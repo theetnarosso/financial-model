@@ -271,7 +271,7 @@ button{
 table{
   width:100%;
   border-collapse:collapse;
-  min-width:1250px;
+  min-width:1450px;
 }
 
 th,
@@ -586,7 +586,8 @@ th:first-child{
 <div class="summary">
   <strong>Profit / Loss Logic:</strong><br>
   <strong>Operational Profit / Loss</strong> = Expected Sales − True Break-Even. This shows pure business viability.<br>
-  <strong>Owner Profit Gap</strong> = Expected Sales − Sales Required With Owner Profit Target. This shows how far the business is from paying the owner target.
+  <strong>Owner Profit Gap</strong> = Expected Sales − Sales Required With Owner Profit Target. This shows how far the business is from paying the owner target.<br>
+  <strong>Expected Cash Flow</strong> = Expected Sales + Estimated Tips + Sales Tax. This reflects actual money expected to pass through the restaurant.
 </div>
 
 <h2>Charts</h2>
@@ -594,7 +595,7 @@ th:first-child{
   <div class="chart-card">
     <h3>Year Operating Cost Pie</h3>
     <canvas id="costPie"></canvas>
-    <div class="note">Includes adjusted payroll, fixed costs, food cost, beverage cost, and POS fees. Sales tax is excluded because it is pass-through money.</div>
+    <div class="note">Includes adjusted payroll, fixed costs, and expected variable costs based on expected sales. Sales tax is excluded because it is pass-through money.</div>
   </div>
 
   <div class="chart-card">
@@ -605,7 +606,7 @@ th:first-child{
   <div class="chart-card">
     <h3>Tip Distribution Visualization</h3>
     <canvas id="tipChart"></canvas>
-    <div class="note">Estimated tips are shown separately from restaurant sales.</div>
+    <div class="note">Tips and sales tax are calculated from expected sales, because they occur only on actual customer spending.</div>
   </div>
 
   <div class="chart-card">
@@ -665,10 +666,20 @@ th:first-child{
 <h2>Monthly Breakdown</h2>
 
 <div class="summary">
-  <strong>Seasonality is now inside each month.</strong><br>
-  Adjust the factor directly on the month you are reviewing. Break-even stays based on real costs.
-  Expected sales change with the seasonality factor, and the model shows both:
-  <strong>Operational Profit / Loss</strong> and <strong>Owner Profit Gap</strong>.
+  <strong>Monthly Breakdown structure:</strong><br>
+  <strong>Costs</strong> show what the restaurant must cover. 
+  <strong>Required Sales</strong> show the true operational break-even and the sales needed to also pay the owner target.
+  <strong>Expected Reality</strong> uses the seasonality factor to estimate likely sales.
+  <strong>Results</strong> show Operational Profit/Loss and Owner Profit Gap.
+  Food cost, beverage cost, POS, tips, sales tax, and expected cash flow are based on expected sales. Fixed costs and payroll stay fixed.
+</div>
+
+
+<div class="summary">
+  <strong>Variable Cost Correction:</strong><br>
+  Fixed costs and payroll do not move when expected sales changes.
+  Food cost, beverage cost, POS fees, tips, and sales tax now move with <strong>Expected Sales</strong>.
+  This means lowering or raising the seasonality factor will correctly change the expected operating costs and the projected profit/loss.
 </div>
 
 <div class="table-wrap">
@@ -687,15 +698,15 @@ th:first-child{
   <th>Vacation Payroll</th>
   <th>Adjusted Payroll</th>
   <th>Fixed</th>
-  <th>Food Cost</th>
-  <th>Beverage Cost</th>
-  <th>POS</th>
+  <th>Expected Food Cost</th>
+  <th>Expected Beverage Cost</th>
+  <th>Expected POS</th>
   <th>Break-Even Net Sales</th>
   <th>Daily BE</th>
   <th>Sales + Profit Target</th>
   <th>Estimated Tips</th>
   <th>Sales Tax</th>
-  <th>Gross + Tips</th>
+  <th>Expected Cash Flow</th>
   <th>Prime Cost %</th>
 </tr>
 </thead>
@@ -715,7 +726,9 @@ th:first-child{
 
 <div class="note">
   This model treats sales tax and tips as money collected but not restaurant income.
-  POS fees are calculated on gross sales before tips. EBITDA mode shows the profit-target view plus add-backs.
+  The Monthly Breakdown now separates required sales from expected reality.
+  Food cost, beverage cost, POS fees, tips, sales tax, and gross cash flow are calculated from expected sales, because those change with actual customer spending.
+  POS fees are calculated on net sales before tips. EBITDA mode shows the profit-target view plus add-backs.
 </div>
 
 </div>
@@ -909,8 +922,11 @@ function runModel(options = {}){
   let rows = [];
   let totals = {
     regularWorkingDays:0, openDays:0, vacationDays:0, bohPayroll:0, fohPayroll:0,
-    vacationPayroll:0, adjustedPayroll:0, fixed:0, foodCost:0, bevCost:0, posFees:0,
-    breakEven:0, requiredProfit:0, tips:0, tax:0, gross:0, grossPlusTips:0, cogs:0,
+    vacationPayroll:0, adjustedPayroll:0, fixed:0,
+    requiredFoodCost:0, requiredBevCost:0, requiredCogs:0, requiredPosFees:0,
+    foodCost:0, bevCost:0, posFees:0,
+    breakEven:0, requiredProfit:0, expectedSales:0, operationalProfitLoss:0, ownerProfitGap:0,
+    tips:0, tax:0, gross:0, grossPlusTips:0, cogs:0,
     ebitda:0, profitTarget:0
   };
 
@@ -937,23 +953,35 @@ function runModel(options = {}){
     const operationalProfitLoss = expectedSales - baseSales;
     const ownerProfitGap = expectedSales - requiredProfit;
 
-    const foodCost = seasonalSales * input.foodMix * input.foodCostPct;
-    const bevCost = seasonalSales * input.bevMix * input.bevCostPct;
+    // Required / break-even variable costs are used to calculate the true break-even requirement.
+    const requiredFoodCost = seasonalSales * input.foodMix * input.foodCostPct;
+    const requiredBevCost = seasonalSales * input.bevMix * input.bevCostPct;
+    const requiredCogs = requiredFoodCost + requiredBevCost;
+    const requiredPosFees = seasonalSales * input.pos;
+
+    // Expected variable costs change with expected sales.
+    const foodCost = expectedSales * input.foodMix * input.foodCostPct;
+    const bevCost = expectedSales * input.bevMix * input.bevCostPct;
     const cogs = foodCost + bevCost;
-    const posFees = seasonalSales * input.pos;
-    const tips = seasonalSales * input.tip;
-    const tax = seasonalSales * input.tax;
-    const gross = seasonalSales + tax;
+    const posFees = expectedSales * input.pos;
+
+    // Tips and sales tax are also based on expected sales.
+    const tips = expectedSales * input.tip;
+    const tax = expectedSales * input.tax;
+    const gross = expectedSales + tax;
     const grossPlusTips = gross + tips;
+
     const dailyBreakEven = stats.actualOpenDays > 0 ? seasonalSales / stats.actualOpenDays : 0;
-    const primeCostPct = seasonalSales > 0 ? (cogs + adjustedPayroll) / seasonalSales : 0;
+    const primeCostPct = expectedSales > 0 ? (cogs + adjustedPayroll) / expectedSales : 0;
     const ebitda = profitTarget + input.ebitdaAddbacks;
 
     const row = {
       monthName, monthIndex, seasonality: seasonality[monthIndex], hasMarginWarning,
       regularWorkingDays:stats.regularWorkingDays, actualOpenDays:stats.actualOpenDays,
       vacationDays:stats.vacationDays, bohPayroll:bohUsed, fohPayroll:fohUsed,
-      vacationPayroll, adjustedPayroll, fixed, foodCost, bevCost, cogs, posFees,
+      vacationPayroll, adjustedPayroll, fixed, 
+      requiredFoodCost, requiredBevCost, requiredCogs, requiredPosFees,
+      foodCost, bevCost, cogs, posFees,
       breakEven:seasonalSales, dailyBreakEven, requiredProfit:seasonalRequiredProfit, expectedSales, operationalProfitLoss, ownerProfitGap,
       tips, tax, gross, grossPlusTips, primeCostPct, ebitda
     };
@@ -968,12 +996,19 @@ function runModel(options = {}){
     totals.vacationPayroll += vacationPayroll;
     totals.adjustedPayroll += adjustedPayroll;
     totals.fixed += fixed;
+    totals.requiredFoodCost += requiredFoodCost;
+    totals.requiredBevCost += requiredBevCost;
+    totals.requiredCogs += requiredCogs;
+    totals.requiredPosFees += requiredPosFees;
     totals.foodCost += foodCost;
     totals.bevCost += bevCost;
     totals.cogs += cogs;
     totals.posFees += posFees;
     totals.breakEven += seasonalSales;
     totals.requiredProfit += seasonalRequiredProfit;
+    totals.expectedSales += expectedSales;
+    totals.operationalProfitLoss += operationalProfitLoss;
+    totals.ownerProfitGap += ownerProfitGap;
     totals.tips += tips;
     totals.tax += tax;
     totals.gross += gross;
@@ -982,7 +1017,7 @@ function runModel(options = {}){
     totals.ebitda += ebitda;
   });
 
-  totals.primeCostPct = totals.breakEven > 0 ? (totals.cogs + totals.adjustedPayroll) / totals.breakEven : 0;
+  totals.primeCostPct = totals.expectedSales > 0 ? (totals.cogs + totals.adjustedPayroll) / totals.expectedSales : 0;
   return {rows, totals, hasMarginWarning, margin};
 }
 
@@ -1024,6 +1059,9 @@ function mobileMonthCard(r){
         ${renderSeasonalityControl(r.monthIndex, r.seasonality)}
       </div>
       <div class="metric-row"><span class="metric-label">Expected Sales</span><span class="metric-value">${money(r.expectedSales)}</span></div>
+      <div class="metric-row"><span class="metric-label">Expected Food Cost</span><span class="metric-value">${money(r.foodCost)}</span></div>
+      <div class="metric-row"><span class="metric-label">Expected Beverage Cost</span><span class="metric-value">${money(r.bevCost)}</span></div>
+      <div class="metric-row"><span class="metric-label">Expected POS</span><span class="metric-value">${money(r.posFees)}</span></div>
       <div class="metric-row"><span class="metric-label">Operational Profit / Loss</span><span class="metric-value ${r.operationalProfitLoss < 0 ? 'warning' : 'good'}">${money(r.operationalProfitLoss)}</span></div>
       <div class="metric-row"><span class="metric-label">Owner Profit Gap</span><span class="metric-value ${r.ownerProfitGap < 0 ? 'warning' : 'good'}">${money(r.ownerProfitGap)}</span></div>
       <div class="metric-row"><span class="metric-label">Open Days</span><span class="metric-value">${r.actualOpenDays}</span></div>
@@ -1031,6 +1069,8 @@ function mobileMonthCard(r){
       <div class="metric-row"><span class="metric-label">Break-Even Sales</span><span class="metric-value">${money(r.breakEven)}</span></div>
       <div class="metric-row"><span class="metric-label">Required Sales + Profit</span><span class="metric-value">${money(r.requiredProfit)}</span></div>
       <div class="metric-row"><span class="metric-label">Estimated Tips</span><span class="metric-value">${money(r.tips)}</span></div>
+      <div class="metric-row"><span class="metric-label">Sales Tax</span><span class="metric-value">${money(r.tax)}</span></div>
+      <div class="metric-row"><span class="metric-label">Expected Cash Flow</span><span class="metric-value">${money(r.grossPlusTips)}</span></div>
       <div class="metric-row"><span class="metric-label">Prime Cost %</span><span class="metric-value">${pct(r.primeCostPct)}</span></div>
     </div>
   `;
@@ -1051,7 +1091,7 @@ function buildCharts(model){
   destroyCharts();
 
   const t = model.totals;
-  const labels = ["Adjusted Payroll","Fixed Costs","Food Cost","Beverage Cost","POS Fees"];
+  const labels = ["Adjusted Payroll","Fixed Costs","Expected Food Cost","Expected Beverage Cost","Expected POS Fees"];
   const values = [t.adjustedPayroll, t.fixed, t.foodCost, t.bevCost, t.posFees];
 
   charts.costPie = new Chart(document.getElementById("costPie"), {
@@ -1062,13 +1102,13 @@ function buildCharts(model){
 
   charts.costBar = new Chart(document.getElementById("costBar"), {
     type:"bar",
-    data:{labels:["Payroll","Fixed","Food","Beverage","POS","Sales Tax"], datasets:[{label:"Year Total", data:[t.adjustedPayroll,t.fixed,t.foodCost,t.bevCost,t.posFees,t.tax]}]},
+    data:{labels:["Payroll","Fixed","Expected Food","Expected Beverage","Expected POS","Sales Tax"], datasets:[{label:"Year Total", data:[t.adjustedPayroll,t.fixed,t.foodCost,t.bevCost,t.posFees,t.tax]}]},
     options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
   });
 
   charts.tipChart = new Chart(document.getElementById("tipChart"), {
     type:"doughnut",
-    data:{labels:["Net Sales","Estimated Tips","Sales Tax"], datasets:[{data:[t.breakEven,t.tips,t.tax]}]},
+    data:{labels:["Expected Net Sales","Estimated Tips","Sales Tax"], datasets:[{data:[t.expectedSales,t.tips,t.tax]}]},
     options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom"}}}
   });
 
@@ -1158,6 +1198,15 @@ function calculate(){
   document.getElementById("yearTips").textContent = money(t.tips);
   document.getElementById("primeCostPct").textContent = pct(t.primeCostPct);
   document.getElementById("yearEbitda").textContent = money(t.ebitda);
+
+  if(document.getElementById("yearExpectedSales")){
+    document.getElementById("yearExpectedSales").textContent = money(t.expectedSales);
+    document.getElementById("yearOperationalPL").textContent = money(t.operationalProfitLoss);
+    document.getElementById("yearOperationalPL").className = "card-value " + (t.operationalProfitLoss < 0 ? "warning" : "good");
+    document.getElementById("yearOwnerGap").textContent = money(t.ownerProfitGap);
+    document.getElementById("yearOwnerGap").className = "card-value " + (t.ownerProfitGap < 0 ? "warning" : "good");
+    document.getElementById("yearExpectedCashFlow").textContent = money(t.grossPlusTips);
+  }
 
   updateScenarios(model);
   buildCharts(model);
