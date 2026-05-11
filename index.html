@@ -524,8 +524,8 @@ th:first-child{
 
 <h2>Monthly Seasonality Sliders</h2>
 <div class="summary">
-  Seasonality adjusts expected sales need by month. A value of <strong>1.00</strong> means normal month.
-  A value of <strong>0.70</strong> means 30% weaker. A value of <strong>1.25</strong> means 25% stronger.
+  Seasonality is now treated as an <strong>expected sales factor</strong>, not a cost reducer.
+  Break-even stays based on real costs. If expected sales are below break-even, the model shows the projected shortfall/loss.
 </div>
 <div id="seasonalitySliders"></div>
 
@@ -555,6 +555,13 @@ th:first-child{
   </div>
 </div>
 
+
+<div class="summary">
+  <strong>Profit / Loss Logic:</strong><br>
+  <strong>Operational Profit / Loss</strong> = Expected Sales − True Break-Even. This shows pure business viability.<br>
+  <strong>Owner Profit Gap</strong> = Expected Sales − Sales Required With Owner Profit Target. This shows how far the business is from paying the owner target.
+</div>
+
 <h2>Charts</h2>
 <div class="chart-grid">
   <div class="chart-card">
@@ -575,7 +582,7 @@ th:first-child{
   </div>
 
   <div class="chart-card">
-    <h3>Monthly Required Sales With Seasonality</h3>
+    <h3>Monthly Break-Even vs Expected Sales / Profit Gaps</h3>
     <canvas id="seasonChart"></canvas>
   </div>
 </div>
@@ -635,6 +642,9 @@ th:first-child{
 <tr>
   <th>Month</th>
   <th>Seasonality</th>
+  <th>Expected Sales</th>
+  <th>Operational Profit / Loss</th>
+  <th>Owner Profit Gap</th>
   <th>Open Days</th>
   <th>Vacation Days</th>
   <th>BOH Payroll</th>
@@ -897,8 +907,13 @@ function runModel(options = {}){
     const baseSales = margin > 0 ? (adjustedPayroll + fixed) / margin : 0;
     const requiredProfit = margin > 0 ? (adjustedPayroll + fixed + profitTarget) / margin : 0;
 
-    const seasonalSales = baseSales * seasonality[monthIndex];
-    const seasonalRequiredProfit = requiredProfit * seasonality[monthIndex];
+    // Break-even must NOT be reduced by seasonality.
+    // Seasonality estimates expected sales performance versus the true break-even requirement.
+    const seasonalSales = baseSales;
+    const seasonalRequiredProfit = requiredProfit;
+    const expectedSales = baseSales * seasonality[monthIndex];
+    const operationalProfitLoss = expectedSales - baseSales;
+    const ownerProfitGap = expectedSales - requiredProfit;
 
     const foodCost = seasonalSales * input.foodMix * input.foodCostPct;
     const bevCost = seasonalSales * input.bevMix * input.bevCostPct;
@@ -917,7 +932,7 @@ function runModel(options = {}){
       regularWorkingDays:stats.regularWorkingDays, actualOpenDays:stats.actualOpenDays,
       vacationDays:stats.vacationDays, bohPayroll:bohUsed, fohPayroll:fohUsed,
       vacationPayroll, adjustedPayroll, fixed, foodCost, bevCost, cogs, posFees,
-      breakEven:seasonalSales, dailyBreakEven, requiredProfit:seasonalRequiredProfit,
+      breakEven:seasonalSales, dailyBreakEven, requiredProfit:seasonalRequiredProfit, expectedSales, operationalProfitLoss, ownerProfitGap,
       tips, tax, gross, grossPlusTips, primeCostPct, ebitda
     };
 
@@ -954,6 +969,9 @@ function mobileMonthCard(r){
     <div class="month-card">
       <h4>${r.monthName}</h4>
       <div class="metric-row"><span class="metric-label">Seasonality</span><span class="metric-value">${r.seasonality.toFixed(2)}</span></div>
+      <div class="metric-row"><span class="metric-label">Expected Sales</span><span class="metric-value">${money(r.expectedSales)}</span></div>
+      <div class="metric-row"><span class="metric-label">Operational Profit / Loss</span><span class="metric-value ${r.operationalProfitLoss < 0 ? 'warning' : 'good'}">${money(r.operationalProfitLoss)}</span></div>
+      <div class="metric-row"><span class="metric-label">Owner Profit Gap</span><span class="metric-value ${r.ownerProfitGap < 0 ? 'warning' : 'good'}">${money(r.ownerProfitGap)}</span></div>
       <div class="metric-row"><span class="metric-label">Open Days</span><span class="metric-value">${r.actualOpenDays}</span></div>
       <div class="metric-row"><span class="metric-label">Adjusted Payroll</span><span class="metric-value">${money(r.adjustedPayroll)}</span></div>
       <div class="metric-row"><span class="metric-label">Break-Even Sales</span><span class="metric-value">${money(r.breakEven)}</span></div>
@@ -1003,8 +1021,11 @@ function buildCharts(model){
   charts.seasonChart = new Chart(document.getElementById("seasonChart"), {
     type:"bar",
     data:{labels:months, datasets:[
-      {label:"Break-Even Sales", data:model.rows.map(r=>r.breakEven)},
-      {label:"Sales + Profit Target", data:model.rows.map(r=>r.requiredProfit)}
+      {label:"True Break-Even Sales", data:model.rows.map(r=>r.breakEven)},
+      {label:"Sales Required + Owner Profit", data:model.rows.map(r=>r.requiredProfit)},
+      {label:"Expected Sales from Seasonality", data:model.rows.map(r=>r.expectedSales)},
+      {label:"Operational Profit / Loss", data:model.rows.map(r=>r.operationalProfitLoss)},
+      {label:"Owner Profit Gap", data:model.rows.map(r=>r.ownerProfitGap)}
     ]},
     options:{responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true}}}
   });
@@ -1022,6 +1043,9 @@ function calculate(){
       <tr>
         <td>${r.monthName}</td>
         <td>${r.seasonality.toFixed(2)}</td>
+        <td>${money(r.expectedSales)}</td>
+        <td class="${r.operationalProfitLoss < 0 ? 'warning' : 'good'}">${money(r.operationalProfitLoss)}</td>
+        <td class="${r.ownerProfitGap < 0 ? 'warning' : 'good'}">${money(r.ownerProfitGap)}</td>
         <td>${r.actualOpenDays}</td>
         <td>${r.vacationDays}</td>
         <td>${money(r.bohPayroll)}</td>
@@ -1049,6 +1073,9 @@ function calculate(){
     <tr class="total">
       <td>Year Total</td>
       <td>-</td>
+      <td>${money(model.rows.reduce((sum,r)=>sum+r.expectedSales,0))}</td>
+      <td class="${model.rows.reduce((sum,r)=>sum+r.operationalProfitLoss,0) < 0 ? 'warning' : 'good'}">${money(model.rows.reduce((sum,r)=>sum+r.operationalProfitLoss,0))}</td>
+      <td class="${model.rows.reduce((sum,r)=>sum+r.ownerProfitGap,0) < 0 ? 'warning' : 'good'}">${money(model.rows.reduce((sum,r)=>sum+r.ownerProfitGap,0))}</td>
       <td>${t.openDays}</td>
       <td>${t.vacationDays}</td>
       <td>${money(t.bohPayroll)}</td>
