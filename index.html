@@ -389,6 +389,40 @@ th:first-child{
   line-height:1.35;
 }
 
+
+.seasonality-cell{
+  min-width:210px;
+}
+
+.inline-seasonality{
+  display:grid;
+  grid-template-columns:1fr 64px;
+  gap:8px;
+  align-items:center;
+}
+
+.inline-seasonality input[type="range"]{
+  width:100%;
+}
+
+.inline-seasonality input[type="number"]{
+  padding:8px;
+  font-size:14px;
+}
+
+.mobile-seasonality-control{
+  margin:8px 0 12px;
+  padding:10px;
+  background:#fafafa;
+  border:1px solid #eee;
+  border-radius:12px;
+}
+
+.mobile-seasonality-control label{
+  display:block;
+  margin-bottom:8px;
+}
+
 @media(max-width:1100px){
   .cards{grid-template-columns:1fr 1fr}
   .chart-grid{grid-template-columns:1fr}
@@ -522,13 +556,6 @@ th:first-child{
   <button class="secondary-btn" type="button" onclick="clearVacationPeriods()">Clear Vacation Periods</button>
 </div>
 
-<h2>Monthly Seasonality Sliders</h2>
-<div class="summary">
-  Seasonality adjusts expected sales need by month. A value of <strong>1.00</strong> means normal month.
-  A value of <strong>0.70</strong> means 30% weaker. A value of <strong>1.25</strong> means 25% stronger.
-</div>
-<div id="seasonalitySliders"></div>
-
 <h2>Yearly Summary</h2>
 <div class="cards">
   <div class="card">
@@ -555,6 +582,13 @@ th:first-child{
   </div>
 </div>
 
+
+<div class="summary">
+  <strong>Profit / Loss Logic:</strong><br>
+  <strong>Operational Profit / Loss</strong> = Expected Sales − True Break-Even. This shows pure business viability.<br>
+  <strong>Owner Profit Gap</strong> = Expected Sales − Sales Required With Owner Profit Target. This shows how far the business is from paying the owner target.
+</div>
+
 <h2>Charts</h2>
 <div class="chart-grid">
   <div class="chart-card">
@@ -575,7 +609,7 @@ th:first-child{
   </div>
 
   <div class="chart-card">
-    <h3>Monthly Required Sales With Seasonality</h3>
+    <h3>Monthly Break-Even vs Expected Sales / Profit Gaps</h3>
     <canvas id="seasonChart"></canvas>
   </div>
 </div>
@@ -629,12 +663,23 @@ th:first-child{
 </div>
 
 <h2>Monthly Breakdown</h2>
+
+<div class="summary">
+  <strong>Seasonality is now inside each month.</strong><br>
+  Adjust the factor directly on the month you are reviewing. Break-even stays based on real costs.
+  Expected sales change with the seasonality factor, and the model shows both:
+  <strong>Operational Profit / Loss</strong> and <strong>Owner Profit Gap</strong>.
+</div>
+
 <div class="table-wrap">
 <table>
 <thead>
 <tr>
   <th>Month</th>
-  <th>Seasonality</th>
+  <th>Seasonality Factor</th>
+  <th>Expected Sales</th>
+  <th>Operational Profit / Loss</th>
+  <th>Owner Profit Gap</th>
   <th>Open Days</th>
   <th>Vacation Days</th>
   <th>BOH Payroll</th>
@@ -683,6 +728,7 @@ const months = [
 
 let vacationCounter = 0;
 let charts = {};
+let pendingSeasonality = null;
 
 function money(value){
   return value.toLocaleString("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
@@ -711,33 +757,19 @@ function getClosedDays(){
 }
 
 function buildSeasonality(){
-  const wrap = document.getElementById("seasonalitySliders");
-  wrap.innerHTML = "";
-
-  months.forEach((m, i) => {
-    const row = document.createElement("div");
-    row.className = "range-row";
-    row.innerHTML = `
-      <label>${m}</label>
-      <input type="range" class="seasonality" data-month="${i}" min="0.25" max="2" step="0.01" value="1">
-      <input type="number" class="seasonalityNumber" data-month="${i}" min="0.25" max="2" step="0.01" value="1.00">
-    `;
-    wrap.appendChild(row);
-  });
-
-  document.querySelectorAll(".seasonality,.seasonalityNumber").forEach(el => {
-    el.addEventListener("input", e => {
-      const month = e.target.dataset.month;
-      const value = Number(e.target.value);
-      document.querySelector(`.seasonality[data-month="${month}"]`).value = value;
-      document.querySelector(`.seasonalityNumber[data-month="${month}"]`).value = value.toFixed(2);
-      calculate();
-    });
-  });
+  // Seasonality controls are now rendered directly inside the monthly breakdown.
+  // This function remains for initialization compatibility.
 }
 
 function getSeasonality(){
-  return months.map((_, i) => Number(document.querySelector(`.seasonalityNumber[data-month="${i}"]`).value) || 1);
+  return months.map((_, i) => {
+    if(pendingSeasonality && pendingSeasonality[i] !== undefined){
+      return Number(pendingSeasonality[i]) || 1;
+    }
+
+    const input = document.querySelector(`.seasonalityNumber[data-month="${i}"]`);
+    return input ? (Number(input.value) || 1) : 1;
+  });
 }
 
 function addVacationPeriod(data = {}){
@@ -897,8 +929,13 @@ function runModel(options = {}){
     const baseSales = margin > 0 ? (adjustedPayroll + fixed) / margin : 0;
     const requiredProfit = margin > 0 ? (adjustedPayroll + fixed + profitTarget) / margin : 0;
 
-    const seasonalSales = baseSales * seasonality[monthIndex];
-    const seasonalRequiredProfit = requiredProfit * seasonality[monthIndex];
+    // Break-even must NOT be reduced by seasonality.
+    // Seasonality estimates expected sales performance versus the true break-even requirement.
+    const seasonalSales = baseSales;
+    const seasonalRequiredProfit = requiredProfit;
+    const expectedSales = baseSales * seasonality[monthIndex];
+    const operationalProfitLoss = expectedSales - baseSales;
+    const ownerProfitGap = expectedSales - requiredProfit;
 
     const foodCost = seasonalSales * input.foodMix * input.foodCostPct;
     const bevCost = seasonalSales * input.bevMix * input.bevCostPct;
@@ -913,11 +950,11 @@ function runModel(options = {}){
     const ebitda = profitTarget + input.ebitdaAddbacks;
 
     const row = {
-      monthName, seasonality: seasonality[monthIndex], hasMarginWarning,
+      monthName, monthIndex, seasonality: seasonality[monthIndex], hasMarginWarning,
       regularWorkingDays:stats.regularWorkingDays, actualOpenDays:stats.actualOpenDays,
       vacationDays:stats.vacationDays, bohPayroll:bohUsed, fohPayroll:fohUsed,
       vacationPayroll, adjustedPayroll, fixed, foodCost, bevCost, cogs, posFees,
-      breakEven:seasonalSales, dailyBreakEven, requiredProfit:seasonalRequiredProfit,
+      breakEven:seasonalSales, dailyBreakEven, requiredProfit:seasonalRequiredProfit, expectedSales, operationalProfitLoss, ownerProfitGap,
       tips, tax, gross, grossPlusTips, primeCostPct, ebitda
     };
 
@@ -949,11 +986,46 @@ function runModel(options = {}){
   return {rows, totals, hasMarginWarning, margin};
 }
 
+
+function renderSeasonalityControl(monthIndex, value){
+  return `
+    <div class="inline-seasonality">
+      <input type="range" class="seasonality" data-month="${monthIndex}" min="0.25" max="2" step="0.01" value="${value}">
+      <input type="number" class="seasonalityNumber" data-month="${monthIndex}" min="0.25" max="2" step="0.01" value="${Number(value).toFixed(2)}">
+    </div>
+  `;
+}
+
+function bindSeasonalityControls(){
+  document.querySelectorAll(".seasonality,.seasonalityNumber").forEach(el => {
+    el.addEventListener("input", e => {
+      const month = e.target.dataset.month;
+      const value = Number(e.target.value) || 1;
+
+      document.querySelectorAll(`.seasonality[data-month="${month}"]`).forEach(slider => {
+        slider.value = value;
+      });
+
+      document.querySelectorAll(`.seasonalityNumber[data-month="${month}"]`).forEach(number => {
+        number.value = value.toFixed(2);
+      });
+
+      calculate();
+    });
+  });
+}
+
 function mobileMonthCard(r){
   return `
     <div class="month-card">
       <h4>${r.monthName}</h4>
-      <div class="metric-row"><span class="metric-label">Seasonality</span><span class="metric-value">${r.seasonality.toFixed(2)}</span></div>
+      <div class="mobile-seasonality-control">
+        <label>Seasonality Factor</label>
+        ${renderSeasonalityControl(r.monthIndex, r.seasonality)}
+      </div>
+      <div class="metric-row"><span class="metric-label">Expected Sales</span><span class="metric-value">${money(r.expectedSales)}</span></div>
+      <div class="metric-row"><span class="metric-label">Operational Profit / Loss</span><span class="metric-value ${r.operationalProfitLoss < 0 ? 'warning' : 'good'}">${money(r.operationalProfitLoss)}</span></div>
+      <div class="metric-row"><span class="metric-label">Owner Profit Gap</span><span class="metric-value ${r.ownerProfitGap < 0 ? 'warning' : 'good'}">${money(r.ownerProfitGap)}</span></div>
       <div class="metric-row"><span class="metric-label">Open Days</span><span class="metric-value">${r.actualOpenDays}</span></div>
       <div class="metric-row"><span class="metric-label">Adjusted Payroll</span><span class="metric-value">${money(r.adjustedPayroll)}</span></div>
       <div class="metric-row"><span class="metric-label">Break-Even Sales</span><span class="metric-value">${money(r.breakEven)}</span></div>
@@ -1003,8 +1075,11 @@ function buildCharts(model){
   charts.seasonChart = new Chart(document.getElementById("seasonChart"), {
     type:"bar",
     data:{labels:months, datasets:[
-      {label:"Break-Even Sales", data:model.rows.map(r=>r.breakEven)},
-      {label:"Sales + Profit Target", data:model.rows.map(r=>r.requiredProfit)}
+      {label:"True Break-Even Sales", data:model.rows.map(r=>r.breakEven)},
+      {label:"Sales Required + Owner Profit", data:model.rows.map(r=>r.requiredProfit)},
+      {label:"Expected Sales from Seasonality", data:model.rows.map(r=>r.expectedSales)},
+      {label:"Operational Profit / Loss", data:model.rows.map(r=>r.operationalProfitLoss)},
+      {label:"Owner Profit Gap", data:model.rows.map(r=>r.ownerProfitGap)}
     ]},
     options:{responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true}}}
   });
@@ -1021,7 +1096,10 @@ function calculate(){
     tbody.innerHTML += `
       <tr>
         <td>${r.monthName}</td>
-        <td>${r.seasonality.toFixed(2)}</td>
+        <td class="seasonality-cell">${renderSeasonalityControl(r.monthIndex, r.seasonality)}</td>
+        <td>${money(r.expectedSales)}</td>
+        <td class="${r.operationalProfitLoss < 0 ? 'warning' : 'good'}">${money(r.operationalProfitLoss)}</td>
+        <td class="${r.ownerProfitGap < 0 ? 'warning' : 'good'}">${money(r.ownerProfitGap)}</td>
         <td>${r.actualOpenDays}</td>
         <td>${r.vacationDays}</td>
         <td>${money(r.bohPayroll)}</td>
@@ -1049,6 +1127,9 @@ function calculate(){
     <tr class="total">
       <td>Year Total</td>
       <td>-</td>
+      <td>${money(model.rows.reduce((sum,r)=>sum+r.expectedSales,0))}</td>
+      <td class="${model.rows.reduce((sum,r)=>sum+r.operationalProfitLoss,0) < 0 ? 'warning' : 'good'}">${money(model.rows.reduce((sum,r)=>sum+r.operationalProfitLoss,0))}</td>
+      <td class="${model.rows.reduce((sum,r)=>sum+r.ownerProfitGap,0) < 0 ? 'warning' : 'good'}">${money(model.rows.reduce((sum,r)=>sum+r.ownerProfitGap,0))}</td>
       <td>${t.openDays}</td>
       <td>${t.vacationDays}</td>
       <td>${money(t.bohPayroll)}</td>
@@ -1068,6 +1149,9 @@ function calculate(){
       <td>${pct(t.primeCostPct)}</td>
     </tr>
   `;
+
+  bindSeasonalityControls();
+  pendingSeasonality = null;
 
   document.getElementById("yearBreakEven").textContent = model.hasMarginWarning ? "Check %" : money(t.breakEven);
   document.getElementById("yearRequiredProfit").textContent = money(t.requiredProfit);
@@ -1166,14 +1250,7 @@ function uploadData(file){
       }
 
       if(Array.isArray(data.seasonality)){
-        data.seasonality.forEach((v,i)=>{
-          const slider = document.querySelector(`.seasonality[data-month="${i}"]`);
-          const number = document.querySelector(`.seasonalityNumber[data-month="${i}"]`);
-          if(slider && number){
-            slider.value = v;
-            number.value = Number(v).toFixed(2);
-          }
-        });
+        pendingSeasonality = data.seasonality;
       }
 
       if(Array.isArray(data.vacations)){
