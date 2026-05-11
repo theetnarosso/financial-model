@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Restaurant Break-Even & Financial Model</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+  --bg:#f4f4f4;
+  --card:#ffffff;
+  --text:#222;
+  --muted:#666;
+  --border:#ddd;
+  --soft:#fafafa;
+  --accent:#111;
+  --danger:#9a3412;
+  --good:#166534;
+}
+
+*{box-sizing:border-box}
+
+body{
+  font-family:Arial, Helvetica, sans-serif;
+  background:var(--bg);
+  padding:18px;
+  color:var(--text);
+  margin:0;
+}
+
+.container{
+  max-width:1280px;
+  margin:auto;
+  background:var(--card);
+  padding:24px;
+  border-radius:18px;
+  box-shadow:0 4px 18px rgba(0,0,0,.08);
+}
+
+h1{
+  text-align:center;
+  margin:0 0 8px;
+  font-size:30px;
+}
+
+.subtitle{
+  text-align:center;
+  color:var(--muted);
+  margin-bottom:24px;
+  line-height:1.4;
+}
+
+h2{
+  margin-top:34px;
+  border-bottom:1px solid var(--border);
+  padding-bottom:8px;
+}
+
+h3{
+  margin-top:24px;
+  margin-bottom:12px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+}
+
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+}
+
+label{
+  font-weight:bold;
+  margin-bottom:6px;
+  font-size:14px;
+}
+
+input,
+select,
+button{
+  font-size:16px;
+}
+
+input,
+select{
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  width:100%;
+  background:white;
+}
+
+input[type="range"]{
+  padding:0;
+}
+
+.range-row{
+  display:grid;
+  grid-template-columns:1fr 85px 115px;
+  gap:10px;
+  align-items:center;
+  padding:9px 0;
+  border-bottom:1px solid #eee;
+}
+
+.range-row:last-child{border-bottom:0}
+
+.days{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+  margin:15px 0;
+}
+
+.day-box{
+  background:var(--soft);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 8px;
+  text-align:center;
+  font-weight:bold;
+  cursor:pointer;
+  user-select:none;
+}
+
+.day-box input{
+  width:auto;
+  margin-right:4px;
+}
+
+.btn-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+
+button{
+  border:0;
+  border-radius:12px;
+  padding:12px 16px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.primary-btn{
+  background:#111;
+  color:#fff;
+}
+
+.secondary-btn{
+  background:#eee;
+  color:#222;
+}
+
+.remove-btn{
+  background:#fee2e2;
+  color:#991b1b;
+  padding:10px 12px;
+}
+
+.vacation-list{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.vacation-card{
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:14px;
+  padding:14px;
+}
+
+.vacation-card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.vacation-title{
+  font-weight:bold;
+}
+
+.vacation-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:12px;
+}
+
+.summary{
+  margin-top:25px;
+  padding:16px;
+  background:var(--soft);
+  border-radius:12px;
+  border:1px solid var(--border);
+  line-height:1.55;
+}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px;
+  margin-top:20px;
+}
+
+.card{
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:14px;
+  padding:15px;
+}
+
+.card-title{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:8px;
+}
+
+.card-value{
+  font-size:23px;
+  font-weight:bold;
+}
+
+.card-sub{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:5px;
+}
+
+.chart-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin-top:20px;
+}
+
+.chart-card{
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:16px;
+  padding:16px;
+  min-height:360px;
+}
+
+.chart-card canvas{
+  width:100%;
+  max-height:310px;
+}
+
+.table-wrap{
+  overflow-x:auto;
+  margin-top:20px;
+  border:1px solid var(--border);
+  border-radius:14px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1250px;
+}
+
+th,
+td{
+  padding:11px 9px;
+  border-bottom:1px solid var(--border);
+  text-align:right;
+  white-space:nowrap;
+}
+
+th:first-child,
+td:first-child{
+  text-align:left;
+  position:sticky;
+  left:0;
+  background:#fff;
+  z-index:1;
+}
+
+th{
+  background:#f7f7f7;
+  font-size:13px;
+}
+
+th:first-child{
+  background:#f7f7f7;
+  z-index:2;
+}
+
+.total{
+  font-weight:bold;
+  background:#fafafa;
+}
+
+.total td:first-child{
+  background:#fafafa;
+}
+
+.mobile-months{
+  display:none;
+  margin-top:20px;
+  gap:12px;
+}
+
+.month-card{
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:14px;
+  padding:15px;
+}
+
+.month-card h4{
+  margin:0 0 12px;
+  font-size:18px;
+}
+
+.metric-row{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  border-bottom:1px solid #eee;
+  padding:8px 0;
+}
+
+.metric-row:last-child{
+  border-bottom:0;
+}
+
+.metric-label{
+  color:var(--muted);
+  font-size:14px;
+}
+
+.metric-value{
+  font-weight:bold;
+  text-align:right;
+}
+
+.note{
+  color:var(--muted);
+  font-size:13px;
+  margin-top:10px;
+  line-height:1.45;
+}
+
+.warning{
+  color:var(--danger);
+  font-weight:bold;
+}
+
+.good{
+  color:var(--good);
+}
+
+.scenario-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+}
+
+.scenario-card{
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  background:#fff;
+}
+
+.scenario-card h3{
+  margin-top:0;
+}
+
+.small-text{
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.35;
+}
+
+@media(max-width:1100px){
+  .cards{grid-template-columns:1fr 1fr}
+  .chart-grid{grid-template-columns:1fr}
+  .scenario-grid{grid-template-columns:1fr}
+}
+
+@media(max-width:900px){
+  body{padding:12px}
+  .container{padding:18px;border-radius:14px}
+  h1{font-size:24px}
+  .grid,.grid-3{grid-template-columns:1fr}
+  .days{grid-template-columns:repeat(2,1fr)}
+  .vacation-grid{grid-template-columns:1fr}
+  .range-row{grid-template-columns:1fr}
+}
+
+@media(max-width:640px){
+  .cards{grid-template-columns:1fr}
+  .table-wrap{display:none}
+  .mobile-months{display:grid}
+  .vacation-card-header{align-items:flex-start}
+  button{width:100%}
+  .remove-btn{width:auto}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Restaurant Break-Even & Financial Model</h1>
+<div class="subtitle">
+  Break-even, seasonality, food/beverage mix, labor split, tips, prime cost, EBITDA, and scenario comparison.
+</div>
+
+<h2>Core Inputs</h2>
+
+<div class="grid">
+  <div class="field">
+    <label>BOH Monthly Payroll ($)</label>
+    <input type="number" id="bohPayroll" value="18000" min="0" step="1">
+  </div>
+
+  <div class="field">
+    <label>FOH Minimum Monthly Payroll ($)</label>
+    <input type="number" id="fohPayroll" value="7000" min="0" step="1">
+  </div>
+
+  <div class="field">
+    <label>Monthly Fixed Costs ($)</label>
+    <input type="number" id="fixed" value="12000" min="0" step="1">
+  </div>
+
+  <div class="field">
+    <label>Sales Tax %</label>
+    <input type="number" id="tax" value="7" min="0" max="100" step="0.1">
+  </div>
+
+  <div class="field">
+    <label>POS Fees %</label>
+    <input type="number" id="pos" value="3" min="0" max="100" step="0.1">
+  </div>
+
+  <div class="field">
+    <label>Estimated Tips Collected %</label>
+    <input type="number" id="tip" value="19" min="0" max="100" step="0.1">
+  </div>
+
+  <div class="field">
+    <label>Monthly Owner Profit Target ($)</label>
+    <input type="number" id="profitTarget" value="5000" min="0" step="1">
+  </div>
+
+  <div class="field">
+    <label>EBITDA Add-Backs / Non-Operating Costs Monthly ($)</label>
+    <input type="number" id="ebitdaAddbacks" value="0" min="0" step="1">
+  </div>
+
+  <div class="field">
+    <label>Year</label>
+    <input type="number" id="year" value="2026" min="2000" max="2100" step="1">
+  </div>
+</div>
+
+<h2>Food vs Beverage Sales Mix</h2>
+
+<div class="grid">
+  <div class="field">
+    <label>Food Sales Mix %</label>
+    <input type="number" id="foodMix" value="75" min="0" max="100" step="1">
+  </div>
+
+  <div class="field">
+    <label>Beverage Sales Mix %</label>
+    <input type="number" id="bevMix" value="25" min="0" max="100" step="1">
+  </div>
+
+  <div class="field">
+    <label>Food Cost %</label>
+    <input type="number" id="foodCost" value="30" min="0" max="100" step="0.1">
+  </div>
+
+  <div class="field">
+    <label>Beverage Cost %</label>
+    <input type="number" id="bevCost" value="25" min="0" max="100" step="0.1">
+  </div>
+</div>
+
+<div class="summary">
+  <strong>Weighted COGS:</strong> the model calculates food and beverage costs separately using your sales mix.
+  Example: 75% food at 30% cost + 25% beverage at 25% cost = 28.75% blended COGS.
+</div>
+
+<h2>Weekly Closed Days</h2>
+<div class="days">
+  <label class="day-box"><input type="checkbox" class="closedDay" value="0"> Sun</label>
+  <label class="day-box"><input type="checkbox" class="closedDay" value="1"> Mon</label>
+  <label class="day-box"><input type="checkbox" class="closedDay" value="2"> Tue</label>
+  <label class="day-box"><input type="checkbox" class="closedDay" value="3"> Wed</label>
+  <label class="day-box"><input type="checkbox" class="closedDay" value="4"> Thu</label>
+  <label class="day-box"><input type="checkbox" class="closedDay" value="5"> Fri</label>
+  <label class="day-box"><input type="checkbox" class="closedDay" value="6"> Sat</label>
+</div>
+
+<h2>Vacation / Temporary Closure Periods</h2>
+<div class="vacation-list" id="vacationList"></div>
+
+<div class="btn-row">
+  <button class="primary-btn" type="button" onclick="addVacationPeriod()">+ Add Vacation Period</button>
+  <button class="secondary-btn" type="button" onclick="clearVacationPeriods()">Clear Vacation Periods</button>
+</div>
+
+<h2>Monthly Seasonality Sliders</h2>
+<div class="summary">
+  Seasonality adjusts expected sales need by month. A value of <strong>1.00</strong> means normal month.
+  A value of <strong>0.70</strong> means 30% weaker. A value of <strong>1.25</strong> means 25% stronger.
+</div>
+<div id="seasonalitySliders"></div>
+
+<h2>Yearly Summary</h2>
+<div class="cards">
+  <div class="card">
+    <div class="card-title">Yearly Break-Even Net Sales</div>
+    <div class="card-value" id="yearBreakEven">$0</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Required Sales With Profit Target</div>
+    <div class="card-value" id="yearRequiredProfit">$0</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Yearly Estimated Tips</div>
+    <div class="card-value" id="yearTips">$0</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Prime Cost %</div>
+    <div class="card-value" id="primeCostPct">0%</div>
+    <div class="card-sub">COGS + adjusted payroll / net sales</div>
+  </div>
+  <div class="card">
+    <div class="card-title">EBITDA Mode</div>
+    <div class="card-value" id="yearEbitda">$0</div>
+    <div class="card-sub">Profit target + add-backs</div>
+  </div>
+</div>
+
+<h2>Charts</h2>
+<div class="chart-grid">
+  <div class="chart-card">
+    <h3>Year Operating Cost Pie</h3>
+    <canvas id="costPie"></canvas>
+    <div class="note">Includes adjusted payroll, fixed costs, food cost, beverage cost, and POS fees. Sales tax is excluded because it is pass-through money.</div>
+  </div>
+
+  <div class="chart-card">
+    <h3>Year Totals Bar Chart</h3>
+    <canvas id="costBar"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>Tip Distribution Visualization</h3>
+    <canvas id="tipChart"></canvas>
+    <div class="note">Estimated tips are shown separately from restaurant sales.</div>
+  </div>
+
+  <div class="chart-card">
+    <h3>Monthly Required Sales With Seasonality</h3>
+    <canvas id="seasonChart"></canvas>
+  </div>
+</div>
+
+<h2>Scenario Comparison</h2>
+<div class="scenario-grid">
+  <div class="scenario-card">
+    <h3>Current Model</h3>
+    <div class="metric-row"><span class="metric-label">Yearly Break-Even</span><span class="metric-value" id="scenarioCurrentBE">$0</span></div>
+    <div class="metric-row"><span class="metric-label">Required Sales + Profit</span><span class="metric-value" id="scenarioCurrentProfit">$0</span></div>
+    <div class="metric-row"><span class="metric-label">Open Days</span><span class="metric-value" id="scenarioCurrentDays">0</span></div>
+  </div>
+
+  <div class="scenario-card">
+    <h3>Summer Closure Model</h3>
+    <div class="grid">
+      <div class="field">
+        <label>Summer Closure Start</label>
+        <input type="date" id="summerStart">
+      </div>
+      <div class="field">
+        <label>Summer Closure End</label>
+        <input type="date" id="summerEnd">
+      </div>
+      <div class="field">
+        <label>Summer Closure Payroll ($)</label>
+        <input type="number" id="summerPayroll" value="0" min="0">
+      </div>
+    </div>
+    <div class="metric-row"><span class="metric-label">Yearly Break-Even</span><span class="metric-value" id="scenarioSummerBE">$0</span></div>
+    <div class="metric-row"><span class="metric-label">Required Sales + Profit</span><span class="metric-value" id="scenarioSummerProfit">$0</span></div>
+    <div class="metric-row"><span class="metric-label">Open Days</span><span class="metric-value" id="scenarioSummerDays">0</span></div>
+  </div>
+
+  <div class="scenario-card">
+    <h3>Reduced Payroll Model</h3>
+    <div class="grid">
+      <div class="field">
+        <label>BOH Payroll Reduction %</label>
+        <input type="number" id="bohReduction" value="15" min="0" max="100" step="1">
+      </div>
+      <div class="field">
+        <label>FOH Payroll Reduction %</label>
+        <input type="number" id="fohReduction" value="15" min="0" max="100" step="1">
+      </div>
+    </div>
+    <div class="metric-row"><span class="metric-label">Yearly Break-Even</span><span class="metric-value" id="scenarioReducedBE">$0</span></div>
+    <div class="metric-row"><span class="metric-label">Required Sales + Profit</span><span class="metric-value" id="scenarioReducedProfit">$0</span></div>
+    <div class="metric-row"><span class="metric-label">Open Days</span><span class="metric-value" id="scenarioReducedDays">0</span></div>
+  </div>
+</div>
+
+<h2>Monthly Breakdown</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+  <th>Month</th>
+  <th>Seasonality</th>
+  <th>Open Days</th>
+  <th>Vacation Days</th>
+  <th>BOH Payroll</th>
+  <th>FOH Payroll</th>
+  <th>Vacation Payroll</th>
+  <th>Adjusted Payroll</th>
+  <th>Fixed</th>
+  <th>Food Cost</th>
+  <th>Beverage Cost</th>
+  <th>POS</th>
+  <th>Break-Even Net Sales</th>
+  <th>Daily BE</th>
+  <th>Sales + Profit Target</th>
+  <th>Estimated Tips</th>
+  <th>Sales Tax</th>
+  <th>Gross + Tips</th>
+  <th>Prime Cost %</th>
+</tr>
+</thead>
+<tbody id="monthlyTable"></tbody>
+</table>
+</div>
+
+<div class="mobile-months" id="mobileMonths"></div>
+
+<div class="btn-row" style="margin-top:20px">
+  <button class="primary-btn" type="button" onclick="downloadData()">Download Configuration</button>
+  <button class="secondary-btn" type="button" onclick="document.getElementById('uploadFile').click()">Upload Configuration</button>
+  <input type="file" id="uploadFile" accept=".json" style="display:none">
+</div>
+
+<div class="note" id="chartWarning" style="display:none;color:#9a3412;font-weight:bold">Charts could not load because Chart.js is unavailable. The calculations still work.</div>
+
+<div class="note">
+  This model treats sales tax and tips as money collected but not restaurant income.
+  POS fees are calculated on gross sales before tips. EBITDA mode shows the profit-target view plus add-backs.
+</div>
+
+</div>
+
+<script>
+const months = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
+];
+
+let vacationCounter = 0;
+let charts = {};
+
+function money(value){
+  return value.toLocaleString("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
+}
+
+function pct(value){
+  return (value * 100).toFixed(1) + "%";
+}
+
+function parseDate(value){
+  if(!value) return null;
+  return new Date(value + "T00:00:00");
+}
+
+function dateOnly(date){
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function daysBetweenInclusive(start, end){
+  const oneDay = 24 * 60 * 60 * 1000;
+  return Math.round((dateOnly(end) - dateOnly(start)) / oneDay) + 1;
+}
+
+function getClosedDays(){
+  return Array.from(document.querySelectorAll(".closedDay:checked")).map(cb => Number(cb.value));
+}
+
+function buildSeasonality(){
+  const wrap = document.getElementById("seasonalitySliders");
+  wrap.innerHTML = "";
+
+  months.forEach((m, i) => {
+    const row = document.createElement("div");
+    row.className = "range-row";
+    row.innerHTML = `
+      <label>${m}</label>
+      <input type="range" class="seasonality" data-month="${i}" min="0.25" max="2" step="0.01" value="1">
+      <input type="number" class="seasonalityNumber" data-month="${i}" min="0.25" max="2" step="0.01" value="1.00">
+    `;
+    wrap.appendChild(row);
+  });
+
+  document.querySelectorAll(".seasonality,.seasonalityNumber").forEach(el => {
+    el.addEventListener("input", e => {
+      const month = e.target.dataset.month;
+      const value = Number(e.target.value);
+      document.querySelector(`.seasonality[data-month="${month}"]`).value = value;
+      document.querySelector(`.seasonalityNumber[data-month="${month}"]`).value = value.toFixed(2);
+      calculate();
+    });
+  });
+}
+
+function getSeasonality(){
+  return months.map((_, i) => Number(document.querySelector(`.seasonalityNumber[data-month="${i}"]`).value) || 1);
+}
+
+function addVacationPeriod(data = {}){
+  vacationCounter++;
+  const list = document.getElementById("vacationList");
+  const card = document.createElement("div");
+  card.className = "vacation-card";
+
+  card.innerHTML = `
+    <div class="vacation-card-header">
+      <div class="vacation-title">Vacation Period ${vacationCounter}</div>
+      <button class="remove-btn" type="button" onclick="removeVacationPeriod(this)">Remove</button>
+    </div>
+    <div class="vacation-grid">
+      <div class="field">
+        <label>Start Date</label>
+        <input type="date" class="vacStart" value="${data.start || ""}">
+      </div>
+      <div class="field">
+        <label>End Date</label>
+        <input type="date" class="vacEnd" value="${data.end || ""}">
+      </div>
+      <div class="field">
+        <label>Total Payroll Paid During This Closure ($)</label>
+        <input type="number" class="vacPayroll" value="${data.payroll ?? 0}" min="0" step="1">
+      </div>
+    </div>
+  `;
+  list.appendChild(card);
+  card.querySelectorAll("input").forEach(input => {
+    input.addEventListener("input", calculate);
+    input.addEventListener("change", calculate);
+  });
+  calculate();
+}
+
+function removeVacationPeriod(button){
+  button.closest(".vacation-card").remove();
+  calculate();
+}
+
+function clearVacationPeriods(){
+  document.getElementById("vacationList").innerHTML = "";
+  calculate();
+}
+
+function getVacationPeriods(extraPeriod = null){
+  const cards = Array.from(document.querySelectorAll(".vacation-card"));
+  const periods = [];
+
+  cards.forEach(card => {
+    const start = parseDate(card.querySelector(".vacStart").value);
+    const end = parseDate(card.querySelector(".vacEnd").value);
+    const payroll = Number(card.querySelector(".vacPayroll").value) || 0;
+    if(start && end && end >= start){
+      periods.push({start,end,payroll,totalDays:daysBetweenInclusive(start,end)});
+    }
+  });
+
+  if(extraPeriod && extraPeriod.start && extraPeriod.end && extraPeriod.end >= extraPeriod.start){
+    periods.push({
+      start: extraPeriod.start,
+      end: extraPeriod.end,
+      payroll: extraPeriod.payroll || 0,
+      totalDays: daysBetweenInclusive(extraPeriod.start, extraPeriod.end)
+    });
+  }
+
+  return periods;
+}
+
+function vacationDataForDate(date, periods){
+  let isVacation = false;
+  let payrollForDate = 0;
+  periods.forEach(period => {
+    const d = dateOnly(date);
+    if(d >= period.start && d <= period.end){
+      isVacation = true;
+      payrollForDate += period.totalDays > 0 ? period.payroll / period.totalDays : 0;
+    }
+  });
+  return { isVacation, payrollForDate };
+}
+
+function monthStats(year, month, closedDays, periods){
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  let regularWorkingDays = 0, actualOpenDays = 0, vacationDays = 0, vacationPayroll = 0;
+
+  for(let day = 1; day <= daysInMonth; day++){
+    const date = new Date(year, month, day);
+    const weeklyClosed = closedDays.includes(date.getDay());
+    const vacationInfo = vacationDataForDate(date, periods);
+
+    if(!weeklyClosed) regularWorkingDays++;
+
+    if(vacationInfo.isVacation){
+      vacationDays++;
+      vacationPayroll += vacationInfo.payrollForDate;
+    }else if(!weeklyClosed){
+      actualOpenDays++;
+    }
+  }
+
+  return {daysInMonth, regularWorkingDays, actualOpenDays, vacationDays, vacationPayroll};
+}
+
+function getInputs(overrides = {}){
+  const foodMixRaw = Number(document.getElementById("foodMix").value) || 0;
+  const bevMixRaw = Number(document.getElementById("bevMix").value) || 0;
+  const totalMix = foodMixRaw + bevMixRaw || 100;
+
+  return {
+    bohPayroll: overrides.bohPayroll !== undefined ? overrides.bohPayroll : (Number(document.getElementById("bohPayroll").value) || 0),
+    fohPayroll: overrides.fohPayroll !== undefined ? overrides.fohPayroll : (Number(document.getElementById("fohPayroll").value) || 0),
+    fixed: Number(document.getElementById("fixed").value) || 0,
+    tax: (Number(document.getElementById("tax").value) || 0) / 100,
+    pos: (Number(document.getElementById("pos").value) || 0) / 100,
+    tip: (Number(document.getElementById("tip").value) || 0) / 100,
+    profitTarget: Number(document.getElementById("profitTarget").value) || 0,
+    ebitdaAddbacks: Number(document.getElementById("ebitdaAddbacks").value) || 0,
+    year: Number(document.getElementById("year").value) || new Date().getFullYear(),
+    foodMix: foodMixRaw / totalMix,
+    bevMix: bevMixRaw / totalMix,
+    foodCostPct: (Number(document.getElementById("foodCost").value) || 0) / 100,
+    bevCostPct: (Number(document.getElementById("bevCost").value) || 0) / 100
+  };
+}
+
+function runModel(options = {}){
+  const input = getInputs(options);
+  const closedDays = getClosedDays();
+  const seasonality = options.ignoreSeasonality ? months.map(()=>1) : getSeasonality();
+  const extraPeriod = options.extraPeriod || null;
+  const periods = getVacationPeriods(extraPeriod);
+  const margin = 1 - ((input.foodMix * input.foodCostPct) + (input.bevMix * input.bevCostPct)) - input.pos;
+  const hasMarginWarning = margin <= 0;
+  let rows = [];
+  let totals = {
+    regularWorkingDays:0, openDays:0, vacationDays:0, bohPayroll:0, fohPayroll:0,
+    vacationPayroll:0, adjustedPayroll:0, fixed:0, foodCost:0, bevCost:0, posFees:0,
+    breakEven:0, requiredProfit:0, tips:0, tax:0, gross:0, grossPlusTips:0, cogs:0,
+    ebitda:0, profitTarget:0
+  };
+
+  months.forEach((monthName, monthIndex) => {
+    const stats = monthStats(input.year, monthIndex, closedDays, periods);
+    const bohDaily = stats.regularWorkingDays > 0 ? input.bohPayroll / stats.regularWorkingDays : 0;
+    const fohDaily = stats.regularWorkingDays > 0 ? input.fohPayroll / stats.regularWorkingDays : 0;
+
+    const bohUsed = bohDaily * stats.actualOpenDays;
+    const fohUsed = fohDaily * stats.actualOpenDays;
+    const vacationPayroll = stats.vacationPayroll;
+    const adjustedPayroll = bohUsed + fohUsed + vacationPayroll;
+    const fixed = input.fixed;
+    const profitTarget = input.profitTarget;
+
+    const baseSales = margin > 0 ? (adjustedPayroll + fixed) / margin : 0;
+    const requiredProfit = margin > 0 ? (adjustedPayroll + fixed + profitTarget) / margin : 0;
+
+    const seasonalSales = baseSales * seasonality[monthIndex];
+    const seasonalRequiredProfit = requiredProfit * seasonality[monthIndex];
+
+    const foodCost = seasonalSales * input.foodMix * input.foodCostPct;
+    const bevCost = seasonalSales * input.bevMix * input.bevCostPct;
+    const cogs = foodCost + bevCost;
+    const posFees = seasonalSales * input.pos;
+    const tips = seasonalSales * input.tip;
+    const tax = seasonalSales * input.tax;
+    const gross = seasonalSales + tax;
+    const grossPlusTips = gross + tips;
+    const dailyBreakEven = stats.actualOpenDays > 0 ? seasonalSales / stats.actualOpenDays : 0;
+    const primeCostPct = seasonalSales > 0 ? (cogs + adjustedPayroll) / seasonalSales : 0;
+    const ebitda = profitTarget + input.ebitdaAddbacks;
+
+    const row = {
+      monthName, seasonality: seasonality[monthIndex], hasMarginWarning,
+      regularWorkingDays:stats.regularWorkingDays, actualOpenDays:stats.actualOpenDays,
+      vacationDays:stats.vacationDays, bohPayroll:bohUsed, fohPayroll:fohUsed,
+      vacationPayroll, adjustedPayroll, fixed, foodCost, bevCost, cogs, posFees,
+      breakEven:seasonalSales, dailyBreakEven, requiredProfit:seasonalRequiredProfit,
+      tips, tax, gross, grossPlusTips, primeCostPct, ebitda
+    };
+
+    rows.push(row);
+
+    totals.regularWorkingDays += stats.regularWorkingDays;
+    totals.openDays += stats.actualOpenDays;
+    totals.vacationDays += stats.vacationDays;
+    totals.bohPayroll += bohUsed;
+    totals.fohPayroll += fohUsed;
+    totals.vacationPayroll += vacationPayroll;
+    totals.adjustedPayroll += adjustedPayroll;
+    totals.fixed += fixed;
+    totals.foodCost += foodCost;
+    totals.bevCost += bevCost;
+    totals.cogs += cogs;
+    totals.posFees += posFees;
+    totals.breakEven += seasonalSales;
+    totals.requiredProfit += seasonalRequiredProfit;
+    totals.tips += tips;
+    totals.tax += tax;
+    totals.gross += gross;
+    totals.grossPlusTips += grossPlusTips;
+    totals.profitTarget += profitTarget;
+    totals.ebitda += ebitda;
+  });
+
+  totals.primeCostPct = totals.breakEven > 0 ? (totals.cogs + totals.adjustedPayroll) / totals.breakEven : 0;
+  return {rows, totals, hasMarginWarning, margin};
+}
+
+function mobileMonthCard(r){
+  return `
+    <div class="month-card">
+      <h4>${r.monthName}</h4>
+      <div class="metric-row"><span class="metric-label">Seasonality</span><span class="metric-value">${r.seasonality.toFixed(2)}</span></div>
+      <div class="metric-row"><span class="metric-label">Open Days</span><span class="metric-value">${r.actualOpenDays}</span></div>
+      <div class="metric-row"><span class="metric-label">Adjusted Payroll</span><span class="metric-value">${money(r.adjustedPayroll)}</span></div>
+      <div class="metric-row"><span class="metric-label">Break-Even Sales</span><span class="metric-value">${money(r.breakEven)}</span></div>
+      <div class="metric-row"><span class="metric-label">Required Sales + Profit</span><span class="metric-value">${money(r.requiredProfit)}</span></div>
+      <div class="metric-row"><span class="metric-label">Estimated Tips</span><span class="metric-value">${money(r.tips)}</span></div>
+      <div class="metric-row"><span class="metric-label">Prime Cost %</span><span class="metric-value">${pct(r.primeCostPct)}</span></div>
+    </div>
+  `;
+}
+
+function destroyCharts(){
+  Object.values(charts).forEach(chart => {
+    if(chart && typeof chart.destroy === "function") chart.destroy();
+  });
+  charts = {};
+}
+
+function buildCharts(model){
+  if(typeof Chart === "undefined"){
+    return;
+  }
+
+  destroyCharts();
+
+  const t = model.totals;
+  const labels = ["Adjusted Payroll","Fixed Costs","Food Cost","Beverage Cost","POS Fees"];
+  const values = [t.adjustedPayroll, t.fixed, t.foodCost, t.bevCost, t.posFees];
+
+  charts.costPie = new Chart(document.getElementById("costPie"), {
+    type:"pie",
+    data:{labels, datasets:[{data:values}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom"}}}
+  });
+
+  charts.costBar = new Chart(document.getElementById("costBar"), {
+    type:"bar",
+    data:{labels:["Payroll","Fixed","Food","Beverage","POS","Sales Tax"], datasets:[{label:"Year Total", data:[t.adjustedPayroll,t.fixed,t.foodCost,t.bevCost,t.posFees,t.tax]}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
+  });
+
+  charts.tipChart = new Chart(document.getElementById("tipChart"), {
+    type:"doughnut",
+    data:{labels:["Net Sales","Estimated Tips","Sales Tax"], datasets:[{data:[t.breakEven,t.tips,t.tax]}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom"}}}
+  });
+
+  charts.seasonChart = new Chart(document.getElementById("seasonChart"), {
+    type:"bar",
+    data:{labels:months, datasets:[
+      {label:"Break-Even Sales", data:model.rows.map(r=>r.breakEven)},
+      {label:"Sales + Profit Target", data:model.rows.map(r=>r.requiredProfit)}
+    ]},
+    options:{responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true}}}
+  });
+}
+
+function calculate(){
+  const model = runModel();
+  const tbody = document.getElementById("monthlyTable");
+  const mobile = document.getElementById("mobileMonths");
+  tbody.innerHTML = "";
+  mobile.innerHTML = "";
+
+  model.rows.forEach(r => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${r.monthName}</td>
+        <td>${r.seasonality.toFixed(2)}</td>
+        <td>${r.actualOpenDays}</td>
+        <td>${r.vacationDays}</td>
+        <td>${money(r.bohPayroll)}</td>
+        <td>${money(r.fohPayroll)}</td>
+        <td>${money(r.vacationPayroll)}</td>
+        <td>${money(r.adjustedPayroll)}</td>
+        <td>${money(r.fixed)}</td>
+        <td>${money(r.foodCost)}</td>
+        <td>${money(r.bevCost)}</td>
+        <td>${money(r.posFees)}</td>
+        <td>${model.hasMarginWarning ? '<span class="warning">Check %</span>' : money(r.breakEven)}</td>
+        <td>${r.actualOpenDays > 0 ? money(r.dailyBreakEven) : "Closed"}</td>
+        <td>${money(r.requiredProfit)}</td>
+        <td>${money(r.tips)}</td>
+        <td>${money(r.tax)}</td>
+        <td>${money(r.grossPlusTips)}</td>
+        <td>${pct(r.primeCostPct)}</td>
+      </tr>
+    `;
+    mobile.innerHTML += mobileMonthCard(r);
+  });
+
+  const t = model.totals;
+  tbody.innerHTML += `
+    <tr class="total">
+      <td>Year Total</td>
+      <td>-</td>
+      <td>${t.openDays}</td>
+      <td>${t.vacationDays}</td>
+      <td>${money(t.bohPayroll)}</td>
+      <td>${money(t.fohPayroll)}</td>
+      <td>${money(t.vacationPayroll)}</td>
+      <td>${money(t.adjustedPayroll)}</td>
+      <td>${money(t.fixed)}</td>
+      <td>${money(t.foodCost)}</td>
+      <td>${money(t.bevCost)}</td>
+      <td>${money(t.posFees)}</td>
+      <td>${model.hasMarginWarning ? '<span class="warning">Check %</span>' : money(t.breakEven)}</td>
+      <td>${t.openDays > 0 ? money(t.breakEven/t.openDays) : "Closed"}</td>
+      <td>${money(t.requiredProfit)}</td>
+      <td>${money(t.tips)}</td>
+      <td>${money(t.tax)}</td>
+      <td>${money(t.grossPlusTips)}</td>
+      <td>${pct(t.primeCostPct)}</td>
+    </tr>
+  `;
+
+  document.getElementById("yearBreakEven").textContent = model.hasMarginWarning ? "Check %" : money(t.breakEven);
+  document.getElementById("yearRequiredProfit").textContent = money(t.requiredProfit);
+  document.getElementById("yearTips").textContent = money(t.tips);
+  document.getElementById("primeCostPct").textContent = pct(t.primeCostPct);
+  document.getElementById("yearEbitda").textContent = money(t.ebitda);
+
+  updateScenarios(model);
+  buildCharts(model);
+}
+
+function updateScenarios(currentModel){
+  const t = currentModel.totals;
+  document.getElementById("scenarioCurrentBE").textContent = money(t.breakEven);
+  document.getElementById("scenarioCurrentProfit").textContent = money(t.requiredProfit);
+  document.getElementById("scenarioCurrentDays").textContent = t.openDays;
+
+  const summerStart = parseDate(document.getElementById("summerStart").value);
+  const summerEnd = parseDate(document.getElementById("summerEnd").value);
+  const summerPayroll = Number(document.getElementById("summerPayroll").value) || 0;
+  const summerModel = runModel({extraPeriod:{start:summerStart,end:summerEnd,payroll:summerPayroll}});
+  document.getElementById("scenarioSummerBE").textContent = money(summerModel.totals.breakEven);
+  document.getElementById("scenarioSummerProfit").textContent = money(summerModel.totals.requiredProfit);
+  document.getElementById("scenarioSummerDays").textContent = summerModel.totals.openDays;
+
+  const input = getInputs();
+  const bohReduction = (Number(document.getElementById("bohReduction").value) || 0) / 100;
+  const fohReduction = (Number(document.getElementById("fohReduction").value) || 0) / 100;
+  const reducedModel = runModel({
+    bohPayroll: input.bohPayroll * (1 - bohReduction),
+    fohPayroll: input.fohPayroll * (1 - fohReduction)
+  });
+  document.getElementById("scenarioReducedBE").textContent = money(reducedModel.totals.breakEven);
+  document.getElementById("scenarioReducedProfit").textContent = money(reducedModel.totals.requiredProfit);
+  document.getElementById("scenarioReducedDays").textContent = reducedModel.totals.openDays;
+}
+
+function collectData(){
+  return {
+    bohPayroll: document.getElementById("bohPayroll").value,
+    fohPayroll: document.getElementById("fohPayroll").value,
+    fixed: document.getElementById("fixed").value,
+    tax: document.getElementById("tax").value,
+    pos: document.getElementById("pos").value,
+    tip: document.getElementById("tip").value,
+    profitTarget: document.getElementById("profitTarget").value,
+    ebitdaAddbacks: document.getElementById("ebitdaAddbacks").value,
+    year: document.getElementById("year").value,
+    foodMix: document.getElementById("foodMix").value,
+    bevMix: document.getElementById("bevMix").value,
+    foodCost: document.getElementById("foodCost").value,
+    bevCost: document.getElementById("bevCost").value,
+    summerStart: document.getElementById("summerStart").value,
+    summerEnd: document.getElementById("summerEnd").value,
+    summerPayroll: document.getElementById("summerPayroll").value,
+    bohReduction: document.getElementById("bohReduction").value,
+    fohReduction: document.getElementById("fohReduction").value,
+    closedDays: Array.from(document.querySelectorAll(".closedDay")).map(cb => ({value: cb.value, checked: cb.checked})),
+    seasonality: getSeasonality(),
+    vacations: Array.from(document.querySelectorAll(".vacation-card")).map(card => ({
+      start: card.querySelector(".vacStart").value,
+      end: card.querySelector(".vacEnd").value,
+      payroll: card.querySelector(".vacPayroll").value
+    }))
+  };
+}
+
+function downloadData(){
+  const blob = new Blob([JSON.stringify(collectData(), null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `restaurant-financial-model-${new Date().toISOString().split("T")[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function setValue(id, value){
+  if(value !== undefined && document.getElementById(id)) document.getElementById(id).value = value;
+}
+
+function uploadData(file){
+  const reader = new FileReader();
+  reader.onload = function(event){
+    try{
+      const data = JSON.parse(event.target.result);
+      ["bohPayroll","fohPayroll","fixed","tax","pos","tip","profitTarget","ebitdaAddbacks","year","foodMix","bevMix","foodCost","bevCost","summerStart","summerEnd","summerPayroll","bohReduction","fohReduction"].forEach(id => setValue(id, data[id]));
+
+      if(Array.isArray(data.closedDays)){
+        document.querySelectorAll(".closedDay").forEach(cb => {
+          const match = data.closedDays.find(x => x.value == cb.value);
+          cb.checked = match ? match.checked : false;
+        });
+      }
+
+      if(Array.isArray(data.seasonality)){
+        data.seasonality.forEach((v,i)=>{
+          const slider = document.querySelector(`.seasonality[data-month="${i}"]`);
+          const number = document.querySelector(`.seasonalityNumber[data-month="${i}"]`);
+          if(slider && number){
+            slider.value = v;
+            number.value = Number(v).toFixed(2);
+          }
+        });
+      }
+
+      if(Array.isArray(data.vacations)){
+        clearVacationPeriods();
+        data.vacations.forEach(v => addVacationPeriod(v));
+      }
+
+      calculate();
+      alert("Configuration uploaded successfully.");
+    }catch(error){
+      alert("Invalid configuration file.");
+      console.error(error);
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.querySelectorAll("input,select").forEach(el => {
+  el.addEventListener("input", calculate);
+  el.addEventListener("change", calculate);
+});
+
+document.getElementById("uploadFile").addEventListener("change", function(e){
+  const file = e.target.files[0];
+  if(file) uploadData(file);
+});
+
+document.getElementById("foodMix").addEventListener("input", () => {
+  const food = Number(document.getElementById("foodMix").value) || 0;
+  document.getElementById("bevMix").value = Math.max(0, 100 - food);
+  calculate();
+});
+
+document.getElementById("bevMix").addEventListener("input", () => {
+  const bev = Number(document.getElementById("bevMix").value) || 0;
+  document.getElementById("foodMix").value = Math.max(0, 100 - bev);
+  calculate();
+});
+
+if(typeof Chart === "undefined"){
+  const warning = document.getElementById("chartWarning");
+  if(warning) warning.style.display = "block";
+}
+
+buildSeasonality();
+addVacationPeriod();
+calculate();
+</script>
+
+</body>
+</html>
