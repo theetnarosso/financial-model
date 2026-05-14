@@ -803,6 +803,56 @@ input[type=range]{
   }
 }
 
+
+/* Better proportional sizing for operating cost pie */
+.chart-card.pie-chart-card{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+
+.chart-card.pie-chart-card canvas{
+  max-width:min(520px, 70vw) !important;
+  max-height:min(520px, 70vh) !important;
+  margin:auto !important;
+}
+
+@media(max-width:1100px){
+  .chart-card.pie-chart-card canvas{
+    max-width:min(460px, 82vw) !important;
+    max-height:min(460px, 60vh) !important;
+  }
+}
+
+@media(max-width:768px){
+  .chart-card.pie-chart-card canvas{
+    max-width:88vw !important;
+    max-height:50vh !important;
+  }
+}
+
+
+.pie-total-display{
+  display:none;
+  text-align:center;
+  font-weight:800;
+  font-size:28px;
+  margin:8px 0 14px;
+}
+
+.pie-total-label{
+  display:block;
+  font-size:13px;
+  color:var(--muted);
+  font-weight:700;
+  margin-bottom:4px;
+}
+
+.chart-card.pie-chart-card{
+  flex-direction:column;
+}
+
 </style>
 </head>
 
@@ -837,13 +887,15 @@ input[type=range]{
     </div>
   </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="inputs">Inputs</button>
-    <button class="tab-btn" data-tab="monthly">Monthly Breakdown</button>
-    <button class="tab-btn" data-tab="charts">Charts</button>
-    <button class="tab-btn" data-tab="scenarios">Scenarios</button>
-    <button class="tab-btn" data-tab="capacity">Capacity</button>
-  </div>
+  
+<div class="tabs">
+  <button class="tab-btn active" data-tab="inputs">Inputs</button>
+  <button class="tab-btn" data-tab="capacity">Capacity</button>
+  <button class="tab-btn" data-tab="monthly">Monthly Breakdown</button>
+  <button class="tab-btn" data-tab="scenarios">Scenario</button>
+  <button class="tab-btn" data-tab="charts">Charts</button>
+</div>
+
 
   <div class="tab-panel active" id="tab-inputs">
     <div class="section">
@@ -1030,16 +1082,20 @@ input[type=range]{
           <select id="chartSelector">
             <option value="profit">Break-Even, Expected Sales & Profit Gaps</option>
             <option value="cost">Cost Breakdown</option>
-            <option value="cash">Cash Flow</option>
+            <option value="cash">Year Operating Cost Pie</option>
                       </select>
         </div>
       </div>
       <div class="help">
         The main chart includes the key values: True Break-Even Sales, Sales Required + Owner Profit,
-        Expected Sales, Operational Profit/Loss, Owner Profit Gap, and Additional Sales Needed.
+        Expected Sales, Operational Profit/Loss, Owner Profit Gap, Additional Sales Needed, and the Year Operating Cost Pie.
         
       </div>
       <div class="chart-card">
+        <div class="pie-total-display" id="pieTotalDisplay">
+          <span class="pie-total-label">Visible Operating Cost Total</span>
+          <span id="pieTotalValue">$0</span>
+        </div>
         <canvas id="mainChart"></canvas>
       </div>
     </div>
@@ -1749,6 +1805,31 @@ function scenarioFill(name,t){
 }
 
 
+
+function updatePieVisibleTotal(){
+  const display = document.getElementById("pieTotalDisplay");
+  const valueEl = document.getElementById("pieTotalValue");
+
+  if(!display || !valueEl || !mainChart || document.getElementById("chartSelector").value !== "cash"){
+    if(display) display.style.display = "none";
+    return;
+  }
+
+  const dataset = mainChart.data.datasets[0];
+  let total = 0;
+
+  dataset.data.forEach((value, index) => {
+    const visible = mainChart.getDataVisibility(index);
+    if(visible){
+      total += Number(value) || 0;
+    }
+  });
+
+  valueEl.textContent = money(total);
+  display.style.display = "block";
+}
+
+
 function updateChart(model){
   if(typeof Chart==="undefined") return;
   const type=document.getElementById("chartSelector").value;
@@ -1789,12 +1870,74 @@ function updateChart(model){
   }else if(type==="cash"){
     const t=model.totals;
     config={
-      type:"doughnut",
-      data:{labels:["Expected Net Sales","Sales Tax","Estimated Tips"],datasets:[{data:[t.expectedSales,t.tax,t.tips]}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:(ctx)=>ctx.label + ": " + money(ctx.raw)}}}}
+      type:"pie",
+      data:{
+        labels:[
+          "Adjusted Payroll",
+          "Fixed Costs",
+          "Expected Food Cost",
+          "Expected Beverage Cost",
+          "Expected POS Fees"
+        ],
+        datasets:[{
+          data:[
+            t.adjustedPayroll,
+            t.fixed,
+            t.foodCost,
+            t.bevCost,
+            t.posFees
+          ],
+          backgroundColor:[
+            "#3ba3e6",
+            "#ff5f86",
+            "#ff9f3a",
+            "#ffd166",
+            "#4bc0c0"
+          ],
+          borderColor:"#ffffff",
+          borderWidth:2
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{
+            position:"bottom",
+            onClick(e, legendItem, legend){
+              const chart = legend.chart;
+              chart.toggleDataVisibility(legendItem.index);
+              chart.update();
+              setTimeout(updatePieVisibleTotal, 0);
+            }
+          },
+          tooltip:{
+            callbacks:{
+              label:(ctx)=>ctx.label + ": " + money(ctx.raw)
+            }
+          }
+        },
+        animation:{
+          onComplete(){
+            updatePieVisibleTotal();
+          }
+        }
+      }
     };
   }
+  const chartCard=document.querySelector(".chart-card");
+  if(chartCard){
+    if(type==="cash"){
+      chartCard.classList.add("pie-chart-card");
+    }else{
+      chartCard.classList.remove("pie-chart-card");
+      const display = document.getElementById("pieTotalDisplay");
+      if(display) display.style.display = "none";
+    }
+  }
+
   mainChart=new Chart(document.getElementById("mainChart"),config);
+  updatePieVisibleTotal();
 }
 
 function calculate(){
