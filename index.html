@@ -697,6 +697,112 @@ input[type=range]{
   }
 }
 
+
+/* Operational Capacity Heatmap */
+.heatmap-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-top:20px;
+}
+
+.heatmap-card{
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:14px;
+  background:#fff;
+  color:#111;
+  min-height:170px;
+}
+
+.heatmap-card h3{
+  margin:0 0 10px;
+  font-size:18px;
+}
+
+.heatmap-status{
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:12px;
+  margin-bottom:10px;
+}
+
+.heatmap-slow{
+  background:#e0f2fe;
+  border-color:#bae6fd;
+}
+
+.heatmap-healthy{
+  background:#dcfce7;
+  border-color:#bbf7d0;
+}
+
+.heatmap-busy{
+  background:#fef9c3;
+  border-color:#fde68a;
+}
+
+.heatmap-pressure{
+  background:#ffedd5;
+  border-color:#fed7aa;
+}
+
+.heatmap-over{
+  background:#fee2e2;
+  border-color:#fecaca;
+}
+
+.heatmap-metric{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 0;
+  border-bottom:1px solid rgba(0,0,0,.08);
+  font-size:13px;
+}
+
+.heatmap-metric:last-child{
+  border-bottom:0;
+}
+
+.heatmap-label{
+  color:#555;
+}
+
+.heatmap-value{
+  font-weight:800;
+  text-align:right;
+}
+
+.heatmap-utilization{
+  margin-top:10px;
+  height:12px;
+  background:rgba(255,255,255,.65);
+  border-radius:999px;
+  overflow:hidden;
+  border:1px solid rgba(0,0,0,.08);
+}
+
+.heatmap-utilization-fill{
+  height:100%;
+  background:#111;
+  border-radius:999px;
+}
+
+@media(max-width:1050px){
+  .heatmap-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:720px){
+  .heatmap-grid{
+    grid-template-columns:1fr;
+  }
+}
+
 </style>
 </head>
 
@@ -925,14 +1031,13 @@ input[type=range]{
             <option value="profit">Break-Even, Expected Sales & Profit Gaps</option>
             <option value="cost">Cost Breakdown</option>
             <option value="cash">Cash Flow</option>
-            <option value="capacity">Capacity</option>
-          </select>
+                      </select>
         </div>
       </div>
       <div class="help">
         The main chart includes the key values: True Break-Even Sales, Sales Required + Owner Profit,
         Expected Sales, Operational Profit/Loss, Owner Profit Gap, and Additional Sales Needed.
-        Hover over the chart to see exact dollar values.
+        
       </div>
       <div class="chart-card">
         <canvas id="mainChart"></canvas>
@@ -1053,6 +1158,14 @@ input[type=range]{
         <div class="small-card"><div class="small-title">Guest Capacity Per Month</div><div class="small-value" id="guestCapacityMonth">0</div></div>
         <div class="small-card"><div class="small-title">Guest Capacity Per Year</div><div class="small-value" id="guestCapacityYear">0</div></div>
       </div>
+
+      <h2 style="margin-top:28px;">Operational Capacity Heatmap</h2>
+      <div class="help">
+        The heatmap converts expected sales into expected guests using the average check.
+        It then compares expected guests with physical guest capacity based on seating, turns, and actual open days.
+      </div>
+      <div class="heatmap-grid" id="capacityHeatmap"></div>
+
     </div>
   </div>
 
@@ -1525,6 +1638,87 @@ function updateCapacity(){
   document.getElementById("guestCapacityYear").textContent=whole(yearlyGuests);
 }
 
+
+function heatmapClass(utilization){
+  if(utilization >= 1) return "heatmap-over";
+  if(utilization >= 0.85) return "heatmap-pressure";
+  if(utilization >= 0.65) return "heatmap-busy";
+  if(utilization >= 0.40) return "heatmap-healthy";
+  return "heatmap-slow";
+}
+
+function heatmapStatus(utilization){
+  if(utilization >= 1) return "Over Capacity";
+  if(utilization >= 0.85) return "High Pressure";
+  if(utilization >= 0.65) return "Busy";
+  if(utilization >= 0.40) return "Healthy";
+  return "Slow";
+}
+
+function updateCapacityHeatmap(model){
+  const heatmap = document.getElementById("capacityHeatmap");
+  if(!heatmap) return;
+
+  const seats = Number(document.getElementById("seatingCapacity").value) || 0;
+  const turns = Number(document.getElementById("turnsPerNight").value) || 0;
+  const avgCheck = Number(document.getElementById("avgCheck").value) || 0;
+
+  const dailyGuestCapacity = seats * turns;
+
+  heatmap.innerHTML = model.rows.map(r => {
+    const expectedMonthlyGuests = avgCheck > 0 ? r.expectedSales / avgCheck : 0;
+    const guestsPerDay = r.actualOpenDays > 0 ? expectedMonthlyGuests / r.actualOpenDays : 0;
+    const openDaysPerWeek = r.actualOpenDays / 4.345;
+    const guestsPerWeek = guestsPerDay * openDaysPerWeek;
+    const monthlyGuestCapacity = dailyGuestCapacity * r.actualOpenDays;
+    const utilization = monthlyGuestCapacity > 0 ? expectedMonthlyGuests / monthlyGuestCapacity : 0;
+    const utilizationPct = utilization * 100;
+    const cappedWidth = Math.min(100, Math.max(0, utilizationPct));
+
+    return `
+      <div class="heatmap-card ${heatmapClass(utilization)}">
+        <h3>${r.monthName}</h3>
+        <div class="heatmap-status">${heatmapStatus(utilization)}</div>
+
+        <div class="heatmap-metric">
+          <span class="heatmap-label">Capacity Used</span>
+          <span class="heatmap-value">${utilizationPct.toFixed(1)}%</span>
+        </div>
+
+        <div class="heatmap-metric">
+          <span class="heatmap-label">Guests / Day</span>
+          <span class="heatmap-value">${whole(guestsPerDay)}</span>
+        </div>
+
+        <div class="heatmap-metric">
+          <span class="heatmap-label">Guests / Week</span>
+          <span class="heatmap-value">${whole(guestsPerWeek)}</span>
+        </div>
+
+        <div class="heatmap-metric">
+          <span class="heatmap-label">Guests / Month</span>
+          <span class="heatmap-value">${whole(expectedMonthlyGuests)}</span>
+        </div>
+
+        <div class="heatmap-metric">
+          <span class="heatmap-label">Actual Open Days</span>
+          <span class="heatmap-value">${r.actualOpenDays}</span>
+        </div>
+
+        <div class="heatmap-metric">
+          <span class="heatmap-label">Month Capacity</span>
+          <span class="heatmap-value">${whole(monthlyGuestCapacity)}</span>
+        </div>
+
+        <div class="heatmap-utilization">
+          <div class="heatmap-utilization-fill" style="width:${cappedWidth}%"></div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+
 function updateScenarios(current){
   scenarioFill("Current",current.totals);
 
@@ -1579,7 +1773,7 @@ function updateChart(model){
           legend:{position:"top"},
           tooltip:{
             enabled:true,
-            callbacks:{label:(ctx)=>ctx.dataset.label + ": " + money(ctx.raw)}
+            callbacks:{label:(ctx)=>ctx.dataset.label + ": " + Number(ctx.raw).toLocaleString("en-US")}
           }
         },
         scales:{y:{beginAtZero:false}}
@@ -1599,16 +1793,6 @@ function updateChart(model){
       data:{labels:["Expected Net Sales","Sales Tax","Estimated Tips"],datasets:[{data:[t.expectedSales,t.tax,t.tips]}]},
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:(ctx)=>ctx.label + ": " + money(ctx.raw)}}}}
     };
-  }else{
-    const seats=Number(document.getElementById("seatingCapacity").value)||0;
-    const turns=Number(document.getElementById("turnsPerNight").value)||0;
-    const days=Number(document.getElementById("daysOpenManual").value)||0;
-    const daily=seats*turns;
-    config={
-      type:"bar",
-      data:{labels:["Day","Week","Month","Year"],datasets:[{label:"Guest Capacity",data:[daily,daily*(days/4.345),daily*days,daily*days*12]}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}},scales:{y:{beginAtZero:true}}}
-    };
   }
   mainChart=new Chart(document.getElementById("mainChart"),config);
 }
@@ -1617,6 +1801,7 @@ function calculate(){
   updateCapacity();
   const model=runModel();
   renderMonthly(model);
+  updateCapacityHeatmap(model);
   updateSummary(model);
   updateScenarios(model);
   updateChart(model);
