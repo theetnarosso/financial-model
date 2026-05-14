@@ -588,6 +588,93 @@ input[type=range]{
     min-width:62px!important;
   }
 }
+
+/* Mobile landscape full-screen chart mode */
+@media screen and (max-width: 950px) and (orientation: landscape){
+  body{
+    padding:0 !important;
+    overflow:hidden !important;
+    background:#fff !important;
+  }
+
+  .hero,
+  .sticky-summary,
+  .tabs,
+  #tab-inputs,
+  #tab-monthly,
+  #tab-scenarios,
+  #tab-capacity{
+    display:none !important;
+  }
+
+  #tab-charts{
+    display:block !important;
+  }
+
+  .app{
+    max-width:none !important;
+    width:100vw !important;
+    height:100vh !important;
+    margin:0 !important;
+  }
+
+  #tab-charts .section{
+    width:100vw !important;
+    height:100vh !important;
+    margin:0 !important;
+    padding:8px !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    display:flex !important;
+    flex-direction:column !important;
+    background:#fff !important;
+  }
+
+  #tab-charts h2,
+  #tab-charts .help{
+    display:none !important;
+  }
+
+  .chart-controls{
+    flex:0 0 auto !important;
+    padding:4px !important;
+    margin:0 !important;
+  }
+
+  .chart-controls .field{
+    max-width:320px !important;
+  }
+
+  .chart-controls label{
+    display:none !important;
+  }
+
+  .chart-controls select{
+    padding:8px 10px !important;
+    font-size:14px !important;
+    border-radius:10px !important;
+  }
+
+  .chart-card{
+    flex:1 1 auto !important;
+    width:100vw !important;
+    height:calc(100vh - 52px) !important;
+    min-height:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:#fff !important;
+  }
+
+  .chart-card canvas{
+    width:100vw !important;
+    height:calc(100vh - 52px) !important;
+    min-height:0 !important;
+    max-height:none !important;
+  }
+}
+
 </style>
 </head>
 
