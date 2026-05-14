@@ -589,12 +589,28 @@ input[type=range]{
   }
 }
 
-/* Mobile landscape full-screen chart mode */
-@media screen and (max-width: 950px) and (orientation: landscape){
+
+
+
+/* Landscape chart focus mode for phones/tablets */
+@media screen and (orientation: landscape) and (max-height: 900px){
+  html,
   body{
+    width:100vw !important;
+    height:100vh !important;
+    margin:0 !important;
     padding:0 !important;
     overflow:hidden !important;
     background:#fff !important;
+  }
+
+  .app{
+    width:100vw !important;
+    height:100vh !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow:hidden !important;
   }
 
   .hero,
@@ -609,25 +625,21 @@ input[type=range]{
 
   #tab-charts{
     display:block !important;
-  }
-
-  .app{
-    max-width:none !important;
     width:100vw !important;
     height:100vh !important;
-    margin:0 !important;
   }
 
   #tab-charts .section{
     width:100vw !important;
     height:100vh !important;
     margin:0 !important;
-    padding:8px !important;
+    padding:6px !important;
     border-radius:0 !important;
     box-shadow:none !important;
+    background:#fff !important;
     display:flex !important;
     flex-direction:column !important;
-    background:#fff !important;
+    overflow:hidden !important;
   }
 
   #tab-charts h2,
@@ -636,13 +648,19 @@ input[type=range]{
   }
 
   .chart-controls{
-    flex:0 0 auto !important;
-    padding:4px !important;
+    flex:0 0 42px !important;
+    height:42px !important;
     margin:0 !important;
+    padding:3px 6px !important;
+    display:flex !important;
+    align-items:center !important;
+    background:#fff !important;
+    z-index:10 !important;
   }
 
   .chart-controls .field{
-    max-width:320px !important;
+    max-width:360px !important;
+    width:360px !important;
   }
 
   .chart-controls label{
@@ -650,7 +668,8 @@ input[type=range]{
   }
 
   .chart-controls select{
-    padding:8px 10px !important;
+    height:34px !important;
+    padding:5px 10px !important;
     font-size:14px !important;
     border-radius:10px !important;
   }
@@ -658,20 +677,23 @@ input[type=range]{
   .chart-card{
     flex:1 1 auto !important;
     width:100vw !important;
-    height:calc(100vh - 52px) !important;
+    height:calc(100vh - 42px) !important;
     min-height:0 !important;
     margin:0 !important;
     padding:0 !important;
     border:0 !important;
     border-radius:0 !important;
+    box-shadow:none !important;
+    overflow:hidden !important;
     background:#fff !important;
   }
 
   .chart-card canvas{
     width:100vw !important;
-    height:calc(100vh - 52px) !important;
+    height:calc(100vh - 42px) !important;
     min-height:0 !important;
     max-height:none !important;
+    display:block !important;
   }
 }
 
@@ -1702,6 +1724,22 @@ document.getElementById("foodMix").addEventListener("input",()=>{
 document.getElementById("bevMix").addEventListener("input",()=>{
   const bev=Number(document.getElementById("bevMix").value)||0;
   document.getElementById("foodMix").value=Math.max(0,100-bev);
+});
+
+
+window.addEventListener("orientationchange", () => {
+  setTimeout(() => {
+    if(mainChart && typeof mainChart.resize === "function"){
+      mainChart.resize();
+    }
+    calculate();
+  }, 350);
+});
+
+window.addEventListener("resize", () => {
+  if(mainChart && typeof mainChart.resize === "function"){
+    setTimeout(()=>mainChart.resize(), 150);
+  }
 });
 
 addVacationPeriod();
