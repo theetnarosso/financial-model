@@ -2,141 +2,192 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Restaurant Break-Even & Financial Model</title>
+<title>Restaurant Financial Model</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
-  --bg:#f4f4f4;
+  --bg:#f5f2ee;
   --card:#ffffff;
-  --text:#222;
-  --muted:#666;
-  --border:#ddd;
+  --text:#242424;
+  --muted:#6b6b6b;
+  --border:#dedbd6;
   --soft:#fafafa;
-  --accent:#111;
-  --danger:#9a3412;
-  --good:#166534;
+  --dark:#111;
+  --green:#166534;
+  --red:#9f2f16;
+  --yellow:#a16207;
+  --shadow:0 8px 25px rgba(0,0,0,.08);
 }
 
 *{box-sizing:border-box}
 
 body{
-  font-family:Arial, Helvetica, sans-serif;
-  background:var(--bg);
-  padding:18px;
-  color:var(--text);
   margin:0;
+  padding:16px;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial, Helvetica, sans-serif;
 }
 
-.container{
-  max-width:1280px;
+.app{
+  max-width:1320px;
   margin:auto;
+}
+
+.hero{
   background:var(--card);
+  border-radius:24px;
   padding:24px;
-  border-radius:18px;
-  box-shadow:0 4px 18px rgba(0,0,0,.08);
+  box-shadow:var(--shadow);
+  margin-bottom:14px;
 }
 
 h1{
-  text-align:center;
   margin:0 0 8px;
-  font-size:30px;
+  font-size:34px;
 }
 
 .subtitle{
-  text-align:center;
   color:var(--muted);
-  margin-bottom:24px;
-  line-height:1.4;
+  line-height:1.45;
+}
+
+.sticky-summary{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(245,242,238,.92);
+  backdrop-filter:blur(10px);
+  padding:10px 0;
+}
+
+.summary-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+
+.kpi{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:14px;
+  box-shadow:0 3px 12px rgba(0,0,0,.04);
+}
+
+.kpi-title{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:6px;
+}
+
+.kpi-value{
+  font-size:22px;
+  font-weight:800;
+}
+
+.good{color:var(--green)!important}
+.bad{color:var(--red)!important}
+.warn{color:var(--yellow)!important}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:16px 0;
+}
+
+.tab-btn{
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:999px;
+  padding:11px 16px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.tab-btn.active{
+  background:#111;
+  color:#fff;
+  border-color:#111;
+}
+
+.tab-panel{
+  display:none;
+}
+
+.tab-panel.active{
+  display:block;
+}
+
+.section{
+  background:var(--card);
+  border-radius:24px;
+  padding:22px;
+  box-shadow:var(--shadow);
+  margin-bottom:16px;
 }
 
 h2{
-  margin-top:34px;
-  border-bottom:1px solid var(--border);
-  padding-bottom:8px;
+  margin:0 0 14px;
+  font-size:24px;
 }
 
 h3{
-  margin-top:24px;
-  margin-bottom:12px;
+  margin:18px 0 10px;
+}
+
+.help{
+  background:#fafafa;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:14px;
+  line-height:1.45;
+  color:#444;
+  margin:12px 0;
 }
 
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
-  gap:15px;
+  gap:14px;
 }
 
 .grid-3{
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:15px;
+  gap:14px;
 }
 
 .field{
   display:flex;
   flex-direction:column;
+  gap:6px;
 }
 
 label{
-  font-weight:bold;
-  margin-bottom:6px;
+  font-weight:800;
   font-size:14px;
 }
 
-input,
-select,
-button{
+input, select, button{
   font-size:16px;
 }
 
-input,
-select{
-  padding:12px;
-  border-radius:10px;
-  border:1px solid #ccc;
+input, select{
   width:100%;
-  background:white;
+  border:1px solid #ccc;
+  border-radius:12px;
+  padding:12px;
+  background:#fff;
 }
 
-input[type="range"]{
-  padding:0;
-}
-
-.range-row{
-  display:grid;
-  grid-template-columns:1fr 85px 115px;
-  gap:10px;
-  align-items:center;
-  padding:9px 0;
-  border-bottom:1px solid #eee;
-}
-
-.range-row:last-child{border-bottom:0}
-
-.days{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:8px;
-  margin:15px 0;
-}
-
-.day-box{
-  background:var(--soft);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:10px 8px;
-  text-align:center;
-  font-weight:bold;
-  cursor:pointer;
-  user-select:none;
-}
-
-.day-box input{
-  width:auto;
-  margin-right:4px;
+.note{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.35;
 }
 
 .btn-row{
@@ -148,26 +199,46 @@ input[type="range"]{
 
 button{
   border:0;
-  border-radius:12px;
-  padding:12px 16px;
+  border-radius:13px;
+  padding:12px 15px;
   cursor:pointer;
-  font-weight:bold;
+  font-weight:800;
 }
 
-.primary-btn{
+.primary{
   background:#111;
   color:#fff;
 }
 
-.secondary-btn{
+.secondary{
   background:#eee;
   color:#222;
 }
 
-.remove-btn{
+.danger{
   background:#fee2e2;
   color:#991b1b;
-  padding:10px 12px;
+}
+
+.checkbox-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+}
+
+.check-card{
+  background:#fbfbfb;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+  font-weight:800;
+  text-align:center;
+  cursor:pointer;
+}
+
+.check-card input{
+  width:auto;
+  margin-right:6px;
 }
 
 .vacation-list{
@@ -178,112 +249,73 @@ button{
 
 .vacation-card{
   border:1px solid var(--border);
-  background:#fff;
-  border-radius:14px;
+  border-radius:16px;
   padding:14px;
+  background:#fff;
 }
 
-.vacation-card-header{
+.vacation-card-head{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:10px;
   margin-bottom:12px;
-}
-
-.vacation-title{
-  font-weight:bold;
-}
-
-.vacation-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
   gap:12px;
 }
 
-.summary{
-  margin-top:25px;
-  padding:16px;
-  background:var(--soft);
-  border-radius:12px;
-  border:1px solid var(--border);
-  line-height:1.55;
-}
-
-.cards{
+.capacity-output,
+.scenario-grid{
   display:grid;
-  grid-template-columns:repeat(5,1fr);
+  grid-template-columns:repeat(4,1fr);
   gap:12px;
-  margin-top:20px;
+  margin-top:14px;
 }
 
-.card{
-  border:1px solid var(--border);
+.small-card,
+.scenario-card{
   background:#fff;
-  border-radius:14px;
-  padding:15px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:14px;
 }
 
-.card-title{
-  color:var(--muted);
-  font-size:13px;
-  margin-bottom:8px;
-}
-
-.card-value{
-  font-size:23px;
-  font-weight:bold;
-}
-
-.card-sub{
-  color:var(--muted);
+.small-title{
   font-size:12px;
-  margin-top:5px;
+  color:var(--muted);
+  margin-bottom:6px;
 }
 
-.chart-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px;
-  margin-top:20px;
-}
-
-.chart-card{
-  border:1px solid var(--border);
-  background:#fff;
-  border-radius:16px;
-  padding:16px;
-  min-height:360px;
-}
-
-.chart-card canvas{
-  width:100%;
-  max-height:310px;
+.small-value{
+  font-size:22px;
+  font-weight:800;
 }
 
 .table-wrap{
+  width:100%;
   overflow-x:auto;
-  margin-top:20px;
   border:1px solid var(--border);
-  border-radius:14px;
+  border-radius:18px;
+  margin-top:14px;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  min-width:1550px;
+  min-width:1120px;
 }
 
-th,
-td{
-  padding:11px 9px;
+th,td{
+  padding:12px 10px;
   border-bottom:1px solid var(--border);
   text-align:right;
   white-space:nowrap;
 }
 
-th:first-child,
-td:first-child{
+th{
+  background:#f6f6f6;
+  font-size:13px;
+}
+
+th:first-child, td:first-child{
   text-align:left;
   position:sticky;
   left:0;
@@ -291,49 +323,78 @@ td:first-child{
   z-index:1;
 }
 
-th{
-  background:#f7f7f7;
-  font-size:13px;
-}
-
 th:first-child{
-  background:#f7f7f7;
-  z-index:2;
+  background:#f6f6f6;
 }
 
-.total{
-  font-weight:bold;
+.total-row{
+  font-weight:800;
   background:#fafafa;
 }
 
-.total td:first-child{
+.total-row td:first-child{
   background:#fafafa;
+}
+
+.details-row{
+  display:none;
+  background:#fbfbfb;
+}
+
+.details-content{
+  padding:14px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  text-align:left;
+}
+
+.detail-item{
+  background:#fff;
+  border:1px solid #eee;
+  border-radius:12px;
+  padding:10px;
+}
+
+.detail-label{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:4px;
+}
+
+.detail-value{
+  font-weight:800;
+}
+
+.expand-btn{
+  padding:8px 10px;
+  border:1px solid var(--border);
+  background:#fff;
 }
 
 .mobile-months{
   display:none;
-  margin-top:20px;
   gap:12px;
+  margin-top:14px;
 }
 
 .month-card{
   border:1px solid var(--border);
+  border-radius:18px;
   background:#fff;
-  border-radius:14px;
-  padding:15px;
+  padding:14px;
 }
 
-.month-card h4{
+.month-card h3{
   margin:0 0 12px;
-  font-size:18px;
 }
 
 .metric-row{
   display:flex;
   justify-content:space-between;
-  gap:16px;
-  border-bottom:1px solid #eee;
+  gap:12px;
   padding:8px 0;
+  border-bottom:1px solid #eee;
 }
 
 .metric-row:last-child{
@@ -342,180 +403,76 @@ th:first-child{
 
 .metric-label{
   color:var(--muted);
-  font-size:14px;
 }
 
 .metric-value{
-  font-weight:bold;
+  font-weight:800;
   text-align:right;
 }
 
-.note{
-  color:var(--muted);
-  font-size:13px;
-  margin-top:10px;
-  line-height:1.45;
-}
-
-.warning{
-  color:var(--danger);
-  font-weight:bold;
-}
-
-.good{
-  color:var(--good);
-}
-
-.scenario-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:15px;
-}
-
-.scenario-card{
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:16px;
+.chart-card{
+  width:100%;
   background:#fff;
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:16px;
+  margin-top:14px;
+  min-height:420px;
 }
 
-.scenario-card h3{
-  margin-top:0;
+.chart-card canvas{
+  width:100%!important;
+  max-width:100%!important;
+  min-height:360px;
 }
 
-.small-text{
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.35;
+.chart-controls{
+  display:flex;
+  gap:12px;
+  align-items:end;
+  flex-wrap:wrap;
 }
 
-
-.seasonality-cell{
+.inline-seasonality{
+  display:flex!important;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
   min-width:210px;
 }
 
-.inline-seasonality{
-  display:grid;
-  grid-template-columns:1fr 64px;
+.inline-seasonality input[type="range"]{
+  width:190px;
+}
+
+.seasonality-controls{
+  display:flex;
+  justify-content:center;
+  align-items:center;
   gap:8px;
-  align-items:center;
-}
-
-.inline-seasonality input[type="range"]{
-  width:100%;
-}
-
-.inline-seasonality input[type="number"]{
-  padding:8px;
-  font-size:14px;
-}
-
-.mobile-seasonality-control{
-  margin:8px 0 12px;
-  padding:10px;
-  background:#fafafa;
-  border:1px solid #eee;
-  border-radius:12px;
-}
-
-
-/* Improved Seasonality Input */
-
-/* Modern compact seasonality controls */
-.inline-seasonality{
-  display:flex !important;
-  flex-direction:column;
-  align-items:center;
-  gap:10px;
-  min-width:220px;
-}
-
-.inline-seasonality input[type="range"]{
-  width:220px;
-  min-width:220px;
-}
-
-.seasonality-controls{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:14px;
-}
-
-.seasonality-btn{
-  border:2px solid #d9d9d9;
-  background:#fff;
-  border-radius:18px;
-  padding:10px 16px;
-  cursor:pointer;
-  font-size:16px;
-  font-weight:700;
-  min-width:84px;
-  transition:0.12s ease;
-}
-
-.seasonality-btn:hover{
-  background:#f4f4f4;
-}
-
-.seasonality-btn:active{
-  transform:scale(0.96);
-}
-
-.seasonalityNumber{
-  width:96px !important;
-  height:68px;
-  text-align:center;
-  font-weight:800;
-  border-radius:22px;
-  padding:10px 8px !important;
-  font-size:24px !important;
-  background:#000;
-  color:#fff;
-  border:2px solid #000;
-}
-
-
-/* Equal-size seasonality value box */
-.seasonality-controls{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:14px;
 }
 
 .seasonality-btn,
 .seasonalityNumber{
-  width:84px !important;
-  min-width:84px !important;
-  height:56px !important;
-  box-sizing:border-box;
-  border-radius:18px;
-  font-size:18px !important;
-  font-weight:700;
+  width:72px!important;
+  min-width:72px!important;
+  height:46px!important;
+  border-radius:15px;
+  font-weight:800;
+  font-size:15px!important;
 }
 
 .seasonality-btn{
-  border:2px solid #d9d9d9;
+  border:2px solid #ddd;
   background:#fff;
-  cursor:pointer;
-  transition:0.12s ease;
-}
-
-.seasonality-btn:hover{
-  background:#f4f4f4;
-}
-
-.seasonality-btn:active{
-  transform:scale(0.96);
 }
 
 .seasonalityNumber{
   text-align:center;
-  background:#000;
+  background:#111;
   color:#fff;
-  border:2px solid #000;
-  padding:0 6px !important;
+  border:2px solid #111;
+  padding:0 5px!important;
   appearance:textfield;
   -moz-appearance:textfield;
 }
@@ -526,1463 +483,1142 @@ th:first-child{
   margin:0;
 }
 
-.seasonalityNumber:focus{
-  outline:none;
-  box-shadow:0 0 0 3px rgba(0,0,0,0.15);
+.slider-value{
+  font-weight:800;
 }
 
-@media(max-width:768px){
-  .seasonality-btn,
-  .seasonalityNumber{
-    width:76px !important;
-    min-width:76px !important;
-    height:52px !important;
-    font-size:17px !important;
+input[type=range]{
+  accent-color:#111;
+}
+
+
+.mobile-details{
+  display:none;
+  margin-top:12px;
+  padding-top:10px;
+  border-top:1px solid #eee;
+}
+
+.mobile-details.open{
+  display:block;
+}
+
+.mobile-detail-toggle{
+  width:100%;
+  margin-top:12px;
+  background:#111;
+  color:#fff;
+  border-radius:12px;
+  padding:10px 12px;
+}
+
+.mobile-detail-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:0;
+}
+
+@media(max-width:1050px){
+  .summary-grid,
+  .capacity-output,
+  .scenario-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .grid,.grid-3{
+    grid-template-columns:1fr;
+  }
+
+  .checkbox-grid{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .details-content{
+    grid-template-columns:repeat(2,1fr);
   }
 }
 
-.seasonalityNumber:focus{
-  outline:none;
-  box-shadow:0 0 0 3px rgba(0,0,0,0.15);
-}
+@media(max-width:720px){
+  body{padding:10px}
+  h1{font-size:26px}
+  .section,.hero{padding:16px;border-radius:18px}
+  .summary-grid,
+  .capacity-output,
+  .scenario-grid{
+    grid-template-columns:1fr;
+  }
 
-@media(max-width:768px){
-  .inline-seasonality input[type="range"]{
-    width:180px;
+  .checkbox-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .table-wrap{
+    display:none;
+  }
+
+  .mobile-months{
+    display:grid;
+  }
+
+  .details-content{
+    grid-template-columns:1fr;
+  }
+
+  .tabs{
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    padding-bottom:5px;
+  }
+
+  .tab-btn{
+    white-space:nowrap;
+  }
+
+  .inline-seasonality{
     min-width:180px;
   }
 
-  .seasonality-controls{
-    gap:10px;
+  .inline-seasonality input[type="range"]{
+    width:160px;
   }
 
-  .seasonality-btn{
-    min-width:74px;
-    padding:9px 12px;
-  }
-
+  .seasonality-btn,
   .seasonalityNumber{
-    width:88px !important;
-    font-size:22px !important;
+    width:62px!important;
+    min-width:62px!important;
   }
-}
-
-.inline-seasonality{
-  grid-template-columns: minmax(120px,1fr) 110px !important;
-  align-items:center;
-}
-
-.inline-seasonality input[type="number"]{
-  width:100%;
-  min-width:100px;
-  font-size:18px !important;
-  font-weight:700;
-  padding:10px 10px !important;
-  border-radius:18px;
-  text-align:center;
-}
-
-.inline-seasonality input[type="range"]{
-  width:100%;
-}
-
-@media(max-width:700px){
-  .inline-seasonality{
-    grid-template-columns:1fr 120px !important;
-  }
-
-  .inline-seasonality input[type="number"]{
-    font-size:18px !important;
-    padding:10px 10px !important;
-  }
-}
-
-.mobile-seasonality-control label{
-  display:block;
-  margin-bottom:8px;
-}
-
-
-.capacity-output{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
-  margin-top:16px;
-}
-
-.capacity-card{
-  border:1px solid var(--border);
-  background:#fff;
-  border-radius:14px;
-  padding:14px;
-}
-
-.capacity-card-title{
-  color:var(--muted);
-  font-size:13px;
-  margin-bottom:7px;
-}
-
-.capacity-card-value{
-  font-size:22px;
-  font-weight:bold;
-}
-
-.locked-target{
-  border:2px solid #111;
-  background:#fafafa;
-}
-
-.slider-label{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-}
-
-.slider-value{
-  font-weight:bold;
-}
-
-@media(max-width:900px){
-  .capacity-output{
-    grid-template-columns:1fr 1fr;
-  }
-}
-
-@media(max-width:640px){
-  .capacity-output{
-    grid-template-columns:1fr;
-  }
-}
-
-
-/* Full-width charts */
-.chart-grid{
-  display:flex !important;
-  flex-direction:column !important;
-  gap:24px !important;
-  width:100% !important;
-}
-
-.chart-card{
-  width:100% !important;
-  max-width:100% !important;
-  flex:none !important;
-}
-
-.chart-card canvas{
-  width:100% !important;
-  max-width:100% !important;
-}
-
-@media(max-width:1200px){
-  .chart-grid{
-    grid-template-columns:1fr !important;
-  }
-}
-
-@media(max-width:1100px){
-  .cards{grid-template-columns:1fr 1fr}
-  .chart-grid{grid-template-columns:1fr}
-  .scenario-grid{grid-template-columns:1fr}
-}
-
-@media(max-width:900px){
-  body{padding:12px}
-  .container{padding:18px;border-radius:14px}
-  h1{font-size:24px}
-  .grid,.grid-3{grid-template-columns:1fr}
-  .days{grid-template-columns:repeat(2,1fr)}
-  .vacation-grid{grid-template-columns:1fr}
-  .range-row{grid-template-columns:1fr}
-}
-
-@media(max-width:640px){
-  .cards{grid-template-columns:1fr}
-  .table-wrap{display:none}
-  .mobile-months{display:grid}
-  .vacation-card-header{align-items:flex-start}
-  button{width:100%}
-  .remove-btn{width:auto}
 }
 </style>
 </head>
 
 <body>
+<div class="app">
 
-<div class="container">
+  <div class="hero">
+    <h1>Restaurant Financial Model</h1>
+    <div class="subtitle">
+      A cleaner model for break-even, expected sales, owner profit gap, additional sales needed, capacity, scenarios, and charts.
+    </div>
+  </div>
 
-<h1>Restaurant Break-Even & Financial Model</h1>
-<div class="subtitle">
-  Break-even, seasonality, food/beverage mix, labor split, tips, prime cost, EBITDA, and scenario comparison.
+  <div class="sticky-summary">
+    <div class="summary-grid">
+      <div class="kpi">
+        <div class="kpi-title">Yearly Expected Sales</div>
+        <div class="kpi-value" id="sumExpectedSales">$0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-title">Operational Profit / Loss</div>
+        <div class="kpi-value" id="sumOperationalPL">$0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-title">Owner Profit Gap</div>
+        <div class="kpi-value" id="sumOwnerGap">$0</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-title">Additional Sales Needed</div>
+        <div class="kpi-value" id="sumAdditionalSales">$0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="inputs">Inputs</button>
+    <button class="tab-btn" data-tab="monthly">Monthly Breakdown</button>
+    <button class="tab-btn" data-tab="charts">Charts</button>
+    <button class="tab-btn" data-tab="scenarios">Scenarios</button>
+    <button class="tab-btn" data-tab="capacity">Capacity</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-inputs">
+    <div class="section">
+      <h2>Core Inputs</h2>
+      <div class="grid">
+        <div class="field">
+          <label>BOH Monthly Payroll ($)</label>
+          <input type="number" id="bohPayroll" value="18000" min="0" step="100">
+        </div>
+
+        <div class="field">
+          <label>FOH Minimum Monthly Payroll ($)</label>
+          <input type="number" id="fohPayroll" value="7000" min="0" step="100">
+        </div>
+
+        <div class="field">
+          <label>Monthly Fixed Costs ($)</label>
+          <input type="number" id="fixed" value="8000" min="0" step="100">
+        </div>
+
+        <div class="field">
+          <label>Adjusted Fixed Cost Override ($)</label>
+          <input type="number" id="adjustedFixedCost" value="0" min="0" step="100">
+          <div class="note">Selected months will use this value instead of the regular fixed cost. $0 is valid.</div>
+        </div>
+
+        <div class="field">
+          <label>Sales Tax %</label>
+          <input type="number" id="tax" value="7" min="0" max="100" step="0.1">
+        </div>
+
+        <div class="field">
+          <label>POS Fees %</label>
+          <input type="number" id="pos" value="3" min="0" max="100" step="0.1">
+        </div>
+
+        <div class="field">
+          <label>Estimated Tips Collected %</label>
+          <input type="number" id="tip" value="19" min="0" max="100" step="0.1">
+        </div>
+
+        <div class="field">
+          <label>Monthly Owner Profit Target ($)</label>
+          <input type="number" id="profitTarget" value="0" min="0" step="100">
+        </div>
+
+        <div class="field">
+          <label>EBITDA Add-Backs / Non-Operating Costs Monthly ($)</label>
+          <input type="number" id="ebitdaAddbacks" value="0" min="0" step="100">
+        </div>
+
+        <div class="field">
+          <label>Year</label>
+          <input type="number" id="year" value="2026" min="2000" max="2100" step="1">
+        </div>
+      </div>
+
+      <h3>Food vs Beverage Mix</h3>
+      <div class="grid">
+        <div class="field">
+          <label>Food Sales Mix %</label>
+          <input type="number" id="foodMix" value="75" min="0" max="100" step="1">
+        </div>
+        <div class="field">
+          <label>Beverage Sales Mix %</label>
+          <input type="number" id="bevMix" value="25" min="0" max="100" step="1">
+        </div>
+        <div class="field">
+          <label>Food Cost %</label>
+          <input type="number" id="foodCost" value="30" min="0" max="100" step="0.1">
+        </div>
+        <div class="field">
+          <label>Beverage Cost %</label>
+          <input type="number" id="bevCost" value="25" min="0" max="100" step="0.1">
+        </div>
+      </div>
+      <div class="help">
+        Break-even is calculated using contribution margin: 1 minus blended food/beverage cost minus POS fees.
+        Expected variable costs change with expected sales.
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Weekly Closed Days</h2>
+      <div class="checkbox-grid">
+        <label class="check-card"><input type="checkbox" class="closedDay" value="0"> Sun</label>
+        <label class="check-card"><input type="checkbox" class="closedDay" value="1"> Mon</label>
+        <label class="check-card"><input type="checkbox" class="closedDay" value="2"> Tue</label>
+        <label class="check-card"><input type="checkbox" class="closedDay" value="3"> Wed</label>
+        <label class="check-card"><input type="checkbox" class="closedDay" value="4"> Thu</label>
+        <label class="check-card"><input type="checkbox" class="closedDay" value="5"> Fri</label>
+        <label class="check-card"><input type="checkbox" class="closedDay" value="6"> Sat</label>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Adjusted Fixed Cost Months</h2>
+      <div class="help">
+        Select which months should use the Adjusted Fixed Cost Override. Unselected months use regular Monthly Fixed Costs.
+      </div>
+      <div class="checkbox-grid" id="adjustedFixedMonths">
+        <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="0"> Jan</label>
+        <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="1"> Feb</label>
+        <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="2"> Mar</label>
+        <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="3"> Apr</label>
+        <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="4"> May</label>
+        <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="5"> Jun</label>
+        <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="6"> Jul</label>
+        <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="7"> Aug</label>
+        <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="8"> Sep</label>
+        <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="9"> Oct</label>
+        <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="10"> Nov</label>
+        <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="11"> Dec</label>
+      </div>
+      <div class="btn-row">
+        <button class="secondary" type="button" onclick="setAdjustedFixedMonths(true)">Select All Months</button>
+        <button class="secondary" type="button" onclick="setAdjustedFixedMonths(false)">Clear Months</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Payroll Adjustment Periods</h2>
+      
+<div class="help">
+  Define temporary payroll changes for closures, slow seasons, reduced staffing, busy periods, or special operating periods.
 </div>
 
-<h2>Core Inputs</h2>
-
-<div class="grid">
-  <div class="field">
-    <label>BOH Monthly Payroll ($)</label>
-    <input type="number" id="bohPayroll" value="18000" min="0" step="1">
-  </div>
-
-  <div class="field">
-    <label>FOH Minimum Monthly Payroll ($)</label>
-    <input type="number" id="fohPayroll" value="7000" min="0" step="1">
-  </div>
-
-  <div class="field">
-    <label>Monthly Fixed Costs ($)</label>
-    <input type="number" id="fixed" value="12000" min="0" step="1">
-  </div>
-
-<div class="field">
-  <label>Adjusted Fixed Cost Override ($)</label>
-  <input type="number" id="adjustedFixedCost" value="0" min="0" step="100">
-  <div class="note">
-    Optional monthly override. Select below which months should use this adjusted fixed cost instead of the regular monthly fixed cost. A value of $0 is allowed.
-  </div>
-</div>
-
-  <div class="field">
-    <label>Sales Tax %</label>
-    <input type="number" id="tax" value="7" min="0" max="100" step="0.1">
-  </div>
-
-  <div class="field">
-    <label>POS Fees %</label>
-    <input type="number" id="pos" value="3" min="0" max="100" step="0.1">
-  </div>
-
-  <div class="field">
-    <label>Estimated Tips Collected %</label>
-    <input type="number" id="tip" value="19" min="0" max="100" step="0.1">
-  </div>
-
-  <div class="field">
-    <label>Monthly Owner Profit Target ($)</label>
-    <input type="number" id="profitTarget" value="5000" min="0" step="1">
-  </div>
-
-  <div class="field">
-    <label>EBITDA Add-Backs / Non-Operating Costs Monthly ($)</label>
-    <input type="number" id="ebitdaAddbacks" value="0" min="0" step="1">
-  </div>
-
-  <div class="field">
-    <label>Year</label>
-    <input type="number" id="year" value="2026" min="2000" max="2100" step="1">
-  </div>
-</div>
-
-<h2>Food vs Beverage Sales Mix</h2>
-
-<div class="grid">
-  <div class="field">
-    <label>Food Sales Mix %</label>
-    <input type="number" id="foodMix" value="75" min="0" max="100" step="1">
-  </div>
-
-  <div class="field">
-    <label>Beverage Sales Mix %</label>
-    <input type="number" id="bevMix" value="25" min="0" max="100" step="1">
-  </div>
-
-  <div class="field">
-    <label>Food Cost %</label>
-    <input type="number" id="foodCost" value="30" min="0" max="100" step="0.1">
-  </div>
-
-  <div class="field">
-    <label>Beverage Cost %</label>
-    <input type="number" id="bevCost" value="25" min="0" max="100" step="0.1">
-  </div>
-</div>
-
-<div class="summary">
-  <strong>Weighted COGS:</strong> the model calculates food and beverage costs separately using your sales mix.
-  Example: 75% food at 30% cost + 25% beverage at 25% cost = 28.75% blended COGS.
-</div>
-
-<h2>Weekly Closed Days</h2>
-<div class="days">
-  <label class="day-box"><input type="checkbox" class="closedDay" value="0"> Sun</label>
-  <label class="day-box"><input type="checkbox" class="closedDay" value="1"> Mon</label>
-  <label class="day-box"><input type="checkbox" class="closedDay" value="2"> Tue</label>
-  <label class="day-box"><input type="checkbox" class="closedDay" value="3"> Wed</label>
-  <label class="day-box"><input type="checkbox" class="closedDay" value="4"> Thu</label>
-  <label class="day-box"><input type="checkbox" class="closedDay" value="5"> Fri</label>
-  <label class="day-box"><input type="checkbox" class="closedDay" value="6"> Sat</label>
-</div>
-
-<h2>Vacation / Temporary Closure Periods</h2>
 <div class="vacation-list" id="vacationList"></div>
 
-<div class="btn-row">
-  <button class="primary-btn" type="button" onclick="addVacationPeriod()">+ Add Vacation Period</button>
-  <button class="secondary-btn" type="button" onclick="clearVacationPeriods()">Clear Vacation Periods</button>
-</div>
-
-
-
-<h2>Adjusted Fixed Cost Months</h2>
-<div class="summary">
-  Select the months that should use the Adjusted Fixed Cost Override. 
-  Unselected months will continue using the regular Monthly Fixed Costs value.
-</div>
-
-<div class="days" id="adjustedFixedMonths">
-  <label class="day-box"><input type="checkbox" class="adjustedFixedMonth" value="0"> Jan</label>
-  <label class="day-box"><input type="checkbox" class="adjustedFixedMonth" value="1"> Feb</label>
-  <label class="day-box"><input type="checkbox" class="adjustedFixedMonth" value="2"> Mar</label>
-  <label class="day-box"><input type="checkbox" class="adjustedFixedMonth" value="3"> Apr</label>
-  <label class="day-box"><input type="checkbox" class="adjustedFixedMonth" value="4"> May</label>
-  <label class="day-box"><input type="checkbox" class="adjustedFixedMonth" value="5"> Jun</label>
-  <label class="day-box"><input type="checkbox" class="adjustedFixedMonth" value="6"> Jul</label>
-  <label class="day-box"><input type="checkbox" class="adjustedFixedMonth" value="7"> Aug</label>
-  <label class="day-box"><input type="checkbox" class="adjustedFixedMonth" value="8"> Sep</label>
-  <label class="day-box"><input type="checkbox" class="adjustedFixedMonth" value="9"> Oct</label>
-  <label class="day-box"><input type="checkbox" class="adjustedFixedMonth" value="10"> Nov</label>
-  <label class="day-box"><input type="checkbox" class="adjustedFixedMonth" value="11"> Dec</label>
-</div>
-
-<div class="btn-row">
-  <button class="secondary-btn" type="button" onclick="setAdjustedFixedMonths(true)">Select All Months</button>
-  <button class="secondary-btn" type="button" onclick="setAdjustedFixedMonths(false)">Clear Months</button>
-</div>
-
-<h2>Capacity & Revenue Target</h2>
-
-<div class="summary">
-  Use this section to test how seating capacity, turns, average check, and days open can produce a specific monthly net sales target.
-  Lock a target number, then adjust the sliders to see whether the operating setup reaches it.
-  Guest capacity is calculated from seats × turns, then expanded by day, week, month, and year.
-</div>
-
-<div class="grid">
-  <div class="field">
-    <label>Lock Monthly Net Sales Target ($)</label>
-    <input type="number" id="lockedMonthlySales" value="50000" min="0" step="100">
-  </div>
-
-  <div class="field">
-    <label>Use Target As Expected Monthly Sales</label>
-    <select id="useCapacityTarget">
-      <option value="no">No, keep seasonality-based expected sales</option>
-      <option value="yes">Yes, use locked target as expected sales</option>
-    </select>
-  </div>
-</div>
-
-<div class="grid">
-  <div class="field">
-    <label class="slider-label">
-      Seating Capacity
-      <span class="slider-value" id="seatingCapacityValue">48</span>
-    </label>
-    <input type="range" id="seatingCapacity" min="10" max="150" step="1" value="48">
-  </div>
-
-  <div class="field">
-    <label class="slider-label">
-      Turns Per Night
-      <span class="slider-value" id="turnsValue">1.5</span>
-    </label>
-    <input type="range" id="turnsPerNight" min="0.5" max="4" step="0.1" value="1.5">
-  </div>
-
-  <div class="field">
-    <label class="slider-label">
-      Average Check
-      <span class="slider-value" id="avgCheckValue">$90</span>
-    </label>
-    <input type="range" id="avgCheck" min="20" max="250" step="1" value="90">
-  </div>
-
-  <div class="field">
-    <label class="slider-label">
-      Days Open Per Month
-      <span class="slider-value" id="daysOpenManualValue">26</span>
-    </label>
-    <input type="range" id="daysOpenManual" min="1" max="31" step="1" value="26">
-  </div>
-</div>
-
-<div class="capacity-output">
-  <div class="capacity-card">
-    <div class="capacity-card-title">Calculated Monthly Net Sales</div>
-    <div class="capacity-card-value" id="capacityMonthlySales">$0</div>
-  </div>
-
-  <div class="capacity-card locked-target">
-    <div class="capacity-card-title">Locked Monthly Target</div>
-    <div class="capacity-card-value" id="capacityTargetDisplay">$0</div>
-  </div>
-
-  <div class="capacity-card">
-    <div class="capacity-card-title">Difference vs Target</div>
-    <div class="capacity-card-value" id="capacityDifference">$0</div>
-  </div>
-
-  <div class="capacity-card">
-    <div class="capacity-card-title">Required Average Check</div>
-    <div class="capacity-card-value" id="requiredAvgCheck">$0</div>
-  </div>
-
-  <div class="capacity-card">
-    <div class="capacity-card-title">Required Turns</div>
-    <div class="capacity-card-value" id="requiredTurns">0.0</div>
-  </div>
-
-  <div class="capacity-card">
-    <div class="capacity-card-title">Required Days Open</div>
-    <div class="capacity-card-value" id="requiredDaysOpen">0</div>
-  </div>
-
-  <div class="capacity-card">
-    <div class="capacity-card-title">Required Seats</div>
-    <div class="capacity-card-value" id="requiredSeats">0</div>
-  </div>
-
-  <div class="capacity-card">
-    <div class="capacity-card-title">Daily Net Sales Target</div>
-    <div class="capacity-card-value" id="dailySalesTarget">$0</div>
-  </div>
-
-  <div class="capacity-card">
-    <div class="capacity-card-title">Guest Capacity Per Day</div>
-    <div class="capacity-card-value" id="guestCapacityDay">0</div>
-  </div>
-
-  <div class="capacity-card">
-    <div class="capacity-card-title">Guest Capacity Per Week</div>
-    <div class="capacity-card-value" id="guestCapacityWeek">0</div>
-  </div>
-
-  <div class="capacity-card">
-    <div class="capacity-card-title">Guest Capacity Per Month</div>
-    <div class="capacity-card-value" id="guestCapacityMonth">0</div>
-  </div>
-
-  <div class="capacity-card">
-    <div class="capacity-card-title">Guest Capacity Per Year</div>
-    <div class="capacity-card-value" id="guestCapacityYear">0</div>
-  </div>
-</div>
-
-<h2>Yearly Summary</h2>
-<div class="cards">
-  <div class="card">
-    <div class="card-title">Yearly Break-Even Net Sales</div>
-    <div class="card-value" id="yearBreakEven">$0</div>
-  </div>
-  <div class="card">
-    <div class="card-title">Required Sales With Profit Target</div>
-    <div class="card-value" id="yearRequiredProfit">$0</div>
-  </div>
-  <div class="card">
-    <div class="card-title">Yearly Estimated Tips</div>
-    <div class="card-value" id="yearTips">$0</div>
-  </div>
-  <div class="card">
-    <div class="card-title">Prime Cost %</div>
-    <div class="card-value" id="primeCostPct">0%</div>
-    <div class="card-sub">COGS + adjusted payroll / net sales</div>
-  </div>
-  <div class="card">
-    <div class="card-title">EBITDA Mode</div>
-    <div class="card-value" id="yearEbitda">$0</div>
-    <div class="card-sub">Profit target + add-backs</div>
-  </div>
-</div>
-
-
-<div class="summary">
-  <strong>Profit / Loss Logic:</strong><br>
-  <strong>Operational Profit / Loss</strong> = Expected Sales minus actual expected operating costs. This shows the true accounting operating result.<br>
-  <strong>Owner Profit Gap</strong> = Owner Profit Target − Operational Profit/Loss. This shows the missing owner income amount.<br>
-  <strong>Additional Sales Needed</strong> = Owner Profit Gap ÷ Contribution Margin. This shows how much additional net sales are needed to close the owner gap.<br>
-  <strong>Expected Cash Flow</strong> = Expected Sales + Estimated Tips + Sales Tax. This reflects actual money expected to pass through the restaurant.
-</div>
-
-<h2>Charts</h2>
-<div class="chart-grid">
-  <div class="chart-card">
-    <h3>Year Operating Cost Pie</h3>
-    <canvas id="costPie"></canvas>
-    <div class="note">Includes adjusted payroll, fixed costs, and expected variable costs based on expected sales. Sales tax is excluded because it is pass-through money.</div>
-  </div>
-
-  <div class="chart-card">
-    <h3>Year Totals Bar Chart</h3>
-    <canvas id="costBar"></canvas>
-  </div>
-
-  <div class="chart-card">
-    <h3>Tip Distribution Visualization</h3>
-    <canvas id="tipChart"></canvas>
-    <div class="note">Tips and sales tax are calculated from expected sales, because they occur only on actual customer spending.</div>
-  </div>
-
-  <div class="chart-card">
-    <h3>Monthly Break-Even vs Expected Sales / Profit Gaps</h3>
-    <canvas id="seasonChart"></canvas>
-  </div>
-</div>
-
-<h2>Scenario Comparison</h2>
-<div class="scenario-grid">
-  <div class="scenario-card">
-    <h3>Current Model</h3>
-    <div class="metric-row"><span class="metric-label">Yearly Break-Even</span><span class="metric-value" id="scenarioCurrentBE">$0</span></div>
-    <div class="metric-row"><span class="metric-label">Required Sales + Profit</span><span class="metric-value" id="scenarioCurrentProfit">$0</span></div>
-    <div class="metric-row"><span class="metric-label">Open Days</span><span class="metric-value" id="scenarioCurrentDays">0</span></div>
-  </div>
-
-  <div class="scenario-card">
-    <h3>Summer Closure Model</h3>
-    <div class="grid">
-      <div class="field">
-        <label>Summer Closure Start</label>
-        <input type="date" id="summerStart">
-      </div>
-      <div class="field">
-        <label>Summer Closure End</label>
-        <input type="date" id="summerEnd">
-      </div>
-      <div class="field">
-        <label>Summer Closure Payroll ($)</label>
-        <input type="number" id="summerPayroll" value="0" min="0">
+      <div class="btn-row">
+        <button class="primary" type="button" onclick="addVacationPeriod()">+ Add Vacation Period</button>
+        <button class="secondary" type="button" onclick="clearVacationPeriods()">Clear Vacation Periods</button>
       </div>
     </div>
-    <div class="metric-row"><span class="metric-label">Yearly Break-Even</span><span class="metric-value" id="scenarioSummerBE">$0</span></div>
-    <div class="metric-row"><span class="metric-label">Required Sales + Profit</span><span class="metric-value" id="scenarioSummerProfit">$0</span></div>
-    <div class="metric-row"><span class="metric-label">Open Days</span><span class="metric-value" id="scenarioSummerDays">0</span></div>
-  </div>
 
-  <div class="scenario-card">
-    <h3>Reduced Payroll Model</h3>
-    <div class="grid">
-      <div class="field">
-        <label>BOH Payroll Reduction %</label>
-        <input type="number" id="bohReduction" value="15" min="0" max="100" step="1">
-      </div>
-      <div class="field">
-        <label>FOH Payroll Reduction %</label>
-        <input type="number" id="fohReduction" value="15" min="0" max="100" step="1">
+    <div class="section">
+      <h2>Save / Load</h2>
+      <div class="btn-row">
+        <button class="primary" type="button" onclick="downloadData()">Download Configuration</button>
+        <button class="secondary" type="button" onclick="document.getElementById('uploadFile').click()">Upload Configuration</button>
+        <input type="file" id="uploadFile" accept=".json" style="display:none">
       </div>
     </div>
-    <div class="metric-row"><span class="metric-label">Yearly Break-Even</span><span class="metric-value" id="scenarioReducedBE">$0</span></div>
-    <div class="metric-row"><span class="metric-label">Required Sales + Profit</span><span class="metric-value" id="scenarioReducedProfit">$0</span></div>
-    <div class="metric-row"><span class="metric-label">Open Days</span><span class="metric-value" id="scenarioReducedDays">0</span></div>
   </div>
-</div>
 
-<h2>Monthly Breakdown</h2>
+  <div class="tab-panel" id="tab-monthly">
+    <div class="section">
+      <h2>Monthly Breakdown</h2>
+      <div class="help">
+        This table keeps the main view simple. Use “Details” to see food cost, beverage cost, POS, tax, tips, cash flow, and prime cost.
+        Operational Profit/Loss is actual expected operating result. Owner Profit Gap is missing owner income. Additional Sales Needed converts that gap into required net sales.
+      </div>
 
-<div class="summary">
-  <strong>Monthly Breakdown structure:</strong><br>
-  <strong>Costs</strong> show what the restaurant must cover. 
-  <strong>Required Sales</strong> show the true operational break-even and the sales needed to also pay the owner target.
-  <strong>Expected Reality</strong> uses either the seasonality factor or, when selected, the locked Capacity & Revenue monthly target to estimate likely sales.
-  <strong>Results</strong> show Operational Profit/Loss, Owner Profit Gap, and Additional Sales Needed.
-  Food cost, beverage cost, POS, tips, sales tax, and expected cash flow are based on expected sales. Fixed costs and payroll stay fixed unless an Adjusted Fixed Cost Override is entered.
-</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Expected Cash Flow</th>
+              <th>Seasonality</th>
+              <th>Expected Sales</th>
+              <th>Fixed Used</th>
+              <th>Payroll</th>
+              <th>Operational P/L</th>
+              <th>Owner Gap</th>
+              <th>Additional Sales Needed</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="monthlyTable"></tbody>
+        </table>
+      </div>
 
+      <div class="mobile-months" id="mobileMonths"></div>
+    </div>
+  </div>
 
-<div class="summary">
-  <strong>Variable Cost Correction:</strong><br>
-  Fixed costs and payroll do not move when expected sales changes.
-  Food cost, beverage cost, POS fees, tips, and sales tax now move with <strong>Expected Sales</strong>.
-  This means lowering or raising the seasonality factor will correctly change the expected operating costs and the projected profit/loss.
-</div>
+  <div class="tab-panel" id="tab-charts">
+    <div class="section">
+      <h2>Charts</h2>
+      <div class="chart-controls">
+        <div class="field">
+          <label>Select Chart</label>
+          <select id="chartSelector">
+            <option value="profit">Break-Even, Expected Sales & Profit Gaps</option>
+            <option value="cost">Cost Breakdown</option>
+            <option value="cash">Cash Flow</option>
+            <option value="capacity">Capacity</option>
+          </select>
+        </div>
+      </div>
+      <div class="help">
+        The main chart includes the key values: True Break-Even Sales, Sales Required + Owner Profit,
+        Expected Sales, Operational Profit/Loss, Owner Profit Gap, and Additional Sales Needed.
+        Hover over the chart to see exact dollar values.
+      </div>
+      <div class="chart-card">
+        <canvas id="mainChart"></canvas>
+      </div>
+    </div>
+  </div>
 
+  <div class="tab-panel" id="tab-scenarios">
+    <div class="section">
+      <h2>Scenario Comparison</h2>
+      <div class="scenario-grid">
+        <div class="scenario-card">
+          <h3>Current Model</h3>
+          <div class="metric-row"><span class="metric-label">Expected Sales</span><span class="metric-value" id="scenarioCurrentSales">$0</span></div>
+          <div class="metric-row"><span class="metric-label">Operational P/L</span><span class="metric-value" id="scenarioCurrentPL">$0</span></div>
+          <div class="metric-row"><span class="metric-label">Owner Gap</span><span class="metric-value" id="scenarioCurrentGap">$0</span></div>
+          <div class="metric-row"><span class="metric-label">Additional Sales Needed</span><span class="metric-value" id="scenarioCurrentAdd">$0</span></div>
+        </div>
 
-<div class="summary">
-  <strong>Owner Profit Gap Logic:</strong><br>
-  <strong>Operational Profit / Loss</strong> = Expected Sales − Expected Food Cost − Expected Beverage Cost − Expected POS − Adjusted Payroll − Fixed Used.<br>
-  <strong>Owner Profit Gap</strong> shows how much owner income is still missing from the monthly target.<br>
-  <strong>Additional Sales Needed</strong> converts that missing owner income into the real extra net sales needed, after food, beverage, and POS costs.
-</div>
+        <div class="scenario-card">
+          <h3>Summer Closure</h3>
+          <div class="grid">
+            <div class="field">
+              <label>Start</label>
+              <input type="date" id="summerStart">
+            </div>
+            <div class="field">
+              <label>End</label>
+              <input type="date" id="summerEnd">
+            </div>
+            <div class="field">
+              <label>Closure Payroll ($)</label>
+              <input type="number" id="summerPayroll" value="0" min="0" step="100">
+            </div>
+          </div>
+          <div class="metric-row"><span class="metric-label">Expected Sales</span><span class="metric-value" id="scenarioSummerSales">$0</span></div>
+          <div class="metric-row"><span class="metric-label">Operational P/L</span><span class="metric-value" id="scenarioSummerPL">$0</span></div>
+          <div class="metric-row"><span class="metric-label">Owner Gap</span><span class="metric-value" id="scenarioSummerGap">$0</span></div>
+          <div class="metric-row"><span class="metric-label">Additional Sales Needed</span><span class="metric-value" id="scenarioSummerAdd">$0</span></div>
+        </div>
 
+        <div class="scenario-card">
+          <h3>Reduced Payroll</h3>
+          <div class="grid">
+            <div class="field">
+              <label>BOH Reduction %</label>
+              <input type="number" id="bohReduction" value="15" min="0" max="100" step="1">
+            </div>
+            <div class="field">
+              <label>FOH Reduction %</label>
+              <input type="number" id="fohReduction" value="15" min="0" max="100" step="1">
+            </div>
+          </div>
+          <div class="metric-row"><span class="metric-label">Expected Sales</span><span class="metric-value" id="scenarioReducedSales">$0</span></div>
+          <div class="metric-row"><span class="metric-label">Operational P/L</span><span class="metric-value" id="scenarioReducedPL">$0</span></div>
+          <div class="metric-row"><span class="metric-label">Owner Gap</span><span class="metric-value" id="scenarioReducedGap">$0</span></div>
+          <div class="metric-row"><span class="metric-label">Additional Sales Needed</span><span class="metric-value" id="scenarioReducedAdd">$0</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<div class="summary">
-  <strong>Adjusted Fixed Cost Override:</strong><br>
-  The Monthly Breakdown uses the Adjusted Fixed Cost Override only for the selected months.
-  A value of $0 is valid and will make selected months use $0 fixed cost.
-  This is useful for testing temporary rent reductions, reduced utilities, negotiated expenses, seasonal operations, or any mid-year fixed cost change.
-</div>
+  <div class="tab-panel" id="tab-capacity">
+    <div class="section">
+      <h2>Capacity & Revenue Target</h2>
+      <div class="help">
+        Lock a monthly net sales target, then adjust seats, turns, average check, and days open to see what operating setup reaches the target.
+      </div>
 
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-  <th>Month</th>
-  <th>Seasonality Factor</th>
-  <th>Expected Cash Flow</th>
-  <th>Expected Sales</th>
-  <th>Operational Profit / Loss</th>
-  <th>Owner Profit Gap</th>
-  <th>Additional Sales Needed</th>
-  <th>Open Days</th>
-  <th>Vacation Days</th>
-  <th>BOH Payroll</th>
-  <th>FOH Payroll</th>
-  <th>Vacation Payroll</th>
-  <th>Adjusted Payroll</th>
-  <th>Fixed Used</th>
-  <th>Expected Food Cost</th>
-  <th>Expected Beverage Cost</th>
-  <th>Expected POS</th>
-  <th>Break-Even Net Sales</th>
-  <th>Daily BE</th>
-  <th>Sales + Profit Target</th>
-  <th>Estimated Tips</th>
-  <th>Sales Tax</th>
-  <th>Prime Cost %</th>
-</tr>
-</thead>
-<tbody id="monthlyTable"></tbody>
-</table>
-</div>
+      <div class="grid">
+        <div class="field">
+          <label>Lock Monthly Net Sales Target ($)</label>
+          <input type="number" id="lockedMonthlySales" value="50000" min="0" step="100">
+        </div>
 
-<div class="mobile-months" id="mobileMonths"></div>
+        <div class="field">
+          <label>Use Target As Expected Monthly Sales</label>
+          <select id="useCapacityTarget">
+            <option value="no">No, keep seasonality-based expected sales</option>
+            <option value="yes">Yes, use locked target as expected sales</option>
+          </select>
+        </div>
+      </div>
 
-<div class="btn-row" style="margin-top:20px">
-  <button class="primary-btn" type="button" onclick="downloadData()">Download Configuration</button>
-  <button class="secondary-btn" type="button" onclick="document.getElementById('uploadFile').click()">Upload Configuration</button>
-  <input type="file" id="uploadFile" accept=".json" style="display:none">
-</div>
+      <div class="grid">
+        <div class="field">
+          <label>Seating Capacity: <span class="slider-value" id="seatingCapacityValue">48</span></label>
+          <input type="range" id="seatingCapacity" min="10" max="150" step="1" value="48">
+        </div>
 
-<div class="note" id="chartWarning" style="display:none;color:#9a3412;font-weight:bold">Charts could not load because Chart.js is unavailable. The calculations still work.</div>
+        <div class="field">
+          <label>Turns Per Night: <span class="slider-value" id="turnsValue">1.5</span></label>
+          <input type="range" id="turnsPerNight" min="0.5" max="4" step="0.1" value="1.5">
+        </div>
 
-<div class="note">
-  This model treats sales tax and tips as money collected but not restaurant income.
-  The Monthly Breakdown now separates required sales from expected reality.
-  Food cost, beverage cost, POS fees, tips, sales tax, and gross cash flow are calculated from expected sales, because those change with actual customer spending.
-  POS fees are calculated on net sales before tips. EBITDA mode shows the profit-target view plus add-backs.
-</div>
+        <div class="field">
+          <label>Average Check: <span class="slider-value" id="avgCheckValue">$90</span></label>
+          <input type="range" id="avgCheck" min="20" max="250" step="1" value="90">
+        </div>
+
+        <div class="field">
+          <label>Days Open Per Month: <span class="slider-value" id="daysOpenManualValue">26</span></label>
+          <input type="range" id="daysOpenManual" min="1" max="31" step="1" value="26">
+        </div>
+      </div>
+
+      <div class="capacity-output">
+        <div class="small-card"><div class="small-title">Calculated Monthly Net Sales</div><div class="small-value" id="capacityMonthlySales">$0</div></div>
+        <div class="small-card"><div class="small-title">Locked Monthly Target</div><div class="small-value" id="capacityTargetDisplay">$0</div></div>
+        <div class="small-card"><div class="small-title">Difference vs Target</div><div class="small-value" id="capacityDifference">$0</div></div>
+        <div class="small-card"><div class="small-title">Required Average Check</div><div class="small-value" id="requiredAvgCheck">$0</div></div>
+        <div class="small-card"><div class="small-title">Required Turns</div><div class="small-value" id="requiredTurns">0.0</div></div>
+        <div class="small-card"><div class="small-title">Required Days Open</div><div class="small-value" id="requiredDaysOpen">0</div></div>
+        <div class="small-card"><div class="small-title">Required Seats</div><div class="small-value" id="requiredSeats">0</div></div>
+        <div class="small-card"><div class="small-title">Daily Net Sales Target</div><div class="small-value" id="dailySalesTarget">$0</div></div>
+        <div class="small-card"><div class="small-title">Guest Capacity Per Day</div><div class="small-value" id="guestCapacityDay">0</div></div>
+        <div class="small-card"><div class="small-title">Guest Capacity Per Week</div><div class="small-value" id="guestCapacityWeek">0</div></div>
+        <div class="small-card"><div class="small-title">Guest Capacity Per Month</div><div class="small-value" id="guestCapacityMonth">0</div></div>
+        <div class="small-card"><div class="small-title">Guest Capacity Per Year</div><div class="small-value" id="guestCapacityYear">0</div></div>
+      </div>
+    </div>
+  </div>
 
 </div>
 
 <script>
-const months = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December"
-];
-
+const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 let vacationCounter = 0;
-let charts = {};
+let mainChart = null;
 let pendingSeasonality = null;
 
-function money(value){
-  return value.toLocaleString("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
+function money(v){
+  return (Number(v)||0).toLocaleString("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
 }
 
-function pct(value){
-  return (value * 100).toFixed(1) + "%";
+function pct(v){
+  return ((Number(v)||0)*100).toFixed(1)+"%";
 }
 
-function parseDate(value){
-  if(!value) return null;
-  return new Date(value + "T00:00:00");
+function whole(v){
+  return Math.round(Number(v)||0).toLocaleString("en-US");
 }
 
-function dateOnly(date){
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+function parseDate(v){
+  if(!v) return null;
+  return new Date(v+"T00:00:00");
 }
 
-function daysBetweenInclusive(start, end){
-  const oneDay = 24 * 60 * 60 * 1000;
-  return Math.round((dateOnly(end) - dateOnly(start)) / oneDay) + 1;
+function dateOnly(d){
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
-function getClosedDays(){
-  return Array.from(document.querySelectorAll(".closedDay:checked")).map(cb => Number(cb.value));
+function daysBetweenInclusive(start,end){
+  const oneDay=24*60*60*1000;
+  return Math.round((dateOnly(end)-dateOnly(start))/oneDay)+1;
 }
 
-
-function getAdjustedFixedMonths(){
-  return Array.from(document.querySelectorAll(".adjustedFixedMonth:checked"))
-    .map(cb => Number(cb.value));
+function getChecked(selector){
+  return Array.from(document.querySelectorAll(selector+":checked")).map(cb=>Number(cb.value));
 }
+
+function getClosedDays(){ return getChecked(".closedDay"); }
+function getAdjustedFixedMonths(){ return getChecked(".adjustedFixedMonth"); }
 
 function setAdjustedFixedMonths(checked){
-  document.querySelectorAll(".adjustedFixedMonth").forEach(cb => {
-    cb.checked = checked;
-  });
+  document.querySelectorAll(".adjustedFixedMonth").forEach(cb=>cb.checked=checked);
   calculate();
 }
 
-
-function buildSeasonality(){
-  // Seasonality controls are rendered inline.
-  // IMPORTANT: avoid rebuilding inputs on every keystroke or arrow click.
-  // This function remains for initialization compatibility.
-}
-
-function getSeasonality(){
-  return months.map((_, i) => {
-    if(pendingSeasonality && pendingSeasonality[i] !== undefined){
-      return Number(pendingSeasonality[i]) || 1;
-    }
-
-    const input = document.querySelector(`.seasonalityNumber[data-month="${i}"]`);
-    return input ? Number(input.value) : 1;
-  });
-}
-
-function addVacationPeriod(data = {}){
+function addVacationPeriod(data={}){
   vacationCounter++;
-  const list = document.getElementById("vacationList");
-  const card = document.createElement("div");
-  card.className = "vacation-card";
-
-  card.innerHTML = `
-    <div class="vacation-card-header">
-      <div class="vacation-title">Vacation Period ${vacationCounter}</div>
-      <button class="remove-btn" type="button" onclick="removeVacationPeriod(this)">Remove</button>
+  const div=document.createElement("div");
+  div.className="vacation-card";
+  div.innerHTML=`
+    <div class="vacation-card-head">
+      <strong>Payroll Adjustment Period ${vacationCounter}</strong>
+      <button class="danger" type="button" onclick="this.closest('.vacation-card').remove(); calculate();">Remove</button>
     </div>
-    <div class="vacation-grid">
-      <div class="field">
-        <label>Start Date</label>
-        <input type="date" class="vacStart" value="${data.start || ""}">
-      </div>
-      <div class="field">
-        <label>End Date</label>
-        <input type="date" class="vacEnd" value="${data.end || ""}">
-      </div>
-      <div class="field">
-        <label>Total Payroll Paid During This Closure ($)</label>
-        <input type="number" class="vacPayroll" value="${data.payroll ?? 0}" min="0" step="1">
-      </div>
+    <div class="grid-3">
+      <div class="field"><label>Start Date</label><input type="date" class="vacStart" value="${data.start||""}"></div>
+      <div class="field"><label>End Date</label><input type="date" class="vacEnd" value="${data.end||""}"></div>
+      <div class="field"><label>Adjusted Payroll During Period ($)</label><input type="number" class="vacPayroll" value="${data.payroll??0}" min="0" step="100"></div>
     </div>
   `;
-  list.appendChild(card);
-  card.querySelectorAll("input").forEach(input => {
-    input.addEventListener("input", calculate);
-    input.addEventListener("change", calculate);
+  document.getElementById("vacationList").appendChild(div);
+  div.querySelectorAll("input").forEach(el=>{
+    el.addEventListener("input",calculate);
+    el.addEventListener("change",calculate);
   });
-  calculate();
-}
-
-function removeVacationPeriod(button){
-  button.closest(".vacation-card").remove();
   calculate();
 }
 
 function clearVacationPeriods(){
-  document.getElementById("vacationList").innerHTML = "";
+  document.getElementById("vacationList").innerHTML="";
   calculate();
 }
 
-function getVacationPeriods(extraPeriod = null){
-  const cards = Array.from(document.querySelectorAll(".vacation-card"));
-  const periods = [];
-
-  cards.forEach(card => {
-    const start = parseDate(card.querySelector(".vacStart").value);
-    const end = parseDate(card.querySelector(".vacEnd").value);
-    const payroll = Number(card.querySelector(".vacPayroll").value) || 0;
-    if(start && end && end >= start){
+function getVacationPeriods(extra=null){
+  const periods=[];
+  document.querySelectorAll(".vacation-card").forEach(card=>{
+    const start=parseDate(card.querySelector(".vacStart").value);
+    const end=parseDate(card.querySelector(".vacEnd").value);
+    const payroll=Number(card.querySelector(".vacPayroll").value)||0;
+    if(start && end && end>=start){
       periods.push({start,end,payroll,totalDays:daysBetweenInclusive(start,end)});
     }
   });
-
-  if(extraPeriod && extraPeriod.start && extraPeriod.end && extraPeriod.end >= extraPeriod.start){
-    periods.push({
-      start: extraPeriod.start,
-      end: extraPeriod.end,
-      payroll: extraPeriod.payroll || 0,
-      totalDays: daysBetweenInclusive(extraPeriod.start, extraPeriod.end)
-    });
+  if(extra && extra.start && extra.end && extra.end>=extra.start){
+    periods.push({start:extra.start,end:extra.end,payroll:extra.payroll||0,totalDays:daysBetweenInclusive(extra.start,extra.end)});
   }
-
   return periods;
 }
 
-function vacationDataForDate(date, periods){
-  let isVacation = false;
-  let payrollForDate = 0;
-  periods.forEach(period => {
-    const d = dateOnly(date);
-    if(d >= period.start && d <= period.end){
-      isVacation = true;
-      payrollForDate += period.totalDays > 0 ? period.payroll / period.totalDays : 0;
+function vacationForDate(date, periods){
+  let isVacation=false, payroll=0;
+  periods.forEach(p=>{
+    const d=dateOnly(date);
+    if(d>=p.start && d<=p.end){
+      isVacation=true;
+      payroll += p.totalDays>0 ? p.payroll/p.totalDays : 0;
     }
   });
-  return { isVacation, payrollForDate };
+  return {isVacation,payroll};
 }
 
 function monthStats(year, month, closedDays, periods){
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  let regularWorkingDays = 0, actualOpenDays = 0, vacationDays = 0, vacationPayroll = 0;
-
-  for(let day = 1; day <= daysInMonth; day++){
-    const date = new Date(year, month, day);
-    const weeklyClosed = closedDays.includes(date.getDay());
-    const vacationInfo = vacationDataForDate(date, periods);
-
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  let regularWorkingDays=0, actualOpenDays=0, vacationDays=0, vacationPayroll=0;
+  for(let day=1;day<=daysInMonth;day++){
+    const date=new Date(year,month,day);
+    const weeklyClosed=closedDays.includes(date.getDay());
+    const vac=vacationForDate(date, periods);
     if(!weeklyClosed) regularWorkingDays++;
-
-    if(vacationInfo.isVacation){
+    if(vac.isVacation){
       vacationDays++;
-      vacationPayroll += vacationInfo.payrollForDate;
+      vacationPayroll+=vac.payroll;
     }else if(!weeklyClosed){
       actualOpenDays++;
     }
   }
-
-  return {daysInMonth, regularWorkingDays, actualOpenDays, vacationDays, vacationPayroll};
+  return {daysInMonth,regularWorkingDays,actualOpenDays,vacationDays,vacationPayroll};
 }
 
-function getInputs(overrides = {}){
-  const foodMixRaw = Number(document.getElementById("foodMix").value) || 0;
-  const bevMixRaw = Number(document.getElementById("bevMix").value) || 0;
-  const totalMix = foodMixRaw + bevMixRaw || 100;
+function getSeasonality(){
+  return months.map((_,i)=>{
+    if(pendingSeasonality && pendingSeasonality[i]!==undefined) return Number(pendingSeasonality[i]);
+    const el=document.querySelector(`.seasonalityNumber[data-month="${i}"]`);
+    return el ? Number(el.value) : 1;
+  });
+}
 
+function getInputs(overrides={}){
+  const foodMixRaw=Number(document.getElementById("foodMix").value)||0;
+  const bevMixRaw=Number(document.getElementById("bevMix").value)||0;
+  const totalMix=foodMixRaw+bevMixRaw||100;
   return {
-    bohPayroll: overrides.bohPayroll !== undefined ? overrides.bohPayroll : (Number(document.getElementById("bohPayroll").value) || 0),
-    fohPayroll: overrides.fohPayroll !== undefined ? overrides.fohPayroll : (Number(document.getElementById("fohPayroll").value) || 0),
-    fixed: Number(document.getElementById("fixed").value) || 0,
-    adjustedFixedCost: Number(document.getElementById("adjustedFixedCost")?.value) || 0,
-    adjustedFixedMonths: getAdjustedFixedMonths(),
-    tax: (Number(document.getElementById("tax").value) || 0) / 100,
-    pos: (Number(document.getElementById("pos").value) || 0) / 100,
-    tip: (Number(document.getElementById("tip").value) || 0) / 100,
-    profitTarget: Number(document.getElementById("profitTarget").value) || 0,
-    ebitdaAddbacks: Number(document.getElementById("ebitdaAddbacks").value) || 0,
-    lockedMonthlySales: Number(document.getElementById("lockedMonthlySales")?.value) || 0,
-    useCapacityTarget: document.getElementById("useCapacityTarget")?.value || "no",
-    year: Number(document.getElementById("year").value) || new Date().getFullYear(),
-    foodMix: foodMixRaw / totalMix,
-    bevMix: bevMixRaw / totalMix,
-    foodCostPct: (Number(document.getElementById("foodCost").value) || 0) / 100,
-    bevCostPct: (Number(document.getElementById("bevCost").value) || 0) / 100
+    bohPayroll: overrides.bohPayroll!==undefined ? overrides.bohPayroll : (Number(document.getElementById("bohPayroll").value)||0),
+    fohPayroll: overrides.fohPayroll!==undefined ? overrides.fohPayroll : (Number(document.getElementById("fohPayroll").value)||0),
+    fixed: Number(document.getElementById("fixed").value)||0,
+    adjustedFixedCost: Number(document.getElementById("adjustedFixedCost").value)||0,
+    adjustedFixedMonths:getAdjustedFixedMonths(),
+    tax:(Number(document.getElementById("tax").value)||0)/100,
+    pos:(Number(document.getElementById("pos").value)||0)/100,
+    tip:(Number(document.getElementById("tip").value)||0)/100,
+    profitTarget:Number(document.getElementById("profitTarget").value)||0,
+    ebitdaAddbacks:Number(document.getElementById("ebitdaAddbacks").value)||0,
+    lockedMonthlySales:Number(document.getElementById("lockedMonthlySales").value)||0,
+    useCapacityTarget:document.getElementById("useCapacityTarget").value,
+    year:Number(document.getElementById("year").value)||new Date().getFullYear(),
+    foodMix:foodMixRaw/totalMix,
+    bevMix:bevMixRaw/totalMix,
+    foodCostPct:(Number(document.getElementById("foodCost").value)||0)/100,
+    bevCostPct:(Number(document.getElementById("bevCost").value)||0)/100
   };
 }
 
-function runModel(options = {}){
-  const input = getInputs(options);
-  const closedDays = getClosedDays();
-  const seasonality = options.ignoreSeasonality ? months.map(()=>1) : getSeasonality();
-  const extraPeriod = options.extraPeriod || null;
-  const periods = getVacationPeriods(extraPeriod);
-  const margin = 1 - ((input.foodMix * input.foodCostPct) + (input.bevMix * input.bevCostPct)) - input.pos;
-  const hasMarginWarning = margin <= 0;
-  let rows = [];
-  let totals = {
-    regularWorkingDays:0, openDays:0, vacationDays:0, bohPayroll:0, fohPayroll:0,
-    vacationPayroll:0, adjustedPayroll:0, fixed:0,
-    requiredFoodCost:0, requiredBevCost:0, requiredCogs:0, requiredPosFees:0,
-    foodCost:0, bevCost:0, posFees:0,
-    breakEven:0, requiredProfit:0, expectedSales:0, operationalProfitLoss:0, ownerProfitGap:0, additionalSalesNeeded:0,
-    tips:0, tax:0, gross:0, grossPlusTips:0, cogs:0,
-    ebitda:0, profitTarget:0
+function runModel(options={}){
+  const input=getInputs(options);
+  const closedDays=getClosedDays();
+  const periods=getVacationPeriods(options.extraPeriod||null);
+  const seasonality=options.ignoreSeasonality ? months.map(()=>1) : getSeasonality();
+  const blendedCogs=(input.foodMix*input.foodCostPct)+(input.bevMix*input.bevCostPct);
+  const margin=1-blendedCogs-input.pos;
+  const hasMarginWarning=margin<=0;
+
+  const totals={
+    regularWorkingDays:0,openDays:0,vacationDays:0,bohPayroll:0,fohPayroll:0,vacationPayroll:0,
+    adjustedPayroll:0,fixed:0,foodCost:0,bevCost:0,cogs:0,posFees:0,
+    breakEven:0,requiredProfit:0,expectedSales:0,operationalProfitLoss:0,ownerProfitGap:0,
+    additionalSalesNeeded:0,tips:0,tax:0,gross:0,grossPlusTips:0,profitTarget:0,ebitda:0
   };
+  const rows=[];
 
-  months.forEach((monthName, monthIndex) => {
-    const stats = monthStats(input.year, monthIndex, closedDays, periods);
-    const bohDaily = stats.regularWorkingDays > 0 ? input.bohPayroll / stats.regularWorkingDays : 0;
-    const fohDaily = stats.regularWorkingDays > 0 ? input.fohPayroll / stats.regularWorkingDays : 0;
+  months.forEach((monthName,monthIndex)=>{
+    const stats=monthStats(input.year,monthIndex,closedDays,periods);
+    const fixed = input.adjustedFixedMonths.includes(monthIndex) ? input.adjustedFixedCost : input.fixed;
 
-    const bohUsed = bohDaily * stats.actualOpenDays;
-    const fohUsed = fohDaily * stats.actualOpenDays;
-    const vacationPayroll = stats.vacationPayroll;
-    const adjustedPayroll = bohUsed + fohUsed + vacationPayroll;
-    const fixed = input.adjustedFixedMonths.includes(monthIndex)
-      ? input.adjustedFixedCost
-      : input.fixed;
-    const profitTarget = input.profitTarget;
+    const bohDaily=stats.regularWorkingDays>0 ? input.bohPayroll/stats.regularWorkingDays : 0;
+    const fohDaily=stats.regularWorkingDays>0 ? input.fohPayroll/stats.regularWorkingDays : 0;
+    const bohUsed=bohDaily*stats.actualOpenDays;
+    const fohUsed=fohDaily*stats.actualOpenDays;
+    const vacationPayroll=stats.vacationPayroll;
+    const adjustedPayroll=bohUsed+fohUsed+vacationPayroll;
 
-    const baseSales = margin > 0 ? (adjustedPayroll + fixed) / margin : 0;
-    const requiredProfit = margin > 0 ? (adjustedPayroll + fixed + profitTarget) / margin : 0;
-
-    // Break-even must NOT be reduced by seasonality.
-    // Seasonality estimates expected sales performance versus the true break-even requirement.
-    const seasonalSales = baseSales;
-    const seasonalRequiredProfit = requiredProfit;
-    const expectedSales = input.useCapacityTarget === "yes"
+    const breakEven=margin>0 ? (adjustedPayroll+fixed)/margin : 0;
+    const requiredProfit=margin>0 ? (adjustedPayroll+fixed+input.profitTarget)/margin : 0;
+    const expectedSales = input.useCapacityTarget==="yes"
       ? input.lockedMonthlySales * seasonality[monthIndex]
-      : baseSales * seasonality[monthIndex];
+      : breakEven * seasonality[monthIndex];
 
-    // Required / break-even variable costs are used to calculate the true break-even requirement.
-    const requiredFoodCost = seasonalSales * input.foodMix * input.foodCostPct;
-    const requiredBevCost = seasonalSales * input.bevMix * input.bevCostPct;
-    const requiredCogs = requiredFoodCost + requiredBevCost;
-    const requiredPosFees = seasonalSales * input.pos;
+    const foodCost=expectedSales*input.foodMix*input.foodCostPct;
+    const bevCost=expectedSales*input.bevMix*input.bevCostPct;
+    const cogs=foodCost+bevCost;
+    const posFees=expectedSales*input.pos;
 
-    // Expected variable costs change with expected sales.
-    const foodCost = expectedSales * input.foodMix * input.foodCostPct;
-    const bevCost = expectedSales * input.bevMix * input.bevCostPct;
-    const cogs = foodCost + bevCost;
-    const posFees = expectedSales * input.pos;
+    const operationalProfitLoss=expectedSales-cogs-posFees-adjustedPayroll-fixed;
+    const ownerProfitGap=Math.max(0,input.profitTarget-operationalProfitLoss);
+    const additionalSalesNeeded=margin>0 ? ownerProfitGap/margin : 0;
 
-    // Operational Profit/Loss is true accounting operating result:
-    // Expected Sales minus expected variable costs, payroll, and fixed costs.
-    // If all costs and sales are zero, this is zero.
-    // If fixed costs are $1,000 and sales are zero, this is -$1,000.
-    const operationalProfitLoss =
-      expectedSales - cogs - posFees - adjustedPayroll - fixed;
+    const tips=expectedSales*input.tip;
+    const tax=expectedSales*input.tax;
+    const gross=expectedSales+tax;
+    const grossPlusTips=gross+tips;
 
-    // Owner Profit Gap is the missing owner income amount.
-    // If operational profit is already above the owner target, the gap is $0.
-    const ownerProfitGap = Math.max(0, profitTarget - operationalProfitLoss);
+    const dailyBE=stats.actualOpenDays>0 ? breakEven/stats.actualOpenDays : 0;
+    const primeCostPct=expectedSales>0 ? (cogs+adjustedPayroll)/expectedSales : 0;
 
-    // Because each additional sales dollar still carries variable costs,
-    // additional sales needed must be divided by contribution margin.
-    const additionalSalesNeeded = margin > 0 ? ownerProfitGap / margin : 0;
-
-    // Tips and sales tax are also based on expected sales.
-    const tips = expectedSales * input.tip;
-    const tax = expectedSales * input.tax;
-    const gross = expectedSales + tax;
-    const grossPlusTips = gross + tips;
-
-    const dailyBreakEven = stats.actualOpenDays > 0 ? seasonalSales / stats.actualOpenDays : 0;
-    const primeCostPct = expectedSales > 0 ? (cogs + adjustedPayroll) / expectedSales : 0;
-    const ebitda = profitTarget + input.ebitdaAddbacks;
-
-    const row = {
-      monthName, monthIndex, seasonality: seasonality[monthIndex], hasMarginWarning,
-      regularWorkingDays:stats.regularWorkingDays, actualOpenDays:stats.actualOpenDays,
-      vacationDays:stats.vacationDays, bohPayroll:bohUsed, fohPayroll:fohUsed,
-      vacationPayroll, adjustedPayroll, fixed, 
-      requiredFoodCost, requiredBevCost, requiredCogs, requiredPosFees,
-      foodCost, bevCost, cogs, posFees,
-      breakEven:seasonalSales, dailyBreakEven, requiredProfit:seasonalRequiredProfit, expectedSales, operationalProfitLoss, ownerProfitGap, additionalSalesNeeded,
-      tips, tax, gross, grossPlusTips, primeCostPct, ebitda
-    };
+    const row={monthName,monthIndex,seasonality:seasonality[monthIndex],regularWorkingDays:stats.regularWorkingDays,
+      actualOpenDays:stats.actualOpenDays,vacationDays:stats.vacationDays,bohPayroll:bohUsed,fohPayroll:fohUsed,
+      vacationPayroll,adjustedPayroll,fixed,foodCost,bevCost,cogs,posFees,breakEven,dailyBE,requiredProfit,
+      expectedSales,operationalProfitLoss,ownerProfitGap,additionalSalesNeeded,tips,tax,gross,grossPlusTips,
+      primeCostPct,hasMarginWarning};
 
     rows.push(row);
 
-    totals.regularWorkingDays += stats.regularWorkingDays;
-    totals.openDays += stats.actualOpenDays;
-    totals.vacationDays += stats.vacationDays;
-    totals.bohPayroll += bohUsed;
-    totals.fohPayroll += fohUsed;
-    totals.vacationPayroll += vacationPayroll;
-    totals.adjustedPayroll += adjustedPayroll;
-    totals.fixed += fixed;
-    totals.requiredFoodCost += requiredFoodCost;
-    totals.requiredBevCost += requiredBevCost;
-    totals.requiredCogs += requiredCogs;
-    totals.requiredPosFees += requiredPosFees;
-    totals.foodCost += foodCost;
-    totals.bevCost += bevCost;
-    totals.cogs += cogs;
-    totals.posFees += posFees;
-    totals.breakEven += seasonalSales;
-    totals.requiredProfit += seasonalRequiredProfit;
-    totals.expectedSales += expectedSales;
-    totals.operationalProfitLoss += operationalProfitLoss;
-    totals.ownerProfitGap += ownerProfitGap;
-    totals.additionalSalesNeeded += additionalSalesNeeded;
-    totals.tips += tips;
-    totals.tax += tax;
-    totals.gross += gross;
-    totals.grossPlusTips += grossPlusTips;
-    totals.profitTarget += profitTarget;
-    totals.ebitda += ebitda;
+    totals.regularWorkingDays+=stats.regularWorkingDays;
+    totals.openDays+=stats.actualOpenDays;
+    totals.vacationDays+=stats.vacationDays;
+    totals.bohPayroll+=bohUsed;
+    totals.fohPayroll+=fohUsed;
+    totals.vacationPayroll+=vacationPayroll;
+    totals.adjustedPayroll+=adjustedPayroll;
+    totals.fixed+=fixed;
+    totals.foodCost+=foodCost;
+    totals.bevCost+=bevCost;
+    totals.cogs+=cogs;
+    totals.posFees+=posFees;
+    totals.breakEven+=breakEven;
+    totals.requiredProfit+=requiredProfit;
+    totals.expectedSales+=expectedSales;
+    totals.operationalProfitLoss+=operationalProfitLoss;
+    totals.ownerProfitGap+=ownerProfitGap;
+    totals.additionalSalesNeeded+=additionalSalesNeeded;
+    totals.tips+=tips;
+    totals.tax+=tax;
+    totals.gross+=gross;
+    totals.grossPlusTips+=grossPlusTips;
+    totals.profitTarget+=input.profitTarget;
+    totals.ebitda+=input.profitTarget+input.ebitdaAddbacks;
   });
 
-  totals.primeCostPct = totals.expectedSales > 0 ? (totals.cogs + totals.adjustedPayroll) / totals.expectedSales : 0;
-  return {rows, totals, hasMarginWarning, margin};
+  totals.primeCostPct=totals.expectedSales>0 ? (totals.cogs+totals.adjustedPayroll)/totals.expectedSales : 0;
+  return {rows,totals,hasMarginWarning,margin};
 }
 
-
-function renderSeasonalityControl(monthIndex, value){
+function renderSeasonalityControl(monthIndex,value){
   return `
     <div class="inline-seasonality">
-
-      <input 
-        type="range" 
-        class="seasonality" 
-        data-month="${monthIndex}" 
-        min="0.00" 
-        max="3.5" 
-        step="0.10" 
-        value="${value}"
-      >
-
+      <input type="range" class="seasonality" data-month="${monthIndex}" min="0" max="3.5" step="0.10" value="${value}">
       <div class="seasonality-controls">
-
-        <button 
-          type="button" 
-          class="seasonality-btn" 
-          data-step="-0.01" 
-          data-month="${monthIndex}"
-        >
-          -0.01
-        </button>
-
-        <input 
-          type="number"
-          class="seasonalityNumber"
-          data-month="${monthIndex}"
-          min="0.00"
-          max="3.5"
-          step="0.01"
-          value="${Number(value).toFixed(2)}"
-        >
-
-        <button 
-          type="button" 
-          class="seasonality-btn" 
-          data-step="0.01" 
-          data-month="${monthIndex}"
-        >
-          +0.01
-        </button>
-
+        <button type="button" class="seasonality-btn" data-step="-0.01" data-month="${monthIndex}">-0.01</button>
+        <input type="number" class="seasonalityNumber" data-month="${monthIndex}" min="0" max="3.5" step="0.01" value="${Number(value).toFixed(2)}">
+        <button type="button" class="seasonality-btn" data-step="0.01" data-month="${monthIndex}">+0.01</button>
       </div>
     </div>
   `;
+}
+
+function clampSeasonality(v){
+  return Math.max(0,Math.min(3.5,Number((Number(v)||0).toFixed(2))));
+}
+
+function syncSeasonality(month,value){
+  document.querySelectorAll(`.seasonality[data-month="${month}"]`).forEach(el=>el.value=value);
+  document.querySelectorAll(`.seasonalityNumber[data-month="${month}"]`).forEach(el=>el.value=Number(value).toFixed(2));
 }
 
 function bindSeasonalityControls(){
-
-  // Slider live update
-  document.querySelectorAll(".seasonality").forEach(el => {
-    el.addEventListener("input", e => {
-      const month = e.target.dataset.month;
-      const value = clampSeasonality(Number(e.target.value));
-
-      syncSeasonality(month, value);
+  document.querySelectorAll(".seasonality").forEach(el=>{
+    el.addEventListener("input",e=>{
+      const value=clampSeasonality(e.target.value);
+      syncSeasonality(e.target.dataset.month,value);
       calculate();
     });
   });
-
-  // Direct typing
-  document.querySelectorAll(".seasonalityNumber").forEach(el => {
-
-    el.addEventListener("change", e => {
-      const month = e.target.dataset.month;
-      const value = clampSeasonality(Number(e.target.value));
-
-      syncSeasonality(month, value);
+  document.querySelectorAll(".seasonalityNumber").forEach(el=>{
+    el.addEventListener("change",e=>{
+      const value=clampSeasonality(e.target.value);
+      syncSeasonality(e.target.dataset.month,value);
       calculate();
     });
-
-    el.addEventListener("keydown", e => {
-      if(e.key === "Enter"){
-        e.target.blur();
-      }
+    el.addEventListener("keydown",e=>{
+      if(e.key==="Enter") e.target.blur();
     });
   });
-
-  // Precise +/- 0.01 buttons
-  document.querySelectorAll(".seasonality-btn").forEach(btn => {
-    btn.addEventListener("click", e => {
-
-      const month = e.target.dataset.month;
-      const step = Number(e.target.dataset.step);
-
-      const currentInput = document.querySelector(`.seasonalityNumber[data-month="${month}"]`);
-
-      const current = Number(currentInput.value) || 0;
-
-      const value = clampSeasonality(current + step);
-
-      syncSeasonality(month, value);
+  document.querySelectorAll(".seasonality-btn").forEach(btn=>{
+    btn.addEventListener("click",e=>{
+      const month=e.target.dataset.month;
+      const step=Number(e.target.dataset.step);
+      const current=Number(document.querySelector(`.seasonalityNumber[data-month="${month}"]`).value)||0;
+      const value=clampSeasonality(current+step);
+      syncSeasonality(month,value);
       calculate();
     });
   });
 }
 
-function clampSeasonality(value){
-  return Math.max(0, Math.min(3.5, Number(value.toFixed(2))));
-}
+function renderMonthly(model){
+  const tbody=document.getElementById("monthlyTable");
+  const mobile=document.getElementById("mobileMonths");
+  tbody.innerHTML="";
+  mobile.innerHTML="";
 
-function syncSeasonality(month, value){
-
-  document.querySelectorAll(`.seasonality[data-month="${month}"]`).forEach(slider => {
-    slider.value = value;
-  });
-
-  document.querySelectorAll(`.seasonalityNumber[data-month="${month}"]`).forEach(number => {
-    number.value = Number(value).toFixed(2);
-  });
-}
-
-function mobileMonthCard(r){
-  return `
-    <div class="month-card">
-      <h4>${r.monthName}</h4>
-      <div class="mobile-seasonality-control">
-        <label>Seasonality Factor</label>
-        ${renderSeasonalityControl(r.monthIndex, r.seasonality)}
-      </div>
-      <div class="metric-row"><span class="metric-label">Expected Cash Flow</span><span class="metric-value">${money(r.grossPlusTips)}</span></div>
-      <div class="metric-row"><span class="metric-label">Expected Sales</span><span class="metric-value">${money(r.expectedSales)}</span></div>
-      <div class="metric-row"><span class="metric-label">Expected Food Cost</span><span class="metric-value">${money(r.foodCost)}</span></div>
-      <div class="metric-row"><span class="metric-label">Expected Beverage Cost</span><span class="metric-value">${money(r.bevCost)}</span></div>
-      <div class="metric-row"><span class="metric-label">Expected POS</span><span class="metric-value">${money(r.posFees)}</span></div>
-      <div class="metric-row"><span class="metric-label">Operational Profit / Loss</span><span class="metric-value ${r.operationalProfitLoss < 0 ? 'warning' : 'good'}">${money(r.operationalProfitLoss)}</span></div>
-      <div class="metric-row"><span class="metric-label">Owner Profit Gap</span><span class="metric-value ${r.ownerProfitGap > 0 ? 'warning' : 'good'}">${money(r.ownerProfitGap)}</span></div>
-      <div class="metric-row"><span class="metric-label">Additional Sales Needed</span><span class="metric-value ${r.additionalSalesNeeded > 0 ? 'warning' : 'good'}">${money(r.additionalSalesNeeded)}</span></div>
-      <div class="metric-row"><span class="metric-label">Open Days</span><span class="metric-value">${r.actualOpenDays}</span></div>
-      <div class="metric-row"><span class="metric-label">Adjusted Payroll</span><span class="metric-value">${money(r.adjustedPayroll)}</span></div>
-      <div class="metric-row"><span class="metric-label">Break-Even Sales</span><span class="metric-value">${money(r.breakEven)}</span></div>
-      <div class="metric-row"><span class="metric-label">Required Sales + Profit</span><span class="metric-value">${money(r.requiredProfit)}</span></div>
-      <div class="metric-row"><span class="metric-label">Estimated Tips</span><span class="metric-value">${money(r.tips)}</span></div>
-      <div class="metric-row"><span class="metric-label">Sales Tax</span><span class="metric-value">${money(r.tax)}</span></div>
-      <div class="metric-row"><span class="metric-label">Prime Cost %</span><span class="metric-value">${pct(r.primeCostPct)}</span></div>
-    </div>
-  `;
-}
-
-function destroyCharts(){
-  Object.values(charts).forEach(chart => {
-    if(chart && typeof chart.destroy === "function") chart.destroy();
-  });
-  charts = {};
-}
-
-function buildCharts(model){
-  if(typeof Chart === "undefined"){
-    return;
-  }
-
-  destroyCharts();
-
-  const t = model.totals;
-  const labels = ["Adjusted Payroll","Fixed Costs","Expected Food Cost","Expected Beverage Cost","Expected POS Fees"];
-  const values = [t.adjustedPayroll, t.fixed, t.foodCost, t.bevCost, t.posFees];
-
-  charts.costPie = new Chart(document.getElementById("costPie"), {
-    type:"pie",
-    data:{labels, datasets:[{data:values}]},
-    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom"}}}
-  });
-
-  charts.costBar = new Chart(document.getElementById("costBar"), {
-    type:"bar",
-    data:{labels:["Payroll","Fixed","Expected Food","Expected Beverage","Expected POS","Sales Tax"], datasets:[{label:"Year Total", data:[t.adjustedPayroll,t.fixed,t.foodCost,t.bevCost,t.posFees,t.tax]}]},
-    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
-  });
-
-  charts.tipChart = new Chart(document.getElementById("tipChart"), {
-    type:"doughnut",
-    data:{labels:["Expected Net Sales","Estimated Tips","Sales Tax"], datasets:[{data:[t.expectedSales,t.tips,t.tax]}]},
-    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom"}}}
-  });
-
-  charts.seasonChart = new Chart(document.getElementById("seasonChart"), {
-    type:"bar",
-    data:{labels:months, datasets:[
-      {label:"True Break-Even Sales", data:model.rows.map(r=>r.breakEven)},
-      {label:"Sales Required + Owner Profit", data:model.rows.map(r=>r.requiredProfit)},
-      {label:"Expected Sales from Seasonality", data:model.rows.map(r=>r.expectedSales)},
-      {label:"Operational Profit / Loss", data:model.rows.map(r=>r.operationalProfitLoss)},
-      {label:"Owner Profit Gap", data:model.rows.map(r=>r.ownerProfitGap)},
-      {label:"Additional Sales Needed", data:model.rows.map(r=>r.additionalSalesNeeded)}
-    ]},
-    options:{responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true}}}
-  });
-}
-
-
-function wholeNumber(value){
-  return Math.round(value).toLocaleString("en-US");
-}
-
-function updateCapacityModule(){
-  const seats = Number(document.getElementById("seatingCapacity")?.value) || 0;
-  const turns = Number(document.getElementById("turnsPerNight")?.value) || 0;
-  const avgCheck = Number(document.getElementById("avgCheck")?.value) || 0;
-  const days = Number(document.getElementById("daysOpenManual")?.value) || 0;
-  const target = Number(document.getElementById("lockedMonthlySales")?.value) || 0;
-
-  const dailyGuestCapacity = seats * turns;
-  const monthlyGuestCapacity = dailyGuestCapacity * days;
-  const weeklyOpenDays = days / 4.345;
-  const weeklyGuestCapacity = dailyGuestCapacity * weeklyOpenDays;
-  const yearlyGuestCapacity = monthlyGuestCapacity * 12;
-
-  const monthlySales = monthlyGuestCapacity * avgCheck;
-  const difference = monthlySales - target;
-  const dailyTarget = days > 0 ? target / days : 0;
-
-  const requiredAvgCheck = seats * turns * days > 0 ? target / (seats * turns * days) : 0;
-  const requiredTurns = seats * avgCheck * days > 0 ? target / (seats * avgCheck * days) : 0;
-  const requiredDays = seats * turns * avgCheck > 0 ? target / (seats * turns * avgCheck) : 0;
-  const requiredSeats = turns * avgCheck * days > 0 ? target / (turns * avgCheck * days) : 0;
-
-  document.getElementById("seatingCapacityValue").textContent = seats;
-  document.getElementById("turnsValue").textContent = turns.toFixed(1);
-  document.getElementById("avgCheckValue").textContent = money(avgCheck);
-  document.getElementById("daysOpenManualValue").textContent = days;
-
-  document.getElementById("capacityMonthlySales").textContent = money(monthlySales);
-  document.getElementById("capacityTargetDisplay").textContent = money(target);
-
-  const diffEl = document.getElementById("capacityDifference");
-  diffEl.textContent = money(difference);
-  diffEl.className = "capacity-card-value " + (difference < 0 ? "warning" : "good");
-
-  document.getElementById("requiredAvgCheck").textContent = money(requiredAvgCheck);
-  document.getElementById("requiredTurns").textContent = requiredTurns.toFixed(2);
-  document.getElementById("requiredDaysOpen").textContent = requiredDays.toFixed(1);
-  document.getElementById("requiredSeats").textContent = Math.ceil(requiredSeats);
-  document.getElementById("dailySalesTarget").textContent = money(dailyTarget);
-
-  document.getElementById("guestCapacityDay").textContent = wholeNumber(dailyGuestCapacity);
-  document.getElementById("guestCapacityWeek").textContent = wholeNumber(weeklyGuestCapacity);
-  document.getElementById("guestCapacityMonth").textContent = wholeNumber(monthlyGuestCapacity);
-  document.getElementById("guestCapacityYear").textContent = wholeNumber(yearlyGuestCapacity);
-}
-
-function calculate(){
-  updateCapacityModule();
-  const model = runModel();
-  const tbody = document.getElementById("monthlyTable");
-  const mobile = document.getElementById("mobileMonths");
-  tbody.innerHTML = "";
-  mobile.innerHTML = "";
-
-  model.rows.forEach(r => {
-    tbody.innerHTML += `
+  model.rows.forEach((r,i)=>{
+    const statusClass=r.operationalProfitLoss<0?"bad":"good";
+    tbody.innerHTML+=`
       <tr>
         <td>${r.monthName}</td>
-        <td class="seasonality-cell">${renderSeasonalityControl(r.monthIndex, r.seasonality)}</td>
         <td>${money(r.grossPlusTips)}</td>
+        <td>${renderSeasonalityControl(r.monthIndex,r.seasonality)}</td>
         <td>${money(r.expectedSales)}</td>
-        <td class="${r.operationalProfitLoss < 0 ? 'warning' : 'good'}">${money(r.operationalProfitLoss)}</td>
-        <td class="${r.ownerProfitGap > 0 ? 'warning' : 'good'}">${money(r.ownerProfitGap)}</td>
-        <td class="${r.additionalSalesNeeded > 0 ? 'warning' : 'good'}">${money(r.additionalSalesNeeded)}</td>
-        <td>${r.actualOpenDays}</td>
-        <td>${r.vacationDays}</td>
-        <td>${money(r.bohPayroll)}</td>
-        <td>${money(r.fohPayroll)}</td>
-        <td>${money(r.vacationPayroll)}</td>
-        <td>${money(r.adjustedPayroll)}</td>
         <td>${money(r.fixed)}</td>
-        <td>${money(r.foodCost)}</td>
-        <td>${money(r.bevCost)}</td>
-        <td>${money(r.posFees)}</td>
-        <td>${model.hasMarginWarning ? '<span class="warning">Check %</span>' : money(r.breakEven)}</td>
-        <td>${r.actualOpenDays > 0 ? money(r.dailyBreakEven) : "Closed"}</td>
-        <td>${money(r.requiredProfit)}</td>
-        <td>${money(r.tips)}</td>
-        <td>${money(r.tax)}</td>
-        <td>${pct(r.primeCostPct)}</td>
+        <td>${money(r.adjustedPayroll)}</td>
+        <td class="${statusClass}">${money(r.operationalProfitLoss)}</td>
+        <td class="${r.ownerProfitGap>0?'bad':'good'}">${money(r.ownerProfitGap)}</td>
+        <td class="${r.additionalSalesNeeded>0?'bad':'good'}">${money(r.additionalSalesNeeded)}</td>
+        <td><button class="expand-btn" onclick="toggleDetails(${i})">Details</button></td>
+      </tr>
+      <tr class="details-row" id="details-${i}">
+        <td colspan="10">
+          <div class="details-content">
+            ${detail("Open Days",r.actualOpenDays)}
+            ${detail("Vacation Days",r.vacationDays)}
+            ${detail("Break-Even Net Sales",money(r.breakEven))}
+            ${detail("Daily BE",money(r.dailyBE))}
+            ${detail("Sales + Profit Target",money(r.requiredProfit))}
+            ${detail("BOH Payroll",money(r.bohPayroll))}
+            ${detail("FOH Payroll",money(r.fohPayroll))}
+            ${detail("Vacation Payroll",money(r.vacationPayroll))}
+            ${detail("Food Cost",money(r.foodCost))}
+            ${detail("Beverage Cost",money(r.bevCost))}
+            ${detail("POS Fees",money(r.posFees))}
+            ${detail("Estimated Tips",money(r.tips))}
+            ${detail("Sales Tax",money(r.tax))}
+            ${detail("Expected Cash Flow",money(r.grossPlusTips))}
+            ${detail("Prime Cost %",pct(r.primeCostPct))}
+          </div>
+        </td>
       </tr>
     `;
-    mobile.innerHTML += mobileMonthCard(r);
+
+    mobile.innerHTML+=`
+      <div class="month-card">
+        <h3>${r.monthName}</h3>
+
+        <div class="metric-row"><span class="metric-label">Seasonality</span><span class="metric-value">${renderSeasonalityControl(r.monthIndex,r.seasonality)}</span></div>
+        <div class="metric-row"><span class="metric-label">Expected Sales</span><span class="metric-value">${money(r.expectedSales)}</span></div>
+        <div class="metric-row"><span class="metric-label">Expected Cash Flow</span><span class="metric-value">${money(r.grossPlusTips)}</span></div>
+        <div class="metric-row"><span class="metric-label">Fixed Used</span><span class="metric-value">${money(r.fixed)}</span></div>
+        <div class="metric-row"><span class="metric-label">Payroll</span><span class="metric-value">${money(r.adjustedPayroll)}</span></div>
+        <div class="metric-row"><span class="metric-label">Operational P/L</span><span class="metric-value ${statusClass}">${money(r.operationalProfitLoss)}</span></div>
+        <div class="metric-row"><span class="metric-label">Owner Gap</span><span class="metric-value ${r.ownerProfitGap>0?'bad':'good'}">${money(r.ownerProfitGap)}</span></div>
+        <div class="metric-row"><span class="metric-label">Additional Sales Needed</span><span class="metric-value ${r.additionalSalesNeeded>0?'bad':'good'}">${money(r.additionalSalesNeeded)}</span></div>
+
+        <button class="mobile-detail-toggle" type="button" onclick="toggleMobileDetails(${i}, this)">Show Details</button>
+
+        <div class="mobile-details" id="mobile-details-${i}">
+          <div class="mobile-detail-grid">
+            <div class="metric-row"><span class="metric-label">Open Days</span><span class="metric-value">${r.actualOpenDays}</span></div>
+            <div class="metric-row"><span class="metric-label">Vacation / Payroll Adjustment Days</span><span class="metric-value">${r.vacationDays}</span></div>
+            <div class="metric-row"><span class="metric-label">Break-Even Net Sales</span><span class="metric-value">${money(r.breakEven)}</span></div>
+            <div class="metric-row"><span class="metric-label">Daily Break-Even</span><span class="metric-value">${money(r.dailyBE)}</span></div>
+            <div class="metric-row"><span class="metric-label">Sales + Owner Profit Target</span><span class="metric-value">${money(r.requiredProfit)}</span></div>
+            <div class="metric-row"><span class="metric-label">BOH Payroll</span><span class="metric-value">${money(r.bohPayroll)}</span></div>
+            <div class="metric-row"><span class="metric-label">FOH Payroll</span><span class="metric-value">${money(r.fohPayroll)}</span></div>
+            <div class="metric-row"><span class="metric-label">Payroll Adjustment Amount</span><span class="metric-value">${money(r.vacationPayroll)}</span></div>
+            <div class="metric-row"><span class="metric-label">Adjusted Payroll</span><span class="metric-value">${money(r.adjustedPayroll)}</span></div>
+            <div class="metric-row"><span class="metric-label">Food Cost</span><span class="metric-value">${money(r.foodCost)}</span></div>
+            <div class="metric-row"><span class="metric-label">Beverage Cost</span><span class="metric-value">${money(r.bevCost)}</span></div>
+            <div class="metric-row"><span class="metric-label">Total COGS</span><span class="metric-value">${money(r.cogs)}</span></div>
+            <div class="metric-row"><span class="metric-label">POS Fees</span><span class="metric-value">${money(r.posFees)}</span></div>
+            <div class="metric-row"><span class="metric-label">Estimated Tips</span><span class="metric-value">${money(r.tips)}</span></div>
+            <div class="metric-row"><span class="metric-label">Sales Tax</span><span class="metric-value">${money(r.tax)}</span></div>
+            <div class="metric-row"><span class="metric-label">Gross Sales</span><span class="metric-value">${money(r.gross)}</span></div>
+            <div class="metric-row"><span class="metric-label">Prime Cost %</span><span class="metric-value">${pct(r.primeCostPct)}</span></div>
+          </div>
+        </div>
+      </div>
+    `;
   });
 
-  const t = model.totals;
-  tbody.innerHTML += `
-    <tr class="total">
+  const t=model.totals;
+  tbody.innerHTML+=`
+    <tr class="total-row">
       <td>Year Total</td>
-      <td>-</td>
       <td>${money(t.grossPlusTips)}</td>
-      <td>${money(model.rows.reduce((sum,r)=>sum+r.expectedSales,0))}</td>
-      <td class="${model.rows.reduce((sum,r)=>sum+r.operationalProfitLoss,0) < 0 ? 'warning' : 'good'}">${money(model.rows.reduce((sum,r)=>sum+r.operationalProfitLoss,0))}</td>
-      <td class="${t.ownerProfitGap > 0 ? 'warning' : 'good'}">${money(t.ownerProfitGap)}</td>
-      <td class="${t.additionalSalesNeeded > 0 ? 'warning' : 'good'}">${money(t.additionalSalesNeeded)}</td>
-      <td>${t.openDays}</td>
-      <td>${t.vacationDays}</td>
-      <td>${money(t.bohPayroll)}</td>
-      <td>${money(t.fohPayroll)}</td>
-      <td>${money(t.vacationPayroll)}</td>
-      <td>${money(t.adjustedPayroll)}</td>
+      <td>-</td>
+      <td>${money(t.expectedSales)}</td>
       <td>${money(t.fixed)}</td>
-      <td>${money(t.foodCost)}</td>
-      <td>${money(t.bevCost)}</td>
-      <td>${money(t.posFees)}</td>
-      <td>${model.hasMarginWarning ? '<span class="warning">Check %</span>' : money(t.breakEven)}</td>
-      <td>${t.openDays > 0 ? money(t.breakEven/t.openDays) : "Closed"}</td>
-      <td>${money(t.requiredProfit)}</td>
-      <td>${money(t.tips)}</td>
-      <td>${money(t.tax)}</td>
-      <td>${pct(t.primeCostPct)}</td>
+      <td>${money(t.adjustedPayroll)}</td>
+      <td class="${t.operationalProfitLoss<0?'bad':'good'}">${money(t.operationalProfitLoss)}</td>
+      <td class="${t.ownerProfitGap>0?'bad':'good'}">${money(t.ownerProfitGap)}</td>
+      <td class="${t.additionalSalesNeeded>0?'bad':'good'}">${money(t.additionalSalesNeeded)}</td>
+      <td></td>
     </tr>
   `;
 
   bindSeasonalityControls();
-  pendingSeasonality = null;
-
-  document.getElementById("yearBreakEven").textContent = model.hasMarginWarning ? "Check %" : money(t.breakEven);
-  document.getElementById("yearRequiredProfit").textContent = money(t.requiredProfit);
-  document.getElementById("yearTips").textContent = money(t.tips);
-  document.getElementById("primeCostPct").textContent = pct(t.primeCostPct);
-  document.getElementById("yearEbitda").textContent = money(t.ebitda);
-
-  if(document.getElementById("yearExpectedSales")){
-    document.getElementById("yearExpectedSales").textContent = money(t.expectedSales);
-    document.getElementById("yearOperationalPL").textContent = money(t.operationalProfitLoss);
-    document.getElementById("yearOperationalPL").className = "card-value " + (t.operationalProfitLoss < 0 ? "warning" : "good");
-    document.getElementById("yearOwnerGap").textContent = money(t.ownerProfitGap);
-    document.getElementById("yearOwnerGap").className = "card-value " + (t.ownerProfitGap > 0 ? "warning" : "good");
-
-    if(document.getElementById("yearAdditionalSalesNeeded")){
-      document.getElementById("yearAdditionalSalesNeeded").textContent = money(t.additionalSalesNeeded);
-      document.getElementById("yearAdditionalSalesNeeded").className = "card-value " + (t.additionalSalesNeeded > 0 ? "warning" : "good");
-    }
-
-    document.getElementById("yearExpectedCashFlow").textContent = money(t.grossPlusTips);
-  }
-
-  updateScenarios(model);
-  buildCharts(model);
+  pendingSeasonality=null;
 }
 
-function updateScenarios(currentModel){
-  const t = currentModel.totals;
-  document.getElementById("scenarioCurrentBE").textContent = money(t.breakEven);
-  document.getElementById("scenarioCurrentProfit").textContent = money(t.requiredProfit);
-  document.getElementById("scenarioCurrentDays").textContent = t.openDays;
+function detail(label,value){
+  return `<div class="detail-item"><div class="detail-label">${label}</div><div class="detail-value">${value}</div></div>`;
+}
 
-  const summerStart = parseDate(document.getElementById("summerStart").value);
-  const summerEnd = parseDate(document.getElementById("summerEnd").value);
-  const summerPayroll = Number(document.getElementById("summerPayroll").value) || 0;
-  const summerModel = runModel({extraPeriod:{start:summerStart,end:summerEnd,payroll:summerPayroll}});
-  document.getElementById("scenarioSummerBE").textContent = money(summerModel.totals.breakEven);
-  document.getElementById("scenarioSummerProfit").textContent = money(summerModel.totals.requiredProfit);
-  document.getElementById("scenarioSummerDays").textContent = summerModel.totals.openDays;
+function toggleDetails(i){
+  const row=document.getElementById("details-"+i);
+  row.style.display=row.style.display==="table-row"?"none":"table-row";
+}
 
-  const input = getInputs();
-  const bohReduction = (Number(document.getElementById("bohReduction").value) || 0) / 100;
-  const fohReduction = (Number(document.getElementById("fohReduction").value) || 0) / 100;
-  const reducedModel = runModel({
-    bohPayroll: input.bohPayroll * (1 - bohReduction),
-    fohPayroll: input.fohPayroll * (1 - fohReduction)
-  });
-  document.getElementById("scenarioReducedBE").textContent = money(reducedModel.totals.breakEven);
-  document.getElementById("scenarioReducedProfit").textContent = money(reducedModel.totals.requiredProfit);
-  document.getElementById("scenarioReducedDays").textContent = reducedModel.totals.openDays;
+
+function toggleMobileDetails(i, button){
+  const detail = document.getElementById("mobile-details-" + i);
+  if(!detail) return;
+
+  const isOpen = detail.classList.toggle("open");
+  button.textContent = isOpen ? "Hide Details" : "Show Details";
+}
+
+
+function updateSummary(model){
+  const t=model.totals;
+  setKPI("sumExpectedSales",t.expectedSales);
+  setKPI("sumOperationalPL",t.operationalProfitLoss,true);
+  setKPI("sumOwnerGap",t.ownerProfitGap,false,true);
+  setKPI("sumAdditionalSales",t.additionalSalesNeeded,false,true);
+}
+
+function setKPI(id,value,isPL=false,isGap=false){
+  const el=document.getElementById(id);
+  el.textContent=money(value);
+  el.className="kpi-value ";
+  if(isPL) el.className+=value<0?"bad":"good";
+  if(isGap) el.className+=value>0?"bad":"good";
+}
+
+function updateCapacity(){
+  const seats=Number(document.getElementById("seatingCapacity").value)||0;
+  const turns=Number(document.getElementById("turnsPerNight").value)||0;
+  const avg=Number(document.getElementById("avgCheck").value)||0;
+  const days=Number(document.getElementById("daysOpenManual").value)||0;
+  const target=Number(document.getElementById("lockedMonthlySales").value)||0;
+
+  const dailyGuests=seats*turns;
+  const monthlyGuests=dailyGuests*days;
+  const weeklyGuests=dailyGuests*(days/4.345);
+  const yearlyGuests=monthlyGuests*12;
+  const monthlySales=monthlyGuests*avg;
+  const diff=monthlySales-target;
+
+  document.getElementById("seatingCapacityValue").textContent=seats;
+  document.getElementById("turnsValue").textContent=turns.toFixed(1);
+  document.getElementById("avgCheckValue").textContent=money(avg);
+  document.getElementById("daysOpenManualValue").textContent=days;
+
+  document.getElementById("capacityMonthlySales").textContent=money(monthlySales);
+  document.getElementById("capacityTargetDisplay").textContent=money(target);
+  const diffEl=document.getElementById("capacityDifference");
+  diffEl.textContent=money(diff);
+  diffEl.className="small-value "+(diff<0?"bad":"good");
+
+  document.getElementById("requiredAvgCheck").textContent=money(seats*turns*days>0?target/(seats*turns*days):0);
+  document.getElementById("requiredTurns").textContent=(seats*avg*days>0?target/(seats*avg*days):0).toFixed(2);
+  document.getElementById("requiredDaysOpen").textContent=(seats*turns*avg>0?target/(seats*turns*avg):0).toFixed(1);
+  document.getElementById("requiredSeats").textContent=Math.ceil(turns*avg*days>0?target/(turns*avg*days):0);
+  document.getElementById("dailySalesTarget").textContent=money(days>0?target/days:0);
+  document.getElementById("guestCapacityDay").textContent=whole(dailyGuests);
+  document.getElementById("guestCapacityWeek").textContent=whole(weeklyGuests);
+  document.getElementById("guestCapacityMonth").textContent=whole(monthlyGuests);
+  document.getElementById("guestCapacityYear").textContent=whole(yearlyGuests);
+}
+
+function updateScenarios(current){
+  scenarioFill("Current",current.totals);
+
+  const summerStart=parseDate(document.getElementById("summerStart").value);
+  const summerEnd=parseDate(document.getElementById("summerEnd").value);
+  const summerPayroll=Number(document.getElementById("summerPayroll").value)||0;
+  const summer=runModel({extraPeriod:{start:summerStart,end:summerEnd,payroll:summerPayroll}});
+  scenarioFill("Summer",summer.totals);
+
+  const input=getInputs();
+  const bohRed=(Number(document.getElementById("bohReduction").value)||0)/100;
+  const fohRed=(Number(document.getElementById("fohReduction").value)||0)/100;
+  const reduced=runModel({bohPayroll:input.bohPayroll*(1-bohRed),fohPayroll:input.fohPayroll*(1-fohRed)});
+  scenarioFill("Reduced",reduced.totals);
+}
+
+function scenarioFill(name,t){
+  document.getElementById(`scenario${name}Sales`).textContent=money(t.expectedSales);
+  const pl=document.getElementById(`scenario${name}PL`);
+  pl.textContent=money(t.operationalProfitLoss);
+  pl.className="metric-value "+(t.operationalProfitLoss<0?"bad":"good");
+  const gap=document.getElementById(`scenario${name}Gap`);
+  gap.textContent=money(t.ownerProfitGap);
+  gap.className="metric-value "+(t.ownerProfitGap>0?"bad":"good");
+  const add=document.getElementById(`scenario${name}Add`);
+  add.textContent=money(t.additionalSalesNeeded);
+  add.className="metric-value "+(t.additionalSalesNeeded>0?"bad":"good");
+}
+
+
+function updateChart(model){
+  if(typeof Chart==="undefined") return;
+  const type=document.getElementById("chartSelector").value;
+  if(mainChart) mainChart.destroy();
+
+  let config;
+  if(type==="profit"){
+    config={
+      type:"bar",
+      data:{labels:months,datasets:[
+        {label:"True Break-Even Sales",data:model.rows.map(r=>r.breakEven)},
+        {label:"Sales Required + Owner Profit",data:model.rows.map(r=>r.requiredProfit)},
+        {label:"Expected Sales from Seasonality",data:model.rows.map(r=>r.expectedSales)},
+        {label:"Operational Profit / Loss",data:model.rows.map(r=>r.operationalProfitLoss)},
+        {label:"Owner Profit Gap",data:model.rows.map(r=>r.ownerProfitGap)},
+        {label:"Additional Sales Needed",data:model.rows.map(r=>r.additionalSalesNeeded)}
+      ]},
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{position:"top"},
+          tooltip:{
+            enabled:true,
+            callbacks:{label:(ctx)=>ctx.dataset.label + ": " + money(ctx.raw)}
+          }
+        },
+        scales:{y:{beginAtZero:false}}
+      }
+    };
+  }else if(type==="cost"){
+    const t=model.totals;
+    config={
+      type:"bar",
+      data:{labels:["Payroll","Fixed","Food","Beverage","POS"],datasets:[{label:"Year Total",data:[t.adjustedPayroll,t.fixed,t.foodCost,t.bevCost,t.posFees]}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}},scales:{y:{beginAtZero:true}}}
+    };
+  }else if(type==="cash"){
+    const t=model.totals;
+    config={
+      type:"doughnut",
+      data:{labels:["Expected Net Sales","Sales Tax","Estimated Tips"],datasets:[{data:[t.expectedSales,t.tax,t.tips]}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:(ctx)=>ctx.label + ": " + money(ctx.raw)}}}}
+    };
+  }else{
+    const seats=Number(document.getElementById("seatingCapacity").value)||0;
+    const turns=Number(document.getElementById("turnsPerNight").value)||0;
+    const days=Number(document.getElementById("daysOpenManual").value)||0;
+    const daily=seats*turns;
+    config={
+      type:"bar",
+      data:{labels:["Day","Week","Month","Year"],datasets:[{label:"Guest Capacity",data:[daily,daily*(days/4.345),daily*days,daily*days*12]}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}},scales:{y:{beginAtZero:true}}}
+    };
+  }
+  mainChart=new Chart(document.getElementById("mainChart"),config);
+}
+
+function calculate(){
+  updateCapacity();
+  const model=runModel();
+  renderMonthly(model);
+  updateSummary(model);
+  updateScenarios(model);
+  updateChart(model);
 }
 
 function collectData(){
   return {
-    bohPayroll: document.getElementById("bohPayroll").value,
-    fohPayroll: document.getElementById("fohPayroll").value,
-    fixed: document.getElementById("fixed").value,
-    adjustedFixedCost: document.getElementById("adjustedFixedCost")?.value,
-    adjustedFixedMonths: Array.from(document.querySelectorAll(".adjustedFixedMonth")).map(cb => ({
-      value: cb.value,
-      checked: cb.checked
-    })),
-    tax: document.getElementById("tax").value,
-    pos: document.getElementById("pos").value,
-    tip: document.getElementById("tip").value,
-    profitTarget: document.getElementById("profitTarget").value,
-    ebitdaAddbacks: document.getElementById("ebitdaAddbacks").value,
-    year: document.getElementById("year").value,
-    foodMix: document.getElementById("foodMix").value,
-    bevMix: document.getElementById("bevMix").value,
-    foodCost: document.getElementById("foodCost").value,
-    bevCost: document.getElementById("bevCost").value,
-    summerStart: document.getElementById("summerStart").value,
-    summerEnd: document.getElementById("summerEnd").value,
-    summerPayroll: document.getElementById("summerPayroll").value,
-    bohReduction: document.getElementById("bohReduction").value,
-    fohReduction: document.getElementById("fohReduction").value,
-    lockedMonthlySales: document.getElementById("lockedMonthlySales")?.value,
-    useCapacityTarget: document.getElementById("useCapacityTarget")?.value,
-    seatingCapacity: document.getElementById("seatingCapacity")?.value,
-    turnsPerNight: document.getElementById("turnsPerNight")?.value,
-    avgCheck: document.getElementById("avgCheck")?.value,
-    daysOpenManual: document.getElementById("daysOpenManual")?.value,
-    closedDays: Array.from(document.querySelectorAll(".closedDay")).map(cb => ({value: cb.value, checked: cb.checked})),
-    seasonality: getSeasonality(),
-    vacations: Array.from(document.querySelectorAll(".vacation-card")).map(card => ({
-      start: card.querySelector(".vacStart").value,
-      end: card.querySelector(".vacEnd").value,
-      payroll: card.querySelector(".vacPayroll").value
+    bohPayroll:val("bohPayroll"),fohPayroll:val("fohPayroll"),fixed:val("fixed"),adjustedFixedCost:val("adjustedFixedCost"),
+    tax:val("tax"),pos:val("pos"),tip:val("tip"),profitTarget:val("profitTarget"),ebitdaAddbacks:val("ebitdaAddbacks"),year:val("year"),
+    foodMix:val("foodMix"),bevMix:val("bevMix"),foodCost:val("foodCost"),bevCost:val("bevCost"),
+    lockedMonthlySales:val("lockedMonthlySales"),useCapacityTarget:val("useCapacityTarget"),
+    seatingCapacity:val("seatingCapacity"),turnsPerNight:val("turnsPerNight"),avgCheck:val("avgCheck"),daysOpenManual:val("daysOpenManual"),
+    summerStart:val("summerStart"),summerEnd:val("summerEnd"),summerPayroll:val("summerPayroll"),bohReduction:val("bohReduction"),fohReduction:val("fohReduction"),
+    closedDays:Array.from(document.querySelectorAll(".closedDay")).map(cb=>({value:cb.value,checked:cb.checked})),
+    adjustedFixedMonths:Array.from(document.querySelectorAll(".adjustedFixedMonth")).map(cb=>({value:cb.value,checked:cb.checked})),
+    seasonality:getSeasonality(),
+    vacations:Array.from(document.querySelectorAll(".vacation-card")).map(card=>({
+      start:card.querySelector(".vacStart").value,
+      end:card.querySelector(".vacEnd").value,
+      payroll:card.querySelector(".vacPayroll").value
     }))
   };
 }
 
+function val(id){ return document.getElementById(id)?.value; }
+
 function downloadData(){
-  const blob = new Blob([JSON.stringify(collectData(), null, 2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `restaurant-financial-model-${new Date().toISOString().split("T")[0]}.json`;
+  const blob=new Blob([JSON.stringify(collectData(),null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=`restaurant-financial-model-${new Date().toISOString().split("T")[0]}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
 }
 
-function setValue(id, value){
-  if(value !== undefined && document.getElementById(id)) document.getElementById(id).value = value;
+function setValue(id,value){
+  const el=document.getElementById(id);
+  if(el && value!==undefined) el.value=value;
 }
 
 function uploadData(file){
-  const reader = new FileReader();
-  reader.onload = function(event){
+  const reader=new FileReader();
+  reader.onload=e=>{
     try{
-      const data = JSON.parse(event.target.result);
-      ["bohPayroll","fohPayroll","fixed","adjustedFixedCost","tax","pos","tip","profitTarget","ebitdaAddbacks","year","foodMix","bevMix","foodCost","bevCost","summerStart","summerEnd","summerPayroll","bohReduction","fohReduction","lockedMonthlySales","useCapacityTarget","seatingCapacity","turnsPerNight","avgCheck","daysOpenManual"].forEach(id => setValue(id, data[id]));
+      const data=JSON.parse(e.target.result);
+      ["bohPayroll","fohPayroll","fixed","adjustedFixedCost","tax","pos","tip","profitTarget","ebitdaAddbacks","year",
+       "foodMix","bevMix","foodCost","bevCost","lockedMonthlySales","useCapacityTarget","seatingCapacity","turnsPerNight",
+       "avgCheck","daysOpenManual","summerStart","summerEnd","summerPayroll","bohReduction","fohReduction"].forEach(id=>setValue(id,data[id]));
 
       if(Array.isArray(data.closedDays)){
-        document.querySelectorAll(".closedDay").forEach(cb => {
-          const match = data.closedDays.find(x => x.value == cb.value);
-          cb.checked = match ? match.checked : false;
+        document.querySelectorAll(".closedDay").forEach(cb=>{
+          const match=data.closedDays.find(x=>x.value==cb.value);
+          cb.checked=match?match.checked:false;
         });
       }
-
       if(Array.isArray(data.adjustedFixedMonths)){
-        document.querySelectorAll(".adjustedFixedMonth").forEach(cb => {
-          const match = data.adjustedFixedMonths.find(x => x.value == cb.value);
-          cb.checked = match ? match.checked : false;
+        document.querySelectorAll(".adjustedFixedMonth").forEach(cb=>{
+          const match=data.adjustedFixedMonths.find(x=>x.value==cb.value);
+          cb.checked=match?match.checked:false;
         });
       }
-
-      if(Array.isArray(data.seasonality)){
-        pendingSeasonality = data.seasonality;
-      }
-
+      if(Array.isArray(data.seasonality)) pendingSeasonality=data.seasonality;
       if(Array.isArray(data.vacations)){
         clearVacationPeriods();
-        data.vacations.forEach(v => addVacationPeriod(v));
+        data.vacations.forEach(v=>addVacationPeriod(v));
       }
-
       calculate();
       alert("Configuration uploaded successfully.");
-    }catch(error){
+    }catch(err){
       alert("Invalid configuration file.");
-      console.error(error);
+      console.error(err);
     }
   };
   reader.readAsText(file);
 }
 
-document.querySelectorAll("input,select").forEach(el => {
-  el.addEventListener("input", calculate);
-  el.addEventListener("change", calculate);
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-"+btn.dataset.tab).classList.add("active");
+    calculate();
+  });
 });
 
-document.getElementById("uploadFile").addEventListener("change", function(e){
-  const file = e.target.files[0];
+document.querySelectorAll("input,select").forEach(el=>{
+  el.addEventListener("input",calculate);
+  el.addEventListener("change",calculate);
+});
+
+document.getElementById("uploadFile").addEventListener("change",e=>{
+  const file=e.target.files[0];
   if(file) uploadData(file);
 });
 
-document.getElementById("foodMix").addEventListener("input", () => {
-  const food = Number(document.getElementById("foodMix").value) || 0;
-  document.getElementById("bevMix").value = Math.max(0, 100 - food);
-  calculate();
+document.getElementById("foodMix").addEventListener("input",()=>{
+  const food=Number(document.getElementById("foodMix").value)||0;
+  document.getElementById("bevMix").value=Math.max(0,100-food);
 });
 
-document.getElementById("bevMix").addEventListener("input", () => {
-  const bev = Number(document.getElementById("bevMix").value) || 0;
-  document.getElementById("foodMix").value = Math.max(0, 100 - bev);
-  calculate();
+document.getElementById("bevMix").addEventListener("input",()=>{
+  const bev=Number(document.getElementById("bevMix").value)||0;
+  document.getElementById("foodMix").value=Math.max(0,100-bev);
 });
 
-if(typeof Chart === "undefined"){
-  const warning = document.getElementById("chartWarning");
-  if(warning) warning.style.display = "block";
-}
-
-buildSeasonality();
 addVacationPeriod();
 calculate();
 </script>
-
 </body>
 </html>
