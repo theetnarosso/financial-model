@@ -853,6 +853,186 @@ input[type=range]{
   flex-direction:column;
 }
 
+
+/* Sticky Monthly Breakdown header */
+#tab-monthly .table-wrap{
+  max-height: calc(100vh - 180px);
+  overflow: auto;
+  position: relative;
+}
+
+#tab-monthly table thead th{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #f6f6f6;
+  box-shadow: 0 2px 0 rgba(0,0,0,.08);
+}
+
+#tab-monthly table thead th:first-child{
+  z-index: 6;
+  left: 0;
+}
+
+#tab-monthly table tbody td:first-child{
+  z-index: 3;
+}
+
+@media(max-width:720px){
+  #tab-monthly .table-wrap{
+    max-height:none;
+  }
+}
+
+
+/* Mobile Year Totals Summary */
+.mobile-year-summary{
+  display:none;
+  margin-top:18px;
+  border:1px solid var(--border);
+  border-radius:20px;
+  background:#fff;
+  padding:18px;
+}
+
+.mobile-year-summary h3{
+  margin:0 0 16px;
+  font-size:22px;
+}
+
+.mobile-summary-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.mobile-summary-card{
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:16px;
+  padding:12px;
+  background:#fafafa;
+}
+
+.mobile-summary-label{
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+
+.mobile-summary-value{
+  font-size:22px;
+  font-weight:800;
+}
+
+@media(max-width:720px){
+  .mobile-year-summary{
+    display:block;
+  }
+}
+
+
+.year-total-details{
+  display:none;
+}
+
+.year-total-details.open{
+  display:block;
+}
+
+.year-total-detail-toggle{
+  width:100%;
+  margin-top:14px;
+  background:#111;
+  color:#fff;
+  border-radius:12px;
+  padding:11px 14px;
+}
+
+
+/* Responsive chart sizing */
+.chart-card{
+  position:relative;
+  height:62vh;
+  min-height:420px;
+  max-height:720px;
+  overflow:hidden;
+}
+
+.chart-card canvas{
+  width:100% !important;
+  height:100% !important;
+}
+
+.chart-card.pie-chart-card{
+  height:72vh;
+  min-height:520px;
+  max-height:860px;
+}
+
+@media(max-width:1100px){
+  .chart-card{
+    height:56vh;
+    min-height:380px;
+  }
+
+  .chart-card.pie-chart-card{
+    height:68vh;
+    min-height:480px;
+  }
+}
+
+@media(max-width:768px){
+  .chart-card{
+    height:52vh;
+    min-height:320px;
+  }
+
+  .chart-card.pie-chart-card{
+    height:62vh;
+    min-height:420px;
+  }
+}
+
+
+/* Inline Operating Revenue Distribution pies in Monthly Details */
+.inline-pie-wrap{
+  grid-column:1 / -1;
+  margin-top:12px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:#fff;
+  padding:14px;
+}
+
+.inline-pie-title{
+  font-weight:800;
+  margin-bottom:8px;
+  text-align:center;
+}
+
+.inline-pie-total{
+  text-align:center;
+  font-size:22px;
+  font-weight:800;
+  margin-bottom:8px;
+}
+
+.inline-pie-canvas-wrap{
+  height:280px;
+  position:relative;
+}
+
+.inline-pie-canvas-wrap canvas{
+  width:100% !important;
+  height:100% !important;
+}
+
+@media(max-width:720px){
+  .inline-pie-canvas-wrap{
+    height:240px;
+  }
+}
+
 </style>
 </head>
 
@@ -1109,21 +1289,21 @@ input[type=range]{
           <select id="chartSelector">
             <option value="profit">Break-Even, Expected Sales & Profit Gaps</option>
             <option value="cost">Cost Breakdown</option>
-            <option value="cash">Operating Cost + Tips + Sales Tax</option>
+            <option value="cash">Operating Revenue Distribution</option>
                       </select>
         </div>
       </div>
       <div class="help">
         The main chart includes the key values: True Break-Even Sales, Sales Required + Owner Profit,
-        Expected Sales, Operational Profit/Loss, Owner Profit Gap, Additional Sales Needed, and the Operating Cost + Tips + Sales Tax.
+        Expected Sales, Operational Profit/Loss, Owner Profit Gap, Additional Sales Needed, and the Operating Revenue Distribution.
         
       </div>
       <div class="chart-card">
         <div class="pie-total-display" id="pieTotalDisplay">
-          <span class="pie-total-label">Visible Operating Cost + Tips + Sales Tax Total</span>
+          <span class="pie-total-label">Visible Operating Revenue Distribution Total</span>
           <span id="pieTotalValue">$0</span>
         </div>
-        <canvas id="mainChart"></canvas>
+        <canvas id="mainChart"></canvas><div style="margin-top:12px;text-align:center;color:#666;font-size:13px;">Visual distribution of operational revenue, costs, taxes, tips, and remaining operational profit. Percentages are shown on slices when space allows.</div>
       </div>
     </div>
   </div>
@@ -1258,6 +1438,7 @@ input[type=range]{
 const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 let vacationCounter = 0;
 let mainChart = null;
+let inlinePieCharts = {};
 let pendingSeasonality = null;
 
 function money(v){
@@ -1378,6 +1559,8 @@ function getSeasonality(){
     const el=document.querySelector(`.seasonalityNumber[data-month="${i}"]`);
     return el ? Number(el.value) : 1;
   });
+
+  updateInlinePieVisibleTotal(canvasId);
 }
 
 function getInputs(overrides={}){
@@ -1560,7 +1743,186 @@ function bindSeasonalityControls(){
   });
 }
 
+
+
+const inlinePiePercentagePlugin = {
+  id: "inlinePiePercentagePlugin",
+  afterDatasetsDraw(chart) {
+    if(!chart.canvas || !chart.canvas.id) return;
+    if(!chart.canvas.id.includes("pie")) return;
+
+    const { ctx } = chart;
+    const dataset = chart.data.datasets[0];
+    if(!dataset) return;
+
+    let visibleTotal = 0;
+    dataset.data.forEach((value, index) => {
+      if(chart.getDataVisibility(index)){
+        visibleTotal += Number(value) || 0;
+      }
+    });
+
+    if(visibleTotal <= 0) return;
+
+    ctx.save();
+    ctx.font = "bold 12px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    chart.getDatasetMeta(0).data.forEach((arc, index) => {
+      if(!chart.getDataVisibility(index)) return;
+      const value = Number(dataset.data[index]) || 0;
+      const percent = (value / visibleTotal) * 100;
+
+      // Same logic as main pie: avoid crowding tiny slices.
+      if(percent < 3) return;
+
+      const pos = arc.tooltipPosition();
+      ctx.fillStyle = "#111";
+      ctx.fillText(percent.toFixed(1) + "%", pos.x, pos.y);
+    });
+
+    ctx.restore();
+  }
+};
+
+if(typeof Chart !== "undefined"){
+  Chart.register(inlinePiePercentagePlugin);
+}
+
+function operatingRevenueItemsFromRow(r){
+  const profit = Math.max(0, r.operationalProfitLoss || 0);
+  return {
+    labels:["True Labor Cost","Fixed Costs","Expected Food Cost","Expected Beverage Cost","Expected POS Fees","Sales Tax","Estimated Tips","Operational Profit"],
+    values:[
+      r.trueLaborCost || r.adjustedPayroll || 0,
+      r.fixed || 0,
+      r.foodCost || 0,
+      r.bevCost || 0,
+      r.posFees || 0,
+      r.tax || 0,
+      r.tips || 0,
+      profit
+    ],
+    colors:["#3ba3e6","#ff5f86","#ff9f3a","#ffd166","#4bc0c0","#8b5cf6","#14b8a6","#22c55e"]
+  };
+}
+
+function destroyInlinePieCharts(){
+  Object.values(inlinePieCharts).forEach(chart => {
+    if(chart && typeof chart.destroy === "function") chart.destroy();
+  });
+  inlinePieCharts = {};
+}
+
+
+function updateInlinePieVisibleTotal(canvasId){
+  const chart = inlinePieCharts[canvasId];
+  const totalEl = document.getElementById(canvasId + "-total");
+  if(!chart || !totalEl) return;
+
+  const dataset = chart.data.datasets[0];
+  let total = 0;
+
+  dataset.data.forEach((value, index) => {
+    if(chart.getDataVisibility(index)){
+      total += Number(value) || 0;
+    }
+  });
+
+  totalEl.textContent = money(total);
+}
+
+function renderInlinePieChart(canvasId, source){
+  if(typeof Chart === "undefined") return;
+
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+
+  if(inlinePieCharts[canvasId]){
+    inlinePieCharts[canvasId].destroy();
+  }
+
+  const items = operatingRevenueItemsFromRow(source);
+  const total = items.values.reduce((sum, value) => sum + (Number(value)||0), 0);
+
+  const totalEl = document.getElementById(canvasId + "-total");
+  if(totalEl) totalEl.textContent = money(total);
+
+  inlinePieCharts[canvasId] = new Chart(canvas, {
+    type:"pie",
+    data:{
+      labels:items.labels,
+      datasets:[{
+        data:items.values,
+        backgroundColor:items.colors,
+        borderColor:"#fff",
+        borderWidth:2
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{
+          position:"bottom",
+          onClick(e, legendItem, legend){
+            const chart = legend.chart;
+            chart.toggleDataVisibility(legendItem.index);
+            chart.update();
+            setTimeout(()=>updateInlinePieVisibleTotal(canvasId), 0);
+          }
+        },
+        tooltip:{
+          callbacks:{
+            label:(ctx)=>{
+              const totalVisible = ctx.chart.data.datasets[0].data.reduce((sum, value, index) => {
+                return ctx.chart.getDataVisibility(index) ? sum + (Number(value)||0) : sum;
+              }, 0);
+              const pctValue = totalVisible > 0 ? ((Number(ctx.raw)||0) / totalVisible) * 100 : 0;
+              return ctx.label + ": " + money(ctx.raw) + " (" + pctValue.toFixed(1) + "%)";
+            }
+          }
+        }
+      },
+      animation:{
+        onComplete(){
+          updateInlinePieVisibleTotal(canvasId);
+        }
+      }
+    }
+  });
+}
+
+function renderVisibleInlinePieCharts(model){
+  if(!model) return;
+
+  model.rows.forEach((row, index) => {
+    const detailsRow = document.getElementById("details-" + index);
+    if(detailsRow && detailsRow.style.display === "table-row"){
+      renderInlinePieChart("month-pie-" + index, row);
+    }
+
+    const mobileDetails = document.getElementById("mobile-details-" + index);
+    if(mobileDetails && mobileDetails.classList.contains("open")){
+      renderInlinePieChart("mobile-month-pie-" + index, row);
+    }
+  });
+
+  const yearRow = document.getElementById("year-details-row");
+  if(yearRow && yearRow.style.display === "table-row"){
+    renderInlinePieChart("year-pie", model.totals);
+  }
+
+  const mobileYear = document.getElementById("mobileYearDetails");
+  if(mobileYear && mobileYear.classList.contains("open")){
+    renderInlinePieChart("mobile-year-pie", model.totals);
+  }
+}
+
+
 function renderMonthly(model){
+  destroyInlinePieCharts();
   const tbody=document.getElementById("monthlyTable");
   const mobile=document.getElementById("mobileMonths");
   tbody.innerHTML="";
@@ -1603,6 +1965,14 @@ function renderMonthly(model){
             ${detail("Sales Tax",money(r.tax))}
             ${detail("Expected Cash Flow",money(r.grossPlusTips))}
             ${detail("Prime Cost %",pct(r.primeCostPct))}
+            <div class="inline-pie-wrap">
+              <div class="inline-pie-title">Operating Revenue Distribution</div>
+              <div class="pie-total-label">Visible Operating Revenue Distribution Total</div><div class="inline-pie-total" id="month-pie-${i}-total">$0</div>
+              <div class="inline-pie-canvas-wrap">
+                <canvas id="month-pie-${i}"></canvas>
+              </div>
+              <div style="margin-top:8px;text-align:center;color:#666;font-size:12px;">Percentages are shown on slices when space allows. Click legend items to include/exclude slices from the visible total.</div>
+            </div>
           </div>
         </td>
       </tr>
@@ -1642,6 +2012,15 @@ function renderMonthly(model){
             <div class="metric-row"><span class="metric-label">Sales Tax</span><span class="metric-value">${money(r.tax)}</span></div>
             <div class="metric-row"><span class="metric-label">Gross Sales</span><span class="metric-value">${money(r.gross)}</span></div>
             <div class="metric-row"><span class="metric-label">Prime Cost %</span><span class="metric-value">${pct(r.primeCostPct)}</span></div>
+
+            <div class="inline-pie-wrap">
+              <div class="inline-pie-title">Operating Revenue Distribution</div>
+              <div class="pie-total-label">Visible Operating Revenue Distribution Total</div><div class="inline-pie-total" id="mobile-month-pie-${i}-total">$0</div>
+              <div class="inline-pie-canvas-wrap">
+                <canvas id="mobile-month-pie-${i}"></canvas>
+              </div>
+              <div style="margin-top:8px;text-align:center;color:#666;font-size:12px;">Percentages are shown on slices when space allows. Click legend items to include/exclude slices from the visible total.</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1660,7 +2039,45 @@ function renderMonthly(model){
       <td class="${t.operationalProfitLoss<0?'bad':'good'}">${money(t.operationalProfitLoss)}</td>
       <td class="${t.ownerProfitGap>0?'bad':'good'}">${money(t.ownerProfitGap)}</td>
       <td class="${t.additionalSalesNeeded>0?'bad':'good'}">${money(t.additionalSalesNeeded)}</td>
-      <td></td>
+      <td><button class="expand-btn" onclick="toggleYearDetails()">Details</button></td>
+    </tr>
+
+    <tr class="details-row" id="year-details-row">
+      <td colspan="10">
+        <div class="details-content">
+          ${detail("Open Days",t.openDays)}
+          ${detail("Vacation / Payroll Adjustment Days",t.vacationDays)}
+          ${detail("Break-Even Net Sales",money(t.breakEven))}
+          ${detail("Sales + Profit Target",money(t.requiredProfit))}
+          ${detail("Expected Sales",money(t.expectedSales))}
+          ${detail("Expected Cash Flow",money(t.grossPlusTips))}
+          ${detail("BOH Payroll",money(t.bohPayroll))}
+          ${detail("FOH Payroll",money(t.fohPayroll))}
+          ${detail("Vacation / Adjustment Payroll",money(t.vacationPayroll))}
+          ${detail("Base Payroll",money(t.adjustedPayroll))}
+          ${detail("Labor Burden Cost",money(t.laborBurdenCost || 0))}
+          ${detail("True Labor Cost",money(t.trueLaborCost || t.adjustedPayroll))}
+          ${detail("Fixed Costs",money(t.fixed))}
+          ${detail("Food Cost",money(t.foodCost))}
+          ${detail("Beverage Cost",money(t.bevCost))}
+          ${detail("Total COGS",money(t.cogs))}
+          ${detail("POS Fees",money(t.posFees))}
+          ${detail("Estimated Tips",money(t.tips))}
+          ${detail("Sales Tax",money(t.tax))}
+          ${detail("Operational P/L",money(t.operationalProfitLoss))}
+          ${detail("Owner Gap",money(t.ownerProfitGap))}
+          ${detail("Additional Sales Needed",money(t.additionalSalesNeeded))}
+          ${detail("Prime Cost %",pct(t.primeCostPct))}
+          ${detail("Effective Labor %",pct(t.expectedSales>0 ? (t.trueLaborCost || t.adjustedPayroll)/t.expectedSales : 0))}
+          <div class="inline-pie-wrap">
+            <div class="inline-pie-title">Operating Revenue Distribution</div>
+            <div class="pie-total-label">Visible Operating Revenue Distribution Total</div><div class="inline-pie-total" id="year-pie-total">$0</div>
+            <div class="inline-pie-canvas-wrap">
+              <canvas id="year-pie"></canvas>
+            </div>
+          </div>
+        </div>
+      </td>
     </tr>
   `;
 
@@ -1674,7 +2091,25 @@ function detail(label,value){
 
 function toggleDetails(i){
   const row=document.getElementById("details-"+i);
-  row.style.display=row.style.display==="table-row"?"none":"table-row";
+  const isOpen = row.style.display==="table-row";
+  row.style.display = isOpen ? "none" : "table-row";
+  if(!isOpen){
+    const model = runModel();
+    renderInlinePieChart("month-pie-" + i, model.rows[i]);
+  }
+}
+
+
+
+function toggleYearDetails(){
+  const row = document.getElementById("year-details-row");
+  if(!row) return;
+  const isOpen = row.style.display === "table-row";
+  row.style.display = isOpen ? "none" : "table-row";
+  if(!isOpen){
+    const model = runModel();
+    renderInlinePieChart("year-pie", model.totals);
+  }
 }
 
 
@@ -1684,6 +2119,11 @@ function toggleMobileDetails(i, button){
 
   const isOpen = detail.classList.toggle("open");
   button.textContent = isOpen ? "Hide Details" : "Show Details";
+
+  if(isOpen){
+    const model = runModel();
+    renderInlinePieChart("mobile-month-pie-" + i, model.rows[i]);
+  }
 }
 
 
@@ -1851,6 +2291,53 @@ function scenarioFill(name,t){
 
 
 
+
+const piePercentagePlugin = {
+  id: "piePercentagePlugin",
+  afterDatasetsDraw(chart) {
+    const selector = document.getElementById("chartSelector");
+    if(!selector || selector.value !== "cash") return;
+
+    const { ctx } = chart;
+    const dataset = chart.data.datasets[0];
+    if(!dataset) return;
+
+    let visibleTotal = 0;
+    dataset.data.forEach((value, index) => {
+      if(chart.getDataVisibility(index)){
+        visibleTotal += Number(value) || 0;
+      }
+    });
+
+    if(visibleTotal <= 0) return;
+
+    ctx.save();
+    ctx.font = "bold 13px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    chart.getDatasetMeta(0).data.forEach((arc, index) => {
+      if(!chart.getDataVisibility(index)) return;
+
+      const value = Number(dataset.data[index]) || 0;
+      const percent = (value / visibleTotal) * 100;
+
+      // Avoid crowding tiny slices.
+      if(percent < 3) return;
+
+      const pos = arc.tooltipPosition();
+      ctx.fillStyle = "#111";
+      ctx.fillText(percent.toFixed(1) + "%", pos.x, pos.y);
+    });
+
+    ctx.restore();
+  }
+};
+
+if(typeof Chart !== "undefined"){
+  Chart.register(piePercentagePlugin);
+}
+
 function updatePieVisibleTotal(){
   const display = document.getElementById("pieTotalDisplay");
   const valueEl = document.getElementById("pieTotalValue");
@@ -1875,84 +2362,110 @@ function updatePieVisibleTotal(){
 }
 
 
+
 function updateChart(model){
   if(typeof Chart==="undefined") return;
-  const type=document.getElementById("chartSelector").value;
+
+  const selector = document.getElementById("chartSelector");
+  const type = selector ? selector.value : "profit";
+  const canvas = document.getElementById("mainChart");
+  if(!canvas) return;
+
   if(mainChart) mainChart.destroy();
 
+  const chartCard = document.querySelector(".chart-card");
+  if(chartCard){
+    if(type === "cash"){
+      chartCard.classList.add("pie-chart-card");
+    }else{
+      chartCard.classList.remove("pie-chart-card");
+      const display = document.getElementById("pieTotalDisplay");
+      if(display) display.style.display = "none";
+    }
+  }
+
   let config;
-  if(type==="profit"){
-    config={
+
+  if(type === "profit"){
+    config = {
       type:"bar",
-      data:{labels:months,datasets:[
-        {label:"True Break-Even Sales",data:model.rows.map(r=>r.breakEven)},
-        {label:"Sales Required + Owner Profit",data:model.rows.map(r=>r.requiredProfit)},
-        {label:"Expected Sales from Seasonality",data:model.rows.map(r=>r.expectedSales)},
-        {label:"Operational Profit / Loss",data:model.rows.map(r=>r.operationalProfitLoss)},
-        {label:"Owner Profit Gap",data:model.rows.map(r=>r.ownerProfitGap)},
-        {label:"Additional Sales Needed",data:model.rows.map(r=>r.additionalSalesNeeded)}
-      ]},
+      data:{
+        labels:months,
+        datasets:[
+          {label:"True Break-Even Sales", data:model.rows.map(r=>r.breakEven), backgroundColor:"#3ba3e6", borderRadius:8},
+          {label:"Sales Required + Owner Profit", data:model.rows.map(r=>r.requiredProfit), backgroundColor:"#ff5f86", borderRadius:8},
+          {label:"Expected Sales", data:model.rows.map(r=>r.expectedSales), backgroundColor:"#ffb55a", borderRadius:8},
+          {label:"Operational Profit / Loss", data:model.rows.map(r=>r.operationalProfitLoss), backgroundColor:"#22c55e", borderRadius:8},
+          {label:"Owner Profit Gap", data:model.rows.map(r=>r.ownerProfitGap), backgroundColor:"#8b5cf6", borderRadius:8},
+          {label:"Additional Sales Needed", data:model.rows.map(r=>r.additionalSalesNeeded), backgroundColor:"#14b8a6", borderRadius:8}
+        ]
+      },
       options:{
         responsive:true,
         maintainAspectRatio:false,
+        interaction:{mode:"index", intersect:false},
         plugins:{
           legend:{position:"top"},
-          tooltip:{
-            enabled:true,
-            callbacks:{label:(ctx)=>ctx.dataset.label + ": " + Number(ctx.raw).toLocaleString("en-US")}
-          }
+          tooltip:{enabled:true, callbacks:{label:(ctx)=>ctx.dataset.label + ": " + money(ctx.raw)}}
         },
-        scales:{y:{beginAtZero:false}}
+        scales:{
+          x:{ticks:{maxRotation:45,minRotation:0}},
+          y:{
+            beginAtZero:true,
+            grace:"8%",
+            ticks:{
+              callback:(value)=>money(value),
+              maxTicksLimit:8
+            }
+          }
+        }
       }
     };
-  }else if(type==="cost"){
-    const t=model.totals;
-    config={
+  }else if(type === "cost"){
+    config = {
       type:"bar",
-      data:{labels:["Payroll","Fixed","Food","Beverage","POS"],datasets:[{label:"Year Total",data:[
-            t.trueLaborCost,
-            t.fixed,
-            t.foodCost,
-            t.bevCost,
-            t.posFees,
-            t.tax,
-            t.tips
-          ]}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}},scales:{y:{beginAtZero:true}}}
+      data:{
+        labels:["True Labor Cost","Fixed Costs","Food Cost","Beverage Cost","POS Fees","Sales Tax","Estimated Tips"],
+        datasets:[{
+          label:"Year Totals",
+          data:[
+            model.totals.trueLaborCost || model.totals.adjustedPayroll,
+            model.totals.fixed,
+            model.totals.foodCost,
+            model.totals.bevCost,
+            model.totals.posFees,
+            model.totals.tax,
+            model.totals.tips
+          ],
+          backgroundColor:["#3ba3e6","#ff5f86","#ff9f3a","#ffd166","#4bc0c0","#8b5cf6","#14b8a6"],
+          borderRadius:12,
+          borderWidth:0
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}},
+        scales:{y:{
+            beginAtZero:true,
+            grace:"8%",
+            ticks:{
+              callback:(value)=>money(value),
+              maxTicksLimit:8
+            }
+          }}
+      }
     };
-  }else if(type==="cash"){
-    const t=model.totals;
-    config={
+  }else if(type === "cash"){
+    const t = model.totals;
+    const profitSlice = Math.max(0, t.operationalProfitLoss || 0);
+    config = {
       type:"pie",
       data:{
-        labels:[
-          "True Labor Cost",
-          "Fixed Costs",
-          "Expected Food Cost",
-          "Expected Beverage Cost",
-          "Expected POS Fees",
-          "Sales Tax",
-          "Estimated Tips"
-        ],
+        labels:["True Labor Cost","Fixed Costs","Expected Food Cost","Expected Beverage Cost","Expected POS Fees","Sales Tax","Estimated Tips","Operational Profit"],
         datasets:[{
-          data:[
-            t.trueLaborCost,
-            t.fixed,
-            t.foodCost,
-            t.bevCost,
-            t.posFees,
-            t.tax,
-            t.tips
-          ],
-          backgroundColor:[
-            "#3ba3e6",
-            "#ff5f86",
-            "#ff9f3a",
-            "#ffd166",
-            "#4bc0c0",
-            "#8b5cf6",
-            "#14b8a6"
-          ],
+          data:[t.trueLaborCost || t.adjustedPayroll,t.fixed,t.foodCost,t.bevCost,t.posFees,t.tax,t.tips,profitSlice],
+          backgroundColor:["#3ba3e6","#ff5f86","#ff9f3a","#ffd166","#4bc0c0","#8b5cf6","#14b8a6","#22c55e"],
           borderColor:"#ffffff",
           borderWidth:2
         }]
@@ -1972,41 +2485,94 @@ function updateChart(model){
           },
           tooltip:{
             callbacks:{
-              label:(ctx)=>ctx.label + ": " + money(ctx.raw)
+              label:(ctx)=>{
+                const dataset = ctx.chart.data.datasets[0];
+                const total = dataset.data.reduce((sum, value, index) => {
+                  return ctx.chart.getDataVisibility(index) ? sum + (Number(value)||0) : sum;
+                }, 0);
+                const pctValue = total > 0 ? ((Number(ctx.raw)||0) / total) * 100 : 0;
+                return ctx.label + ": " + money(ctx.raw) + " (" + pctValue.toFixed(1) + "%)";
+              }
             }
           }
         },
-        animation:{
-          onComplete(){
-            updatePieVisibleTotal();
-          }
-        }
+        animation:{onComplete(){updatePieVisibleTotal();}}
       }
     };
   }
-  const chartCard=document.querySelector(".chart-card");
-  if(chartCard){
-    if(type==="cash"){
-      chartCard.classList.add("pie-chart-card");
-    }else{
-      chartCard.classList.remove("pie-chart-card");
-      const display = document.getElementById("pieTotalDisplay");
-      if(display) display.style.display = "none";
-    }
-  }
 
-  mainChart=new Chart(document.getElementById("mainChart"),config);
+  mainChart = new Chart(canvas, config);
   updatePieVisibleTotal();
 }
+
+
+
+
+function toggleMobileYearDetails(button){
+  const details = document.getElementById("mobileYearDetails");
+  if(!details) return;
+
+  const open = details.classList.toggle("open");
+  button.textContent = open ? "Hide Year Details" : "Show Year Details";
+
+  if(open){
+    const model = runModel();
+    renderInlinePieChart("mobile-year-pie", model.totals);
+  }
+}
+
+
+function updateMobileYearSummary(model){
+  const t = model.totals;
+
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = money(value || 0);
+  };
+
+  set("mobileTotalCashFlow", t.grossPlusTips);
+  set("mobileTotalSales", t.expectedSales);
+  set("mobileTotalFixed", t.fixed);
+  set("mobileTotalLabor", t.trueLaborCost || t.adjustedPayroll);
+  set("mobileTotalPL", t.operationalProfitLoss);
+  set("mobileTotalGap", t.ownerProfitGap);
+  set("mobileAdditionalSales", t.additionalSalesNeeded);
+  set("mobileTotalTips", t.tips);
+
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = value;
+  };
+
+  setText("mobileDetailOpenDays", t.openDays);
+  setText("mobileDetailVacationDays", t.vacationDays);
+  setText("mobileDetailBreakEven", money(t.breakEven));
+  setText("mobileDetailRequiredProfit", money(t.requiredProfit));
+  setText("mobileDetailBOH", money(t.bohPayroll));
+  setText("mobileDetailFOH", money(t.fohPayroll));
+  setText("mobileDetailVacPayroll", money(t.vacationPayroll));
+  setText("mobileDetailBasePayroll", money(t.adjustedPayroll));
+  setText("mobileDetailLaborBurden", money(t.laborBurdenCost || 0));
+  setText("mobileDetailFood", money(t.foodCost));
+  setText("mobileDetailBev", money(t.bevCost));
+  setText("mobileDetailCOGS", money(t.cogs));
+  setText("mobileDetailPOS", money(t.posFees));
+  setText("mobileDetailTax", money(t.tax));
+  setText("mobileDetailPrime", pct(t.primeCostPct));
+  setText("mobileDetailLaborPct", pct(t.expectedSales>0 ? (t.trueLaborCost || t.adjustedPayroll)/t.expectedSales : 0));
+}
+
 
 function calculate(){
   updateCapacity();
   const model=runModel();
   renderMonthly(model);
   updateCapacityHeatmap(model);
+  updateMobileYearSummary(model);
   updateSummary(model);
   updateScenarios(model);
   updateChart(model);
+  setTimeout(()=>renderVisibleInlinePieCharts(model), 0);
 }
 
 function collectData(){
