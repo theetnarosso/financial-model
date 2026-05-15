@@ -2454,7 +2454,7 @@ body > .bottom-configuration-toolbar{
     width:100vw !important;
     height:100vh !important;
     background:#fff !important;
-    padding:8px !important;
+    padding:10px 14px 12px !important;
     box-sizing:border-box !important;
   }
 
@@ -4809,22 +4809,6 @@ function updatePieVisibleTotal(){
 }
 
 
-const mobileLandscapeChartPlugin = {
-  id:"mobileLandscapeChartPlugin",
-  beforeUpdate(chart){
-    const landscape = window.matchMedia("(orientation: landscape)").matches;
-    const smallScreen = window.innerWidth <= 1024 || window.innerHeight <= 520;
-    if(landscape && smallScreen && chart.options && chart.options.plugins && chart.options.plugins.legend){
-      chart.options.plugins.legend.display = false;
-    }
-  }
-};
-
-if(typeof Chart !== "undefined" && !Chart.registry.plugins.get("mobileLandscapeChartPlugin")){
-  Chart.register(mobileLandscapeChartPlugin);
-}
-
-
 function updateChart(model){
   if(typeof Chart==="undefined") return;
 
@@ -5559,6 +5543,11 @@ function getCurrentChartConfigClone(){
   config.options.plugins.legend = config.options.plugins.legend || {};
   config.options.plugins.legend.display = true;
   config.options.plugins.legend.position = "top";
+  config.options.plugins.legend.labels = {
+    boxWidth: 18,
+    padding: 14,
+    font: { size: 12, weight: "600" }
+  };
 
   if(config.options.plugins.title){
     config.options.plugins.title.display = true;
@@ -5573,7 +5562,7 @@ function getCurrentChartConfigClone(){
       text: selectedText === "Break-Even, Expected Sales & Profit Gaps"
         ? "Monthly Break-Even vs Expected Sales / Profit Gaps"
         : selectedText,
-      font: { size: 20, weight: "bold" },
+      font: { size: window.innerHeight <= 420 ? 14 : 18, weight: "bold" },
       padding: { bottom: 12 }
     };
   }
@@ -5581,6 +5570,18 @@ function getCurrentChartConfigClone(){
   if(config.options.scales && config.options.scales.x && config.options.scales.x.ticks){
     config.options.scales.x.ticks.maxRotation = 35;
     config.options.scales.x.ticks.minRotation = 25;
+  }
+
+  if(config.options.scales){
+    Object.keys(config.options.scales).forEach(axisKey=>{
+      const axis = config.options.scales[axisKey];
+      axis.display = true;
+      axis.ticks = axis.ticks || {};
+      axis.ticks.display = true;
+      axis.ticks.font = { size: 11 };
+      axis.grid = axis.grid || {};
+      axis.grid.display = true;
+    });
   }
 
   return config;
@@ -5611,6 +5612,11 @@ function renderLandscapeFullscreenChart(){
 
   const config = getCurrentChartConfigClone();
   if(!config) return;
+
+  if(config.options && config.options.plugins && config.options.plugins.legend){
+    config.options.plugins.legend.display = true;
+    config.options.plugins.legend.position = "top";
+  }
 
   if(landscapeFullscreenChart){
     landscapeFullscreenChart.destroy();
