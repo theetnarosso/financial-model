@@ -1980,6 +1980,233 @@ body > .bottom-configuration-toolbar{
   margin-bottom:24px;
 }
 
+/* Model Health Check */
+.model-health-section{
+  margin-top:18px !important;
+  margin-bottom:18px !important;
+  border:1px solid #e7e1da;
+  background:linear-gradient(180deg,#ffffff 0%,#fbfaf8 100%);
+}
+
+.health-dashboard-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:16px;
+}
+
+.eyebrow{
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#8a5a2b;
+  margin-bottom:6px;
+}
+
+.health-dashboard-header h2{
+  margin:0 0 5px;
+  font-size:26px;
+}
+
+.health-subtitle{
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.4;
+}
+
+.health-score-card{
+  min-width:170px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:12px 14px;
+  background:#fff;
+  text-align:center;
+}
+
+.health-score-label{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--muted);
+  font-weight:900;
+  margin-bottom:7px;
+}
+
+.health-score{
+  white-space:nowrap;
+  border-radius:999px;
+  padding:9px 13px;
+  font-weight:900;
+  font-size:13px;
+  background:#eee;
+}
+
+.health-score-good{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.health-score-warning{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.health-score-critical{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.health-overview-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:16px;
+}
+
+.health-metric-card{
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:12px;
+  background:#fff;
+}
+
+.health-metric-card span{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:5px;
+}
+
+.health-metric-card strong{
+  font-size:22px;
+}
+
+.health-columns{
+  display:grid;
+  grid-template-columns:1.2fr 1fr;
+  gap:16px;
+}
+
+.health-column{
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:14px;
+  background:#fff;
+}
+
+.health-column h3{
+  margin:0 0 10px !important;
+  padding:0 !important;
+  border:0 !important;
+  font-size:17px !important;
+}
+
+.health-list{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+}
+
+.health-item{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+  background:#fff;
+  font-size:13px;
+  line-height:1.35;
+}
+
+.health-item strong{
+  display:block;
+  margin-bottom:3px;
+  font-size:14px;
+}
+
+.health-item small{
+  display:block;
+  color:#555;
+  font-size:12.5px;
+  line-height:1.35;
+}
+
+.health-icon{
+  width:24px;
+  height:24px;
+  min-width:24px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  background:#eee;
+}
+
+.health-good .health-icon{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.health-warning .health-icon,
+.health-notice .health-icon{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.health-critical .health-icon{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.health-critical{
+  border-color:#fecaca;
+  background:#fffafa;
+}
+
+.health-warning{
+  border-color:#fde68a;
+  background:#fffdf5;
+}
+
+.health-good{
+  border-color:#bbf7d0;
+  background:#fbfffc;
+}
+
+.health-empty{
+  padding:12px;
+  color:var(--muted);
+  background:#fafafa;
+  border-radius:12px;
+  border:1px dashed var(--border);
+}
+
+@media(max-width:900px){
+  .health-dashboard-header,
+  .health-columns{
+    grid-template-columns:1fr;
+    flex-direction:column;
+  }
+
+  .health-overview-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .health-score-card{
+    width:100%;
+  }
+}
+
+@media(max-width:520px){
+  .health-overview-grid{
+    grid-template-columns:1fr;
+  }
+}
+
 </style>
 </head>
 
@@ -2029,6 +2256,10 @@ body > .bottom-configuration-toolbar{
       </div>
     </div>
   </div>
+
+
+
+
 
 <div class="tabs">
   <button class="tab-btn active" data-tab="inputs">Inputs</button>
@@ -2297,6 +2528,34 @@ Choose which months should use the Adjusted Fixed Cost Override.
 
   
   <div class="tab-panel" id="tab-scenarios">
+
+<div class="section model-health-section">
+  <div class="health-dashboard-header">
+    <div>
+      <div class="eyebrow">Scenario Intelligence</div>
+      <h2>Model Health Check</h2>
+      <div class="health-subtitle">Quick diagnostic of margin, labor, COGS, seasonality, and owner income target.</div>
+    </div>
+    <div class="health-score-card">
+      <div class="health-score-label">Status</div>
+      <div class="health-score" id="modelHealthScore">—</div>
+    </div>
+  </div>
+
+  <div class="health-overview-grid" id="modelHealthOverview"></div>
+
+  <div class="health-columns">
+    <div class="health-column">
+      <h3>Needs Review</h3>
+      <div class="health-list" id="modelHealthWarnings"></div>
+    </div>
+    <div class="health-column">
+      <h3>Looks Good</h3>
+      <div class="health-list" id="modelHealthPositives"></div>
+    </div>
+  </div>
+</div>
+
     <div class="section">
       <h2>Scenario Comparison Dashboard</h2>
       <div class="help">
@@ -3711,7 +3970,137 @@ function toggleMobileDetails(i, button){
   }
 }
 
+
+
+function updateModelHealthCheck(model){
+  const warningsList = document.getElementById("modelHealthWarnings");
+  const positivesList = document.getElementById("modelHealthPositives");
+  const overview = document.getElementById("modelHealthOverview");
+  const score = document.getElementById("modelHealthScore");
+  if(!warningsList || !positivesList || !overview || !score || !model || !model.totals) return;
+
+  const t = model.totals;
+  const warnings = [];
+  const positives = [];
+
+  const laborPct = t.expectedSales > 0 ? (t.trueLaborCost || t.adjustedPayroll || 0) / t.expectedSales : 0;
+  const cogsPct = t.expectedSales > 0 ? (t.cogs || 0) / t.expectedSales : 0;
+  const primePct = t.expectedSales > 0 ? ((t.cogs || 0) + (t.trueLaborCost || t.adjustedPayroll || 0)) / t.expectedSales : 0;
+  const opMargin = t.expectedSales > 0 ? (t.operationalProfitLoss || 0) / t.expectedSales : 0;
+
+  const seasonality = typeof getSeasonalityForExport === "function"
+    ? getSeasonalityForExport()
+    : (typeof getSeasonality === "function" ? getSeasonality() : []);
+
+  const hasZeroSeasonality = seasonality.some(v => Number(v) === 0);
+  const hasVeryLowSeasonality = seasonality.some(v => Number(v) > 0 && Number(v) < 0.25);
+  const annualOwnerTarget = (Number(document.getElementById("profitTarget")?.value) || 0) * 12;
+
+  const addWarning = (level, title, text) => warnings.push({level, title, text});
+  const addPositive = (title, text) => positives.push({level:"good", title, text});
+
+  if(t.expectedSales <= 0){
+    addWarning("critical", "No expected sales", "The model is not currently projecting sales. Check capacity target, break-even assumptions, or seasonality.");
+  }else{
+    addPositive("Sales projection active", `${money(t.expectedSales)} in expected annual sales is being generated by the model.`);
+  }
+
+  if(laborPct > 0.38){
+    addWarning("warning", "Labor cost pressure", `Labor is ${(laborPct*100).toFixed(1)}% of expected sales. Consider payroll, staffing level, or higher sales volume.`);
+  }else if(t.expectedSales > 0){
+    addPositive("Labor ratio acceptable", `Labor is ${(laborPct*100).toFixed(1)}% of expected sales.`);
+  }
+
+  if(cogsPct > 0.36){
+    addWarning("warning", "COGS pressure", `COGS is ${(cogsPct*100).toFixed(1)}% of expected sales. Review food/beverage cost assumptions.`);
+  }else if(t.expectedSales > 0){
+    addPositive("COGS ratio acceptable", `COGS is ${(cogsPct*100).toFixed(1)}% of expected sales.`);
+  }
+
+  if(primePct > 0.68){
+    addWarning("critical", "Prime cost too high", `Prime cost is ${(primePct*100).toFixed(1)}%. This may leave too little room for rent, fixed costs, and profit.`);
+  }else if(t.expectedSales > 0){
+    addPositive("Prime cost controlled", `Prime cost is ${(primePct*100).toFixed(1)}%.`);
+  }
+
+  if(opMargin < 0){
+    addWarning("critical", "Operating loss", `Operational Profit / Loss is ${money(t.operationalProfitLoss)}. The model is not covering operating costs.`);
+  }else if(opMargin < 0.05 && t.expectedSales > 0){
+    addWarning("warning", "Thin operating margin", `Operating margin is ${(opMargin*100).toFixed(1)}%. There is limited cushion.`);
+  }else if(t.expectedSales > 0){
+    addPositive("Operating margin positive", `Operating margin is ${(opMargin*100).toFixed(1)}%.`);
+  }
+
+  if(annualOwnerTarget > 0 && t.ownerProfitGap > 0){
+    addWarning("warning", "Owner income shortfall", `The owner income target is not fully reached. Shortfall: ${money(t.ownerProfitGap)}.`);
+  }else if(annualOwnerTarget > 0){
+    addPositive("Owner target reached", "Annual operational profit covers the owner income target.");
+  }
+
+  if(hasZeroSeasonality){
+    addWarning("warning", "Zero seasonality month", "At least one month has a seasonality factor of 0.00. Confirm this is intentional.");
+  }else if(hasVeryLowSeasonality){
+    addWarning("notice", "Very low seasonality", "At least one month has very low seasonality. Confirm this reflects a slow month or closure.");
+  }else{
+    addPositive("Seasonality complete", "Seasonality factors are populated.");
+  }
+
+  overview.innerHTML = `
+    <div class="health-metric-card">
+      <span>Labor %</span>
+      <strong>${(laborPct*100).toFixed(1)}%</strong>
+    </div>
+    <div class="health-metric-card">
+      <span>COGS %</span>
+      <strong>${(cogsPct*100).toFixed(1)}%</strong>
+    </div>
+    <div class="health-metric-card">
+      <span>Prime Cost %</span>
+      <strong>${(primePct*100).toFixed(1)}%</strong>
+    </div>
+    <div class="health-metric-card">
+      <span>Operating Margin</span>
+      <strong>${(opMargin*100).toFixed(1)}%</strong>
+    </div>
+  `;
+
+  const renderItem = item => `
+    <div class="health-item health-${item.level}">
+      <span class="health-icon">${item.level === "good" ? "✓" : item.level === "critical" ? "!" : "•"}</span>
+      <span>
+        <strong>${item.title}</strong>
+        <small>${item.text}</small>
+      </span>
+    </div>
+  `;
+
+  warningsList.innerHTML = warnings.length
+    ? warnings.map(renderItem).join("")
+    : `<div class="health-empty">No major issues detected.</div>`;
+
+  positivesList.innerHTML = positives.length
+    ? positives.slice(0, 5).map(renderItem).join("")
+    : `<div class="health-empty">No positive checks available yet.</div>`;
+
+  const criticalCount = warnings.filter(w => w.level === "critical").length;
+  const warningCount = warnings.filter(w => w.level === "warning").length;
+
+  if(criticalCount > 0){
+    score.textContent = "Needs Attention";
+    score.className = "health-score health-score-critical";
+  }else if(warningCount > 0){
+    score.textContent = "Review";
+    score.className = "health-score health-score-warning";
+  }else{
+    score.textContent = "Healthy";
+    score.className = "health-score health-score-good";
+  }
+}
+
+
+
 function updateSummary(model){
+  updateModelHealthCheck(model);
   const t=model.totals;
   setKPI("sumExpectedSales",t.expectedSales);
   setKPI("sumOperationalPL",t.operationalProfitLoss,true);
@@ -4126,38 +4515,120 @@ function updateChart(model){
       }
     };
   }else if(type === "cost"){
+    const t = model.totals;
+    const trueLabor = t.trueLaborCost || t.adjustedPayroll || 0;
+    const bohPayroll = t.bohPayroll || 0;
+    const fohPayroll = t.fohPayroll || 0;
+    const payrollBurden = Math.max(0, trueLabor - bohPayroll - fohPayroll);
+
     config = {
       type:"bar",
       data:{
         labels:["True Labor Cost","Fixed Costs","Food Cost","Beverage Cost","POS Fees","Sales Tax","Estimated Tips"],
-        datasets:[{
-          label:"Year Totals",
-          data:[
-            model.totals.trueLaborCost || model.totals.adjustedPayroll,
-            model.totals.fixed,
-            model.totals.foodCost,
-            model.totals.bevCost,
-            model.totals.posFees,
-            model.totals.tax,
-            model.totals.tips
-          ],
-          backgroundColor:["#3ba3e6","#ff5f86","#ff9f3a","#ffd166","#4bc0c0","#8b5cf6","#14b8a6"],
-          borderRadius:12,
-          borderWidth:0
-        }]
+        datasets:[
+          {
+            label:"BOH Payroll",
+            data:[bohPayroll,0,0,0,0,0,0],
+            backgroundColor:"#3ba3e6",
+            borderRadius:12,
+            borderWidth:0,
+            stack:"costStack"
+          },
+          {
+            label:"FOH Payroll",
+            data:[fohPayroll,0,0,0,0,0,0],
+            backgroundColor:"#22c55e",
+            borderRadius:12,
+            borderWidth:0,
+            stack:"costStack"
+          },
+          {
+            label:"Payroll Tax Burden",
+            data:[payrollBurden,0,0,0,0,0,0],
+            backgroundColor:"#ff9f3a",
+            borderRadius:12,
+            borderWidth:0,
+            stack:"costStack"
+          },
+          {
+            label:"Fixed Costs",
+            data:[0,t.fixed,0,0,0,0,0],
+            backgroundColor:"#ff5f86",
+            borderRadius:12,
+            borderWidth:0,
+            stack:"costStack"
+          },
+          {
+            label:"Food Cost",
+            data:[0,0,t.foodCost,0,0,0,0],
+            backgroundColor:"#f97316",
+            borderRadius:12,
+            borderWidth:0,
+            stack:"costStack"
+          },
+          {
+            label:"Beverage Cost",
+            data:[0,0,0,t.bevCost,0,0,0],
+            backgroundColor:"#ffd166",
+            borderRadius:12,
+            borderWidth:0,
+            stack:"costStack"
+          },
+          {
+            label:"POS Fees",
+            data:[0,0,0,0,t.posFees,0,0],
+            backgroundColor:"#4bc0c0",
+            borderRadius:12,
+            borderWidth:0,
+            stack:"costStack"
+          },
+          {
+            label:"Sales Tax",
+            data:[0,0,0,0,0,t.tax,0],
+            backgroundColor:"#8b5cf6",
+            borderRadius:12,
+            borderWidth:0,
+            stack:"costStack"
+          },
+          {
+            label:"Estimated Tips",
+            data:[0,0,0,0,0,0,t.tips],
+            backgroundColor:"#14b8a6",
+            borderRadius:12,
+            borderWidth:0,
+            stack:"costStack"
+          }
+        ]
       },
       options:{
         responsive:true,
         maintainAspectRatio:false,
-        plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}},
-        scales:{y:{
+        plugins:{
+          legend:{display:true, position:"top"},
+          tooltip:{
+            filter:(ctx)=>Number(ctx.raw) !== 0,
+            callbacks:{
+              label:(ctx)=>ctx.dataset.label + ": " + money(ctx.raw),
+              footer:(items)=>{
+                const idx = items[0]?.dataIndex;
+                if(idx === 0) return "True Labor Cost Total: " + money(trueLabor);
+                return "";
+              }
+            }
+          }
+        },
+        scales:{
+          x:{stacked:true},
+          y:{
+            stacked:true,
             beginAtZero:true,
             grace:"8%",
             ticks:{
               callback:(value)=>money(value),
               maxTicksLimit:8
             }
-          }}
+          }
+        }
       }
     };
   }else if(type === "cash"){
