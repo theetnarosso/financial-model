@@ -4,90 +4,169 @@
 <meta charset="UTF-8">
 <title>Restaurant Financial Model</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/chart.js">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
 
-// Robust Configuration Save/Open handlers
-function triggerConfigSave(){
-  if(typeof downloadData === "function"){
-    downloadData();
-    return;
+
+document.getElementById("downloadConfigDownload")?.addEventListener("click",(e)=>{ e.preventDefault(); downloadConfigDirect(); });
+
+
+
+// ===== Direct Configuration Save / Download / Open =====
+function getCurrentConfigurationForExport(){
+  const data = {};
+
+  // Prefer the app's existing complete collector if available.
+  if(typeof collectData === "function"){
+    try{
+      return collectData();
+    }catch(err){
+      console.warn("collectData failed, using fallback.", err);
+    }
   }
 
-  if(typeof collectData === "function"){
-    const blob = new Blob([JSON.stringify(collectData(), null, 2)], {type:"application/json"});
+  document.querySelectorAll("input, select, textarea").forEach(el=>{
+    if(!el.id || el.type === "file") return;
+
+    if(el.type === "checkbox"){
+      data[el.id] = el.checked;
+    }else{
+      data[el.id] = el.value;
+    }
+  });
+
+  data.closedDays = Array.from(document.querySelectorAll(".closedDay")).map(cb=>({
+    value:cb.value,
+    checked:cb.checked
+  }));
+
+  data.adjustedFixedMonths = Array.from(document.querySelectorAll(".adjustedFixedMonth")).map(cb=>({
+    value:cb.value,
+    checked:cb.checked
+  }));
+
+  data.seasonality = typeof getSeasonality === "function" ? getSeasonality() : [];
+
+  data.vacations = Array.from(document.querySelectorAll(".vacation-card")).map(card=>({
+    start:card.querySelector(".vacStart")?.value || "",
+    end:card.querySelector(".vacEnd")?.value || "",
+    payroll:card.querySelector(".vacPayroll")?.value || "0"
+  }));
+
+  return data;
+}
+
+function saveLocalConfiguration(){
+  try{
+    localStorage.setItem("restaurantFinancialModelAutoSave", JSON.stringify({
+      savedAt:new Date().toISOString(),
+      data:getCurrentConfigurationForExport()
+    }));
+    showSaveToast("Saved locally");
+  }catch(err){
+    console.error(err);
+    alert("Could not save locally.");
+  }
+}
+
+function downloadConfigurationFile(){
+  try{
+    const data = getCurrentConfigurationForExport();
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], {type:"application/json;charset=utf-8"});
     const url = URL.createObjectURL(blob);
+
     const a = document.createElement("a");
+    const date = new Date().toISOString().split("T")[0];
+
     a.href = url;
-    a.download = "restaurant-financial-model-configuration.json";
+    a.download = "restaurant-financial-model-" + date + ".json";
+    a.style.display = "none";
+
     document.body.appendChild(a);
     a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+
+    setTimeout(()=>{
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },100);
+
+    showSaveToast("Downloaded");
+  }catch(err){
+    console.error(err);
+    alert("Could not download configuration.");
   }
 }
 
-function triggerConfigOpen(file){
-  if(!file) return;
 
-  if(typeof uploadData === "function"){
-    uploadData(file);
-    return;
+
+function showSaveToast(message){
+  let toast = document.getElementById("saveToast");
+  if(!toast){
+    toast = document.createElement("div");
+    toast.id = "saveToast";
+    toast.style.position = "fixed";
+    toast.style.bottom = "20px";
+    toast.style.right = "20px";
+    toast.style.background = "#111";
+    toast.style.color = "#fff";
+    toast.style.padding = "12px 16px";
+    toast.style.borderRadius = "12px";
+    toast.style.fontWeight = "700";
+    toast.style.zIndex = "99999";
+    toast.style.boxShadow = "0 10px 24px rgba(0,0,0,.18)";
+    toast.style.transition = "opacity .2s ease";
+    document.body.appendChild(toast);
   }
 
-  const reader = new FileReader();
-  reader.onload = e => {
-    try{
-      const data = JSON.parse(e.target.result);
-      Object.keys(data).forEach(id => {
-        const el = document.getElementById(id);
-        if(el && data[id] !== undefined && typeof data[id] !== "object"){
-          el.value = data[id];
-        }
-      });
+  toast.textContent = message;
+  toast.style.opacity = "1";
+  clearTimeout(window.saveToastTimeout);
+  window.saveToastTimeout = setTimeout(()=>toast.style.opacity="0",1600);
+}
 
-      if(Array.isArray(data.closedDays)){
-        document.querySelectorAll(".closedDay").forEach(cb => {
-          const match = data.closedDays.find(x => x.value == cb.value);
-          cb.checked = match ? match.checked : false;
-        });
-      }
+function restoreLocalConfiguration(){
+  try{
+    const raw = localStorage.getItem("restaurantFinancialModelAutoSave");
+    if(!raw) return;
 
-      if(Array.isArray(data.adjustedFixedMonths)){
-        document.querySelectorAll(".adjustedFixedMonth").forEach(cb => {
-          const match = data.adjustedFixedMonths.find(x => x.value == cb.value);
-          cb.checked = match ? match.checked : false;
-        });
-      }
-
+    const parsed = JSON.parse(raw);
+    if(parsed && parsed.data && typeof applyConfigurationDataSafe === "function"){
+      applyConfigurationDataSafe(parsed.data);
       if(typeof calculate === "function") calculate();
-      alert("Configuration opened successfully.");
-    }catch(err){
-      alert("Invalid configuration file.");
-      console.error(err);
     }
-  };
-  reader.readAsText(file);
+  }catch(err){
+    console.warn("Local restore skipped.", err);
+  }
 }
 
-function bindConfigurationButtons(){
-  document.querySelectorAll("#downloadConfigTop,#downloadConfigBottom,[data-config-action='save']").forEach(btn => {
-    btn.onclick = e => {
+function bindConfigurationActions(){
+  const saveBtn = document.getElementById("saveLocalConfig");
+  const downloadBtn = document.getElementById("downloadConfigDownload");
+  const openInput = document.getElementById("uploadConfigTop");
+
+  if(saveBtn){
+    saveBtn.onclick = e => {
       e.preventDefault();
-      triggerConfigSave();
+      saveLocalConfiguration();
     };
-  });
+  }
 
-  document.querySelectorAll("#uploadConfigTop,#uploadConfigBottom,[data-config-action='open']").forEach(input => {
-    input.onchange = e => {
-      const file = e.target.files && e.target.files[0];
-      triggerConfigOpen(file);
-      e.target.value = "";
-    };
-  });
+  if(downloadBtn){
+    downloadBtn.onclick = e => { e.preventDefault(); downloadConfigDirect(); };
+  }
+
+  if(openInput){
+    openInput.onchange = e => { const file = e.target.files && e.target.files[0]; openConfigDirectFromFile(file); e.target.value = ""; };
+  }
 }
 
-document.addEventListener("DOMContentLoaded", bindConfigurationButtons);
-setTimeout(bindConfigurationButtons, 100);
+document.addEventListener("DOMContentLoaded",()=>{
+  restoreLocalConfiguration();
+  bindConfigurationActions();
+});
+
+setTimeout(bindConfigurationActions, 250);
 
 </script>
 
@@ -1546,6 +1625,304 @@ body > .bottom-configuration-toolbar{
   }
 }
 
+
+/* Working configuration toolbar */
+#topConfigurationToolbar,
+.configuration-toolbar:not(.bottom-configuration-toolbar){
+  width:100%;
+  max-width:1320px;
+  margin:14px auto 16px auto;
+  padding:12px 16px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:#fff;
+  box-shadow:0 4px 14px rgba(0,0,0,.05);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  box-sizing:border-box;
+}
+
+.configuration-title{
+  font-size:18px;
+  font-weight:800;
+}
+
+.configuration-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.configuration-actions button,
+.configuration-actions label{
+  min-height:42px;
+  padding:11px 18px;
+  border-radius:12px;
+  background:#111;
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
+  border:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+}
+
+.configuration-actions label input{
+  display:none !important;
+}
+
+@media(max-width:720px){
+  #topConfigurationToolbar,
+  .configuration-toolbar:not(.bottom-configuration-toolbar){
+    width:calc(100% - 20px);
+    flex-direction:row;
+  }
+}
+
+
+#resetConfigurationButton{
+  background:#a11 !important;
+}
+
+#resetConfigurationButton:hover{
+  background:#811 !important;
+}
+
+
+/* Payroll Adjustment Periods upgrade - stable */
+.payroll-adjustment-card .help{
+  font-size:13px;
+  margin-bottom:0;
+}
+
+.payroll-adjustment-card select,
+.payroll-adjustment-card input{
+  min-height:44px;
+}
+
+.payroll-adjustment-card .grid-3{
+  grid-template-columns:repeat(3,1fr);
+}
+
+@media(max-width:1050px){
+  .payroll-adjustment-card .grid-3{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* Merged Payroll & Labor Cost section */
+#tab-inputs h3{
+  margin-top:24px;
+  margin-bottom:12px;
+  font-size:20px;
+}
+
+#tab-inputs .section h3:first-of-type{
+  margin-top:10px;
+}
+
+.payroll-adjustment-card{
+  margin-top:10px;
+}
+
+#vacationList{
+  margin-top:12px;
+}
+
+#tab-inputs .section > .help + #vacationList{
+  margin-top:14px;
+}
+
+@media(max-width:720px){
+  #tab-inputs h3{
+    font-size:18px;
+  }
+}
+
+
+/* Owner Targets section */
+#tab-inputs h3{
+  border-top:1px solid rgba(0,0,0,.06);
+  padding-top:18px;
+}
+
+#tab-inputs h3:first-of-type{
+  border-top:none;
+  padding-top:0;
+}
+
+
+/* Safe visual balance only - no structure or logic changes */
+#tab-inputs .section{
+  max-width:1320px;
+}
+
+#tab-inputs h3{
+  margin-top:26px;
+  padding-top:16px;
+  border-top:1px solid rgba(0,0,0,.06);
+}
+
+#tab-inputs h3:first-of-type{
+  border-top:none;
+  padding-top:0;
+}
+
+#tab-inputs .grid{
+  align-items:stretch;
+}
+
+#tab-inputs .field{
+  min-height:116px;
+}
+
+#tab-inputs .field label{
+  min-height:18px;
+}
+
+@media(max-width:720px){
+  #tab-inputs .field{
+    min-height:auto;
+  }
+}
+
+
+/* Payroll Adjustment Periods - improved burden selector design */
+.payroll-adjustment-card{
+  padding:22px !important;
+}
+
+.payroll-adjustment-card .grid-3{
+  gap:16px !important;
+}
+
+.burden-toggle-row{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  margin-top:4px;
+}
+
+.burden-check-card{
+  position:relative;
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+  min-height:86px;
+  padding:16px !important;
+  border:1px solid #ddd6cf;
+  border-radius:18px;
+  background:#fff;
+  cursor:pointer;
+  transition:all .18s ease;
+}
+
+.burden-check-card:hover{
+  border-color:#111;
+  transform:translateY(-1px);
+  box-shadow:0 8px 20px rgba(0,0,0,.06);
+}
+
+.burden-check-card input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+
+.burden-check-card .checkmark{
+  width:30px;
+  height:30px;
+  min-width:30px;
+  border-radius:999px;
+  border:2px solid #d8d2cc;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  color:transparent;
+  background:#fff;
+  transition:all .18s ease;
+}
+
+.burden-check-card input:checked + .checkmark{
+  background:#111;
+  border-color:#111;
+  color:#fff;
+}
+
+.burden-check-card input:checked ~ span strong{
+  color:#111;
+}
+
+.burden-check-card strong{
+  display:block;
+  font-size:14px;
+  margin-bottom:4px;
+}
+
+.burden-check-card small{
+  display:block;
+  color:#666;
+  font-size:12px;
+  line-height:1.3;
+}
+
+.burden-check-card:has(input:checked){
+  background:#fafafa;
+  border-color:#111;
+}
+
+@media(max-width:1050px){
+  .burden-toggle-row{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* Payroll grouping cleanup */
+.core-operating-section h3,
+.revenue-cogs-section h3,
+.labor-payroll-section h3{
+  margin-top:20px;
+  padding-top:14px;
+  border-top:1px solid rgba(0,0,0,.06);
+}
+
+.core-operating-section h3:first-of-type,
+.revenue-cogs-section h3:first-of-type,
+.labor-payroll-section h3:first-of-type{
+  border-top:none;
+  padding-top:0;
+}
+
+.labor-payroll-section{
+  border:2px solid rgba(0,0,0,.04);
+}
+
+.labor-payroll-section > h2{
+  font-size:28px;
+}
+
+.labor-payroll-section > .help{
+  background:#f8f8f8;
+}
+
+.labor-payroll-section .vacation-card{
+  margin-top:12px;
+}
+
+@media(max-width:720px){
+  .labor-payroll-section > h2{
+    font-size:23px;
+  }
+}
+
 </style>
 </head>
 
@@ -1566,14 +1943,15 @@ body > .bottom-configuration-toolbar{
     
   </div>
 
-  <div class="configuration-actions">
-    <button type="button" id="downloadConfigTop">Save</button>
+  
+<div class="configuration-actions">
+    <button type="button" id="saveLocalConfig">Save</button>
+    <button type="button" id="downloadConfigDownload" onclick="downloadConfigDirect()">Download</button>
+    <button type="button" id="resetConfigurationButton" onclick="resetConfigurationDirect()">Reset</button>
 
-    <label for="uploadConfigTop">
-      Upload
-      <input type="file" id="uploadConfigTop" accept=".json">
-    </label>
-  </div>
+    <label for="uploadConfigTop" class="config-open-label">Open<input type="file" id="uploadConfigTop" accept=".json,application/json" style="display:none"></label>
+</div>
+
 </div>
 
 <div class="sticky-summary">
@@ -1608,45 +1986,25 @@ body > .bottom-configuration-toolbar{
 
 
   <div class="tab-panel active" id="tab-inputs">
-    <div class="section">
-      <h2>Core Inputs</h2>
+    
+<div class="section core-operating-section">
+  <h2>Core Operating Assumptions</h2>
+  <div class="help">Set the owner target, EBITDA add-backs, fixed costs, taxes, POS fees, tips, and model year.</div>
+  <h3>Owner Targets & EBITDA</h3>
+
+<div class="grid">
+<div class="field">
+          <label>Monthly Owner Profit Target ($)</label>
+          <input type="number" id="profitTarget" value="0" min="0" step="100">
+        </div>
+
+<div class="field">
+          <label>EBITDA Add-Backs / Non-Operating Costs Monthly ($)</label>
+          <input type="number" id="ebitdaAddbacks" value="0" min="0" step="100">
+        </div>
+</div>
+  <h3>Core Operating Assumptions</h3>
       <div class="grid">
-        <div class="field">
-          <label>BOH Monthly Payroll ($)</label>
-          <input type="number" id="bohPayroll" value="18000" min="0" step="100">
-        </div>
-
-        <div class="field">
-          <label>FOH Minimum Monthly Payroll ($)</label>
-          <input type="number" id="fohPayroll" value="7000" min="0" step="100">
-        </div>
-
-        <div class="field">
-          <label>BOH Payroll Burden %</label>
-          <input type="number" id="bohBurdenPct" value="12" min="0" max="100" step="0.1">
-          <div class="note">Employer taxes, workers comp, payroll burden on BOH wages.</div>
-        </div>
-
-        <div class="field">
-          <label>FOH Payroll Burden %</label>
-          <input type="number" id="fohBurdenPct" value="10" min="0" max="100" step="0.1">
-          <div class="note">Employer taxes, workers comp, payroll burden on FOH wages.</div>
-        </div>
-
-        <div class="field">
-          <label>Tip Burden %</label>
-          <input type="number" id="tipBurdenPct" value="8" min="0" max="100" step="0.1">
-          <div class="note">Extra employer burden caused by taxable tips.</div>
-        </div>
-
-        <div class="field">
-          <label>Apply Burden to Tips?</label>
-          <select id="applyTipBurden">
-            <option value="yes" selected>Yes</option>
-            <option value="no">No</option>
-          </select>
-        </div>
-
         <div class="field">
           <label>Monthly Fixed Costs ($)</label>
           <input type="number" id="fixed" value="8000" min="0" step="100">
@@ -1673,23 +2031,21 @@ body > .bottom-configuration-toolbar{
           <input type="number" id="tip" value="19" min="0" max="100" step="0.1">
         </div>
 
-        <div class="field">
-          <label>Monthly Owner Profit Target ($)</label>
-          <input type="number" id="profitTarget" value="0" min="0" step="100">
-        </div>
+        
 
-        <div class="field">
-          <label>EBITDA Add-Backs / Non-Operating Costs Monthly ($)</label>
-          <input type="number" id="ebitdaAddbacks" value="0" min="0" step="100">
-        </div>
+        
 
         <div class="field">
           <label>Year</label>
           <input type="number" id="year" value="2026" min="2000" max="2100" step="1">
         </div>
       </div>
+</div>
 
-      <h3>Food vs Beverage Mix</h3>
+<div class="section revenue-cogs-section">
+  <h2>Revenue Mix & COGS</h2>
+  <div class="help">Set the food/beverage sales mix and cost percentages used for contribution margin and break-even.</div>
+  <h3>Food vs Beverage Mix</h3>
       <div class="grid">
         <div class="field">
           <label>Food Sales Mix %</label>
@@ -1713,9 +2069,68 @@ body > .bottom-configuration-toolbar{
         Expected variable costs change with expected sales.
         True Labor Cost includes base payroll plus payroll burden and optional tip burden.
       </div>
-    </div>
+</div>
 
-    <div class="section">
+<div class="section labor-payroll-section">
+  <h2>Labor & Payroll</h2>
+  <div class="help">All regular payroll, payroll burden, tip burden, and temporary payroll adjustment periods are now in one place.</div>
+  <h3>Regular Monthly Payroll</h3>
+      <div class="grid">
+        <div class="field">
+          <label>BOH Monthly Payroll ($)</label>
+          <input type="number" id="bohPayroll" value="18000" min="0" step="100">
+        </div>
+
+        <div class="field">
+          <label>FOH Minimum Monthly Payroll ($)</label>
+          <input type="number" id="fohPayroll" value="7000" min="0" step="100">
+        </div>
+
+      </div>
+  <h3>Payroll Burden</h3>
+      <div class="grid">
+        <div class="field">
+          <label>BOH Payroll Burden %</label>
+          <input type="number" id="bohBurdenPct" value="12" min="0" max="100" step="0.1">
+          <div class="note">Employer taxes, workers comp, payroll burden on BOH wages.</div>
+        </div>
+
+        <div class="field">
+          <label>FOH Payroll Burden %</label>
+          <input type="number" id="fohBurdenPct" value="10" min="0" max="100" step="0.1">
+          <div class="note">Employer taxes, workers comp, payroll burden on FOH wages.</div>
+        </div>
+
+        <div class="field">
+          <label>Tip Burden %</label>
+          <input type="number" id="tipBurdenPct" value="8" min="0" max="100" step="0.1">
+          <div class="note">Extra employer burden caused by taxable tips.</div>
+        </div>
+
+        <div class="field">
+          <label>Apply Burden to Tips?</label>
+          <select id="applyTipBurden">
+            <option value="yes" selected>Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+      </div>
+  <h3>Payroll Adjustment Periods</h3>
+      
+<div class="help">
+  Use this area to adjust BOH and FOH payroll for closures, slow seasons, reduced staffing, busy periods, or special operating periods.
+</div>
+
+<div class="vacation-list" id="vacationList"></div>
+
+      <div class="btn-row">
+        <button class="primary" type="button" onclick="addVacationPeriod()">+ Add Period</button>
+        <button class="secondary" type="button" onclick="clearVacationPeriods()">Clear Periods</button>
+      </div>
+</div>
+
+<div class="section">
       <h2>Weekly Closed Days</h2>
       <div class="checkbox-grid">
         <label class="check-card"><input type="checkbox" class="closedDay" value="0"> Sun</label>
@@ -1750,21 +2165,6 @@ body > .bottom-configuration-toolbar{
       <div class="btn-row">
         <button class="secondary" type="button" onclick="setAdjustedFixedMonths(true)">Select All Months</button>
         <button class="secondary" type="button" onclick="setAdjustedFixedMonths(false)">Clear Months</button>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>Payroll Adjustment Periods</h2>
-      
-<div class="help">
-  Define temporary payroll changes for closures, slow seasons, reduced staffing, busy periods, or special operating periods.
-</div>
-
-<div class="vacation-list" id="vacationList"></div>
-
-      <div class="btn-row">
-        <button class="primary" type="button" onclick="addVacationPeriod()">+ Add Period</button>
-        <button class="secondary" type="button" onclick="clearVacationPeriods()">Clear Periods</button>
       </div>
     </div>
 
@@ -1956,13 +2356,287 @@ body > .bottom-configuration-toolbar{
   </div>
 
 
-<div class="configuration-toolbar bottom-configuration-toolbar">
-  <div class="configuration-left">
-    <div class="configuration-title">Configuration</div>
-  </div>
 </div>
 
 <script>
+
+function applyConfigDirect(data){
+  try{
+    // Simple scalar fields
+    Object.keys(data).forEach(key=>{
+      if(["closedDays","adjustedFixedMonths","vacations","seasonality"].includes(key)) return;
+
+      const el = document.getElementById(key);
+      if(!el) return;
+
+      if(el.type === "file") return;
+
+      if(el.type === "checkbox"){
+        el.checked = !!data[key];
+      }else{
+        el.value = data[key];
+      }
+    });
+
+    // Weekly closed days
+    if(Array.isArray(data.closedDays)){
+      document.querySelectorAll(".closedDay").forEach(cb=>{
+        const match = data.closedDays.find(x => String(x.value) === String(cb.value));
+        cb.checked = match ? !!match.checked : false;
+      });
+    }
+
+    // Adjusted fixed cost months
+    if(Array.isArray(data.adjustedFixedMonths)){
+      document.querySelectorAll(".adjustedFixedMonth").forEach(cb=>{
+        const match = data.adjustedFixedMonths.find(x => String(x.value) === String(cb.value));
+        cb.checked = match ? !!match.checked : false;
+      });
+    }
+
+    // Seasonality
+    if(Array.isArray(data.seasonality)){
+      window.pendingSeasonality = data.seasonality.map(v=>Number(v)||0);
+    }
+
+    // Payroll adjustment periods
+    if(Array.isArray(data.vacations)){
+      const list = document.getElementById("vacationList");
+      if(list) list.innerHTML = "";
+
+      if(typeof vacationCounter !== "undefined"){
+        vacationCounter = 0;
+      }
+
+      if(typeof addVacationPeriod === "function"){
+        data.vacations.forEach(v=>{
+          addVacationPeriod({
+            start:v.start || "",
+            end:v.end || "",
+            mode:v.mode || v.adjustmentMode || "replace",
+            type:v.type || "Custom",
+            bohPayroll:v.bohPayroll ?? v.boh ?? v.payroll ?? 0,
+            fohPayroll:v.fohPayroll ?? v.foh ?? 0,
+            payroll:v.payroll ?? 0,
+            applyBOHBurden:v.applyBOHBurden || "yes",
+            applyFOHBurden:v.applyFOHBurden || "yes",
+            applyTipBurden:v.applyTipBurden || "default"
+          });
+        });
+
+        if(data.vacations.length === 0){
+          addVacationPeriod();
+        }
+      }
+    }
+
+    if(typeof calculate === "function"){
+      calculate();
+    }
+
+    if(typeof showSaveToast === "function"){
+      showSaveToast("Configuration opened");
+    }else{
+      alert("Configuration opened successfully.");
+    }
+
+  }catch(err){
+    console.error("Apply configuration failed:", err);
+    alert("The JSON file opened, but the configuration could not be applied.");
+  }
+}
+
+function openConfigDirectFromFile(file){
+  if(!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = event => {
+    try{
+      const data = JSON.parse(event.target.result);
+      applyConfigDirect(data);
+    }catch(err){
+      console.error("Invalid JSON file:", err);
+      alert("Invalid JSON file. Please choose a configuration file exported from this model.");
+    }
+  };
+
+  reader.onerror = () => {
+    alert("Could not read the selected file.");
+  };
+
+  reader.readAsText(file);
+}
+
+function bindOpenConfigDirect(){
+  const input = document.getElementById("uploadConfigTop");
+  if(!input) return;
+
+  input.onchange = event => {
+    const file = event.target.files && event.target.files[0];
+    openConfigDirectFromFile(file);
+    event.target.value = "";
+  };
+}
+
+document.addEventListener("DOMContentLoaded", bindOpenConfigDirect);
+setTimeout(bindOpenConfigDirect, 250);
+
+
+
+function resetConfigurationDirect(){
+
+  const confirmed = confirm(
+    "Reset the model and clear the locally saved configuration?"
+  );
+
+  if(!confirmed) return;
+
+  try{
+
+    localStorage.removeItem("restaurantFinancialModelAutoSave");
+
+    // Reset all standard inputs/selects/textareas
+    document.querySelectorAll("input, select, textarea").forEach(el=>{
+
+      if(el.type === "file") return;
+
+      if(el.type === "checkbox"){
+        el.checked = false;
+        return;
+      }
+
+      if(el.dataset.default !== undefined){
+        el.value = el.dataset.default;
+      }else if(el.defaultValue !== undefined){
+        el.value = el.defaultValue;
+      }else{
+        el.value = "";
+      }
+
+    });
+
+    // Reset closed days
+    document.querySelectorAll(".closedDay").forEach(cb=>{
+      cb.checked = false;
+    });
+
+    // Reset adjusted fixed months
+    document.querySelectorAll(".adjustedFixedMonth").forEach(cb=>{
+      cb.checked = false;
+    });
+
+    // Clear vacation periods
+    const vacationList = document.getElementById("vacationList");
+    if(vacationList){
+      vacationList.innerHTML = "";
+    }
+
+    // Re-add default period if function exists
+    if(typeof addVacationPeriod === "function"){
+      addVacationPeriod();
+    }
+
+    // Reset seasonality if available
+    if(typeof seasonalityFactors !== "undefined" && Array.isArray(seasonalityFactors)){
+      seasonalityFactors = seasonalityFactors.map(()=>1);
+    }
+
+    // Recalculate
+    if(typeof calculate === "function"){
+      calculate();
+    }
+
+    if(typeof showSaveToast === "function"){
+      showSaveToast("Configuration reset");
+    }
+
+  }catch(err){
+    console.error(err);
+    alert("Could not reset the configuration.");
+  }
+}
+
+
+
+function downloadConfigDirect(){
+  try{
+    let data = {};
+
+    if(typeof collectData === "function"){
+      try{
+        data = collectData();
+      }catch(e){
+        console.warn("collectData failed, using DOM fallback", e);
+      }
+    }
+
+    if(!data || Object.keys(data).length === 0){
+      document.querySelectorAll("input, select, textarea").forEach(el=>{
+        if(!el.id || el.type === "file") return;
+        if(el.type === "checkbox"){
+          data[el.id] = el.checked;
+        }else{
+          data[el.id] = el.value;
+        }
+      });
+
+      data.closedDays = Array.from(document.querySelectorAll(".closedDay")).map(cb=>({
+        value: cb.value,
+        checked: cb.checked
+      }));
+
+      data.adjustedFixedMonths = Array.from(document.querySelectorAll(".adjustedFixedMonth")).map(cb=>({
+        value: cb.value,
+        checked: cb.checked
+      }));
+
+      data.vacations = Array.from(document.querySelectorAll(".vacation-card")).map(card=>({
+        start: card.querySelector(".vacStart")?.value || "",
+        end: card.querySelector(".vacEnd")?.value || "",
+        mode: card.querySelector(".adjustmentMode")?.value || "replace",
+        type: card.querySelector(".periodType")?.value || "Custom",
+        bohPayroll: card.querySelector(".periodBOH")?.value || "0",
+        fohPayroll: card.querySelector(".periodFOH")?.value || "0",
+        payroll: card.querySelector(".vacPayroll")?.value || "0",
+        applyBOHBurden: card.querySelector(".applyPeriodBOHBurden")?.checked ? "yes" : "no",
+        applyFOHBurden: card.querySelector(".applyPeriodFOHBurden")?.checked ? "yes" : "no",
+        applyTipBurden: card.querySelector(".applyPeriodTipBurden")?.checked ? "default" : "no"
+      }));
+
+      if(typeof getSeasonality === "function"){
+        data.seasonality = getSeasonality();
+      }
+    }
+
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "restaurant-financial-model-" + new Date().toISOString().slice(0,10) + ".json";
+    link.style.display = "none";
+    document.body.appendChild(link);
+
+    link.click();
+
+    setTimeout(()=>{
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 500);
+
+    if(typeof showSaveToast === "function"){
+      showSaveToast("Configuration downloaded");
+    }
+
+  }catch(err){
+    console.error("Download failed:", err);
+    alert("Download failed. Please check the browser console for details.");
+  }
+}
+
+
 const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 let vacationCounter = 0;
 let mainChart = null;
@@ -2007,26 +2681,112 @@ function setAdjustedFixedMonths(checked){
   calculate();
 }
 
+
 function addVacationPeriod(data={}){
   vacationCounter++;
+
+  const type = data.type || "Custom";
+  const mode = data.mode || data.adjustmentMode || "replace";
+  const bohPayroll = data.bohPayroll ?? data.boh ?? data.payroll ?? 0;
+  const fohPayroll = data.fohPayroll ?? data.foh ?? 0;
+  const applyBOHBurden = data.applyBOHBurden || "yes";
+  const applyFOHBurden = data.applyFOHBurden || "yes";
+  const applyTipBurden = data.applyTipBurden || "default";
+
   const div=document.createElement("div");
-  div.className="vacation-card";
+  div.className="vacation-card payroll-adjustment-card";
+
   div.innerHTML=`
     <div class="vacation-card-head">
       <strong>Payroll Adjustment Period ${vacationCounter}</strong>
       <button class="danger" type="button" onclick="this.closest('.vacation-card').remove(); calculate();">Remove</button>
     </div>
+
     <div class="grid-3">
-      <div class="field"><label>Start Date</label><input type="date" class="vacStart" value="${data.start||""}"></div>
-      <div class="field"><label>End Date</label><input type="date" class="vacEnd" value="${data.end||""}"></div>
-      <div class="field"><label>Adjusted Payroll During Period ($)</label><input type="number" class="vacPayroll" value="${data.payroll??0}" min="0" step="100"></div>
+      <div class="field">
+        <label>Period Type</label>
+        <select class="periodType">
+          <option value="Normal" ${type==="Normal"?"selected":""}>Normal</option>
+          <option value="Slow Season" ${type==="Slow Season"?"selected":""}>Slow Season</option>
+          <option value="Closure" ${type==="Closure"?"selected":""}>Closure</option>
+          <option value="Busy Season" ${type==="Busy Season"?"selected":""}>Busy Season</option>
+          <option value="Custom" ${type==="Custom"?"selected":""}>Custom</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Adjustment Mode</label>
+        <select class="adjustmentMode">
+          <option value="replace" ${mode==="replace"?"selected":""}>Replace Regular Payroll</option>
+          <option value="add" ${mode==="add"?"selected":""}>Add to Regular Payroll</option>
+          <option value="reduce" ${mode==="reduce"?"selected":""}>Reduce Regular Payroll</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Start Date</label>
+        <input type="date" class="vacStart" value="${data.start||""}">
+      </div>
+
+      <div class="field">
+        <label>End Date</label>
+        <input type="date" class="vacEnd" value="${data.end||""}">
+      </div>
+
+      <div class="field">
+        <label>BOH Payroll During Period ($)</label>
+        <input type="number" class="periodBOH" value="${bohPayroll}" min="0" step="100">
+      </div>
+
+      <div class="field">
+        <label>FOH Payroll During Period ($)</label>
+        <input type="number" class="periodFOH" value="${fohPayroll}" min="0" step="100">
+      </div>
+
+      <div class="burden-toggle-row">
+        <label class="burden-check-card">
+          <input type="checkbox" class="applyPeriodBOHBurden" ${applyBOHBurden==="no" ? "" : "checked"}>
+          <span class="checkmark">✓</span>
+          <span>
+            <strong>Apply BOH Burden</strong>
+            <small>Use BOH payroll burden %</small>
+          </span>
+        </label>
+
+        <label class="burden-check-card">
+          <input type="checkbox" class="applyPeriodFOHBurden" ${applyFOHBurden==="no" ? "" : "checked"}>
+          <span class="checkmark">✓</span>
+          <span>
+            <strong>Apply FOH Burden</strong>
+            <small>Use FOH payroll burden %</small>
+          </span>
+        </label>
+
+        <label class="burden-check-card">
+          <input type="checkbox" class="applyPeriodTipBurden" ${applyTipBurden==="no" ? "" : "checked"}>
+          <span class="checkmark">✓</span>
+          <span>
+            <strong>Apply Tip Burden</strong>
+            <small>Uses global tip burden setting</small>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="help" style="margin-top:12px;">
+      <strong>Replace</strong> replaces regular payroll during this period.
+      <strong>Add</strong> adds extra payroll on top of regular payroll.
+      <strong>Reduce</strong> subtracts payroll from regular payroll.
     </div>
   `;
+
   document.getElementById("vacationList").appendChild(div);
-  div.querySelectorAll("input").forEach(el=>{
+
+  div.querySelectorAll("input,select").forEach(el=>{
     el.addEventListener("input",calculate);
     el.addEventListener("change",calculate);
   });
+
   calculate();
 }
 
@@ -2035,21 +2795,62 @@ function clearVacationPeriods(){
   calculate();
 }
 
+
+
 function getVacationPeriods(extra=null){
   const periods=[];
+
   document.querySelectorAll(".vacation-card").forEach(card=>{
-    const start=parseDate(card.querySelector(".vacStart").value);
-    const end=parseDate(card.querySelector(".vacEnd").value);
-    const payroll=Number(card.querySelector(".vacPayroll").value)||0;
+    const start=parseDate(card.querySelector(".vacStart")?.value);
+    const end=parseDate(card.querySelector(".vacEnd")?.value);
+
+    const mode=card.querySelector(".adjustmentMode")?.value || "replace";
+    const type=card.querySelector(".periodType")?.value || "Custom";
+
+    const bohPayroll=Number(card.querySelector(".periodBOH")?.value) || 0;
+    const fohPayroll=Number(card.querySelector(".periodFOH")?.value) || 0;
+    const legacyPayroll=Number(card.querySelector(".vacPayroll")?.value) || 0;
+
+    const applyBOHBurden=card.querySelector(".applyPeriodBOHBurden")?.checked ? "yes" : "no";
+    const applyFOHBurden=card.querySelector(".applyPeriodFOHBurden")?.checked ? "yes" : "no";
+    const applyTipBurden=card.querySelector(".applyPeriodTipBurden")?.checked ? "default" : "no";
+
     if(start && end && end>=start){
-      periods.push({start,end,payroll,totalDays:daysBetweenInclusive(start,end)});
+      periods.push({
+        start,
+        end,
+        mode,
+        type,
+        bohPayroll,
+        fohPayroll,
+        legacyPayroll,
+        applyBOHBurden,
+        applyFOHBurden,
+        applyTipBurden,
+        totalDays:daysBetweenInclusive(start,end)
+      });
     }
   });
+
   if(extra && extra.start && extra.end && extra.end>=extra.start){
-    periods.push({start:extra.start,end:extra.end,payroll:extra.payroll||0,totalDays:daysBetweenInclusive(extra.start,extra.end)});
+    periods.push({
+      start:extra.start,
+      end:extra.end,
+      mode:extra.mode || "replace",
+      type:extra.type || "Custom",
+      bohPayroll:Number(extra.bohPayroll)||0,
+      fohPayroll:Number(extra.fohPayroll)||0,
+      legacyPayroll:Number(extra.payroll)||0,
+      applyBOHBurden:extra.applyBOHBurden || "yes",
+      applyFOHBurden:extra.applyFOHBurden || "yes",
+      applyTipBurden:extra.applyTipBurden || "default",
+      totalDays:daysBetweenInclusive(extra.start,extra.end)
+    });
   }
+
   return periods;
 }
+
 
 function vacationForDate(date, periods){
   let isVacation=false, payroll=0;
@@ -2063,23 +2864,97 @@ function vacationForDate(date, periods){
   return {isVacation,payroll};
 }
 
+
 function monthStats(year, month, closedDays, periods){
   const daysInMonth=new Date(year,month+1,0).getDate();
-  let regularWorkingDays=0, actualOpenDays=0, vacationDays=0, vacationPayroll=0;
+
+  let regularWorkingDays=0;
+  let actualOpenDays=0;
+  let vacationDays=0;
+
+  let replaceBOH=0;
+  let replaceFOH=0;
+  let addBOH=0;
+  let addFOH=0;
+  let reduceBOH=0;
+  let reduceFOH=0;
+
+  let periodBOHBurdenBase=0;
+  let periodFOHBurdenBase=0;
+  let tipBurdenOverride=null;
+
   for(let day=1;day<=daysInMonth;day++){
     const date=new Date(year,month,day);
     const weeklyClosed=closedDays.includes(date.getDay());
-    const vac=vacationForDate(date, periods);
-    if(!weeklyClosed) regularWorkingDays++;
-    if(vac.isVacation){
+
+    if(!weeklyClosed){
+      regularWorkingDays++;
+    }
+
+    let inPeriod=false;
+
+    periods.forEach(p=>{
+      const d=dateOnly(date);
+      if(d>=p.start && d<=p.end){
+        inPeriod=true;
+
+        const dailyBOH=p.totalDays>0 ? (Number(p.bohPayroll)||0)/p.totalDays : 0;
+        const dailyFOH=p.totalDays>0 ? (Number(p.fohPayroll)||0)/p.totalDays : 0;
+        const dailyLegacy=p.totalDays>0 ? (Number(p.legacyPayroll)||0)/p.totalDays : 0;
+
+        const bohDailyTotal=dailyBOH + dailyLegacy;
+        const fohDailyTotal=dailyFOH;
+
+        if(p.mode==="add"){
+          addBOH += bohDailyTotal;
+          addFOH += fohDailyTotal;
+        }else if(p.mode==="reduce"){
+          reduceBOH += bohDailyTotal;
+          reduceFOH += fohDailyTotal;
+        }else{
+          replaceBOH += bohDailyTotal;
+          replaceFOH += fohDailyTotal;
+        }
+
+        if(p.applyBOHBurden==="yes"){
+          periodBOHBurdenBase += bohDailyTotal;
+        }
+
+        if(p.applyFOHBurden==="yes"){
+          periodFOHBurdenBase += fohDailyTotal;
+        }
+
+        if(p.applyTipBurden !== "default"){
+          tipBurdenOverride = p.applyTipBurden;
+        }
+      }
+    });
+
+    if(inPeriod){
       vacationDays++;
-      vacationPayroll+=vac.payroll;
     }else if(!weeklyClosed){
       actualOpenDays++;
     }
   }
-  return {daysInMonth,regularWorkingDays,actualOpenDays,vacationDays,vacationPayroll};
+
+  return {
+    daysInMonth,
+    regularWorkingDays,
+    actualOpenDays,
+    vacationDays,
+    replaceBOH,
+    replaceFOH,
+    addBOH,
+    addFOH,
+    reduceBOH,
+    reduceFOH,
+    periodBOHBurdenBase,
+    periodFOHBurdenBase,
+    tipBurdenOverride,
+    vacationPayroll:replaceBOH+replaceFOH+addBOH+addFOH-reduceBOH-reduceFOH
+  };
 }
+
 
 function getSeasonality(){
   return months.map((_,i)=>{
@@ -2143,14 +3018,28 @@ function runModel(options={}){
 
     const bohDaily=stats.regularWorkingDays>0 ? input.bohPayroll/stats.regularWorkingDays : 0;
     const fohDaily=stats.regularWorkingDays>0 ? input.fohPayroll/stats.regularWorkingDays : 0;
-    const bohUsed=bohDaily*stats.actualOpenDays;
-    const fohUsed=fohDaily*stats.actualOpenDays;
-    const vacationPayroll=stats.vacationPayroll;
-    const adjustedPayroll=bohUsed+fohUsed+vacationPayroll;
 
-    // Payroll burden is calculated on wages and optionally on tips.
-    // Tip burden is calculated later after expected tips are known.
-    const wageBurdenCost = (bohUsed * input.bohBurdenPct) + (fohUsed * input.fohBurdenPct);
+    const regularBOHForOpenDays=bohDaily*stats.actualOpenDays;
+    const regularFOHForOpenDays=fohDaily*stats.actualOpenDays;
+
+    let bohUsed=regularBOHForOpenDays;
+    let fohUsed=regularFOHForOpenDays;
+
+    bohUsed += stats.replaceBOH + stats.addBOH;
+    fohUsed += stats.replaceFOH + stats.addFOH;
+
+    bohUsed = Math.max(0, bohUsed - stats.reduceBOH);
+    fohUsed = Math.max(0, fohUsed - stats.reduceFOH);
+
+    const vacationPayroll=stats.vacationPayroll;
+    const adjustedPayroll=bohUsed+fohUsed;
+
+    const regularBOHBurdenBase=Math.max(0, regularBOHForOpenDays + stats.addBOH - stats.reduceBOH);
+    const regularFOHBurdenBase=Math.max(0, regularFOHForOpenDays + stats.addFOH - stats.reduceFOH);
+
+    const wageBurdenCost =
+      ((regularBOHBurdenBase + stats.periodBOHBurdenBase) * input.bohBurdenPct) +
+      ((regularFOHBurdenBase + stats.periodFOHBurdenBase) * input.fohBurdenPct);
 
     const breakEven=margin>0 ? (adjustedPayroll+fixed)/margin : 0;
     const requiredProfit=margin>0 ? (adjustedPayroll+fixed+input.profitTarget)/margin : 0;
@@ -2164,7 +3053,12 @@ function runModel(options={}){
     const posFees=expectedSales*input.pos;
 
     const tips=expectedSales*input.tip;
-    const tipBurdenCost=input.applyTipBurden ? tips*input.tipBurdenPct : 0;
+    const periodTipBurdenApplies =
+      stats.tipBurdenOverride === "yes" ? true :
+      stats.tipBurdenOverride === "no" ? false :
+      input.applyTipBurden;
+
+    const tipBurdenCost=periodTipBurdenApplies ? tips*input.tipBurdenPct : 0;
     const laborBurdenCost=wageBurdenCost+tipBurdenCost;
     const trueLaborCost=adjustedPayroll+laborBurdenCost;
 
@@ -3118,9 +4012,16 @@ function collectData(){
     adjustedFixedMonths:Array.from(document.querySelectorAll(".adjustedFixedMonth")).map(cb=>({value:cb.value,checked:cb.checked})),
     seasonality:getSeasonality(),
     vacations:Array.from(document.querySelectorAll(".vacation-card")).map(card=>({
-      start:card.querySelector(".vacStart").value,
-      end:card.querySelector(".vacEnd").value,
-      payroll:card.querySelector(".vacPayroll").value
+      start:card.querySelector(".vacStart")?.value || "",
+      end:card.querySelector(".vacEnd")?.value || "",
+      mode:card.querySelector(".adjustmentMode")?.value || "replace",
+      type:card.querySelector(".periodType")?.value || "Custom",
+      bohPayroll:card.querySelector(".periodBOH")?.value || 0,
+      fohPayroll:card.querySelector(".periodFOH")?.value || 0,
+      payroll:card.querySelector(".vacPayroll")?.value || 0,
+      applyBOHBurden:card.querySelector(".applyPeriodBOHBurden")?.value || "yes",
+      applyFOHBurden:card.querySelector(".applyPeriodFOHBurden")?.value || "yes",
+      applyTipBurden:card.querySelector(".applyPeriodTipBurden")?.value || "default"
     }))
   };
 }
@@ -3238,101 +4139,221 @@ addVacationPeriod();
 calculate();
 
 
-// Robust Configuration Save/Open handlers
-function triggerConfigSave(){
-  if(typeof downloadData === "function"){
-    downloadData();
-    return;
+
+document.getElementById("downloadConfigDownload")?.addEventListener("click",(e)=>{ e.preventDefault(); downloadConfigDirect(); });
+
+
+
+// ===== Direct Configuration Save / Download / Open =====
+function getCurrentConfigurationForExport(){
+  const data = {};
+
+  // Prefer the app's existing complete collector if available.
+  if(typeof collectData === "function"){
+    try{
+      return collectData();
+    }catch(err){
+      console.warn("collectData failed, using fallback.", err);
+    }
   }
 
-  if(typeof collectData === "function"){
-    const blob = new Blob([JSON.stringify(collectData(), null, 2)], {type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "restaurant-financial-model-configuration.json";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+  document.querySelectorAll("input, select, textarea").forEach(el=>{
+    if(!el.id || el.type === "file") return;
+
+    if(el.type === "checkbox"){
+      data[el.id] = el.checked;
+    }else{
+      data[el.id] = el.value;
+    }
+  });
+
+  data.closedDays = Array.from(document.querySelectorAll(".closedDay")).map(cb=>({
+    value:cb.value,
+    checked:cb.checked
+  }));
+
+  data.adjustedFixedMonths = Array.from(document.querySelectorAll(".adjustedFixedMonth")).map(cb=>({
+    value:cb.value,
+    checked:cb.checked
+  }));
+
+  data.seasonality = typeof getSeasonality === "function" ? getSeasonality() : [];
+
+  data.vacations = Array.from(document.querySelectorAll(".vacation-card")).map(card=>({
+    start:card.querySelector(".vacStart")?.value || "",
+    end:card.querySelector(".vacEnd")?.value || "",
+    payroll:card.querySelector(".vacPayroll")?.value || "0"
+  }));
+
+  return data;
+}
+
+function saveLocalConfiguration(){
+  try{
+    localStorage.setItem("restaurantFinancialModelAutoSave", JSON.stringify({
+      savedAt:new Date().toISOString(),
+      data:getCurrentConfigurationForExport()
+    }));
+    showSaveToast("Saved locally");
+  }catch(err){
+    console.error(err);
+    alert("Could not save locally.");
   }
 }
 
-function triggerConfigOpen(file){
-  if(!file) return;
+function downloadConfigurationFile(){
+  try{
+    const data = getCurrentConfigurationForExport();
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], {type:"application/json;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
 
-  if(typeof uploadData === "function"){
-    uploadData(file);
-    return;
+    const a = document.createElement("a");
+    const date = new Date().toISOString().split("T")[0];
+
+    a.href = url;
+    a.download = "restaurant-financial-model-" + date + ".json";
+    a.style.display = "none";
+
+    document.body.appendChild(a);
+    a.click();
+
+    setTimeout(()=>{
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },100);
+
+    showSaveToast("Downloaded");
+  }catch(err){
+    console.error(err);
+    alert("Could not download configuration.");
   }
+}
+
+function openConfigurationFile(file){
+  if(!file) return;
 
   const reader = new FileReader();
   reader.onload = e => {
     try{
       const data = JSON.parse(e.target.result);
-      Object.keys(data).forEach(id => {
-        const el = document.getElementById(id);
-        if(el && data[id] !== undefined && typeof data[id] !== "object"){
-          el.value = data[id];
-        }
-      });
 
-      if(Array.isArray(data.closedDays)){
-        document.querySelectorAll(".closedDay").forEach(cb => {
-          const match = data.closedDays.find(x => x.value == cb.value);
-          cb.checked = match ? match.checked : false;
-        });
-      }
-
-      if(Array.isArray(data.adjustedFixedMonths)){
-        document.querySelectorAll(".adjustedFixedMonth").forEach(cb => {
-          const match = data.adjustedFixedMonths.find(x => x.value == cb.value);
-          cb.checked = match ? match.checked : false;
-        });
+      if(typeof applyConfigurationDataSafe === "function"){
+        applyConfigurationDataSafe(data);
+      }else if(typeof uploadData === "function"){
+        // uploadData expects a file in some older versions, so avoid using it here.
+        console.warn("applyConfigurationDataSafe not found.");
       }
 
       if(typeof calculate === "function") calculate();
-      alert("Configuration opened successfully.");
+      showSaveToast("Opened");
     }catch(err){
-      alert("Invalid configuration file.");
       console.error(err);
+      alert("Invalid configuration file.");
     }
   };
+
   reader.readAsText(file);
 }
 
-function bindConfigurationButtons(){
-  document.querySelectorAll("#downloadConfigTop,#downloadConfigBottom,[data-config-action='save']").forEach(btn => {
-    btn.onclick = e => {
-      e.preventDefault();
-      triggerConfigSave();
-    };
-  });
+function showSaveToast(message){
+  let toast = document.getElementById("saveToast");
+  if(!toast){
+    toast = document.createElement("div");
+    toast.id = "saveToast";
+    toast.style.position = "fixed";
+    toast.style.bottom = "20px";
+    toast.style.right = "20px";
+    toast.style.background = "#111";
+    toast.style.color = "#fff";
+    toast.style.padding = "12px 16px";
+    toast.style.borderRadius = "12px";
+    toast.style.fontWeight = "700";
+    toast.style.zIndex = "99999";
+    toast.style.boxShadow = "0 10px 24px rgba(0,0,0,.18)";
+    toast.style.transition = "opacity .2s ease";
+    document.body.appendChild(toast);
+  }
 
-  document.querySelectorAll("#uploadConfigTop,#uploadConfigBottom,[data-config-action='open']").forEach(input => {
-    input.onchange = e => {
-      const file = e.target.files && e.target.files[0];
-      triggerConfigOpen(file);
-      e.target.value = "";
+  toast.textContent = message;
+  toast.style.opacity = "1";
+  clearTimeout(window.saveToastTimeout);
+  window.saveToastTimeout = setTimeout(()=>toast.style.opacity="0",1600);
+}
+
+function restoreLocalConfiguration(){
+  try{
+    const raw = localStorage.getItem("restaurantFinancialModelAutoSave");
+    if(!raw) return;
+
+    const parsed = JSON.parse(raw);
+    if(parsed && parsed.data && typeof applyConfigurationDataSafe === "function"){
+      applyConfigurationDataSafe(parsed.data);
+      if(typeof calculate === "function") calculate();
+    }
+  }catch(err){
+    console.warn("Local restore skipped.", err);
+  }
+}
+
+function bindConfigurationActions(){
+  const saveBtn = document.getElementById("saveLocalConfig");
+  const downloadBtn = document.getElementById("downloadConfigDownload");
+  const openInput = document.getElementById("uploadConfigTop");
+
+  if(saveBtn){
+    saveBtn.onclick = e => {
+      e.preventDefault();
+      saveLocalConfiguration();
+    };
+  }
+
+  if(downloadBtn){
+    downloadBtn.onclick = e => { e.preventDefault(); downloadConfigDirect(); };
+  }
+
+  if(openInput){
+    openInput.onchange = e => { const file = e.target.files && e.target.files[0]; openConfigDirectFromFile(file); e.target.value = ""; };
+  }
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  restoreLocalConfiguration();
+  bindConfigurationActions();
+});
+
+setTimeout(bindConfigurationActions, 250);
+
+
+// Stable tab navigation repair
+function bindTabsStableRepair(){
+  document.querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.onclick = () => {
+      document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+
+      btn.classList.add("active");
+
+      const target = document.getElementById("tab-" + btn.dataset.tab);
+      if(target){
+        target.classList.add("active");
+      }
+
+      if(typeof calculate === "function"){
+        setTimeout(calculate, 0);
+      }
     };
   });
 }
 
-document.addEventListener("DOMContentLoaded", bindConfigurationButtons);
-setTimeout(bindConfigurationButtons, 100);
+document.addEventListener("DOMContentLoaded", bindTabsStableRepair);
+setTimeout(bindTabsStableRepair, 250);
 
 </script>
 
 
 
-  <div class="configuration-actions">
-    <button type="button" id="downloadConfigBottom">Save</button>
-
-    <label for="uploadConfigBottom">
-      Open
-      <input type="file" id="uploadConfigBottom" accept=".json">
-    </label>
-  </div>
+  
 </div>
 
 </body>
