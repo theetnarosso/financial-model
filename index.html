@@ -2558,6 +2558,18 @@ body > .bottom-configuration-toolbar{
   }
 }
 
+
+/* Landscape chart-only mode keeps chart labels/legend inside canvas */
+@media screen and (orientation: landscape) and (max-height: 520px){
+  body.landscape-chart-only #landscapeChartFullscreen{
+    background:#ffffff !important;
+  }
+
+  body.landscape-chart-only #landscapeChartCanvas{
+    background:#ffffff !important;
+  }
+}
+
 </style>
 </head>
 
@@ -5537,16 +5549,22 @@ function getCurrentChartConfigClone(){
 
   config.options.responsive = true;
   config.options.maintainAspectRatio = false;
-  config.options.layout = { padding: 12 };
+  config.options.layout = {
+    padding: config.type === "pie"
+      ? {top: 8, right: 12, bottom: 18, left: 12}
+      : {top: 8, right: 12, bottom: 8, left: 12}
+  };
 
   config.options.plugins = config.options.plugins || {};
   config.options.plugins.legend = config.options.plugins.legend || {};
   config.options.plugins.legend.display = true;
-  config.options.plugins.legend.position = "top";
+  config.options.plugins.legend.position = config.type === "pie" ? "bottom" : "top";
+  config.options.plugins.legend.align = "center";
   config.options.plugins.legend.labels = {
-    boxWidth: 18,
-    padding: 14,
-    font: { size: 12, weight: "600" }
+    boxWidth: 26,
+    boxHeight: 10,
+    padding: 12,
+    font: { size: window.innerHeight <= 420 ? 10 : 12, weight: "600" }
   };
 
   if(config.options.plugins.title){
@@ -5562,7 +5580,7 @@ function getCurrentChartConfigClone(){
       text: selectedText === "Break-Even, Expected Sales & Profit Gaps"
         ? "Monthly Break-Even vs Expected Sales / Profit Gaps"
         : selectedText,
-      font: { size: window.innerHeight <= 420 ? 14 : 18, weight: "bold" },
+      font: { size: window.innerHeight <= 420 ? 12 : 16, weight: "bold" },
       padding: { bottom: 12 }
     };
   }
@@ -5615,7 +5633,7 @@ function renderLandscapeFullscreenChart(){
 
   if(config.options && config.options.plugins && config.options.plugins.legend){
     config.options.plugins.legend.display = true;
-    config.options.plugins.legend.position = "top";
+    config.options.plugins.legend.position = config.type === "pie" ? "bottom" : "top";
   }
 
   if(landscapeFullscreenChart){
