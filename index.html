@@ -2298,6 +2298,128 @@ body > .bottom-configuration-toolbar{
   }
 }
 
+
+/* STRICT mobile landscape chart-only fullscreen */
+@media screen and (orientation: landscape) and (max-width: 1024px), 
+       screen and (orientation: landscape) and (max-height: 520px){
+
+  html,
+  body{
+    width:100vw !important;
+    height:100vh !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow:hidden !important;
+    background:#fff !important;
+  }
+
+  .app{
+    width:100vw !important;
+    height:100vh !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow:hidden !important;
+    background:#fff !important;
+  }
+
+  .hero,
+  .configuration-toolbar,
+  .sticky-summary,
+  .summary-grid,
+  .tabs,
+  #tab-inputs,
+  #tab-capacity,
+  #tab-monthly,
+  #tab-scenarios,
+  #topConfigurationToolbar,
+  .model-health-section{
+    display:none !important;
+  }
+
+  #tab-charts{
+    display:block !important;
+    position:fixed !important;
+    inset:0 !important;
+    width:100vw !important;
+    height:100vh !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow:hidden !important;
+    background:#fff !important;
+    z-index:999999 !important;
+  }
+
+  #tab-charts .section{
+    display:block !important;
+    width:100vw !important;
+    height:100vh !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    background:#fff !important;
+    overflow:hidden !important;
+  }
+
+  #tab-charts h2,
+  #tab-charts .help,
+  #tab-charts .chart-controls,
+  #tab-charts .chart-card > div:not(.pie-total-display),
+  #tab-charts .chart-card > div[style]{
+    display:none !important;
+  }
+
+  #tab-charts .chart-card{
+    display:block !important;
+    position:fixed !important;
+    inset:0 !important;
+    width:100vw !important;
+    height:100vh !important;
+    max-height:none !important;
+    min-height:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    background:#fff !important;
+    overflow:hidden !important;
+  }
+
+  #tab-charts .chart-card canvas{
+    display:block !important;
+    position:absolute !important;
+    inset:0 !important;
+    width:100vw !important;
+    height:100vh !important;
+    max-width:100vw !important;
+    max-height:100vh !important;
+    min-height:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+
+  #tab-charts .pie-total-display{
+    position:absolute !important;
+    top:4px !important;
+    left:0 !important;
+    right:0 !important;
+    z-index:2 !important;
+    margin:0 !important;
+    padding:0 !important;
+    font-size:18px !important;
+    line-height:1.1 !important;
+    background:rgba(255,255,255,.72) !important;
+  }
+
+  #tab-charts .pie-total-label{
+    display:none !important;
+  }
+}
+
 </style>
 </head>
 
@@ -4547,6 +4669,23 @@ function updatePieVisibleTotal(){
   display.style.display = "block";
 }
 
+
+const mobileLandscapeChartPlugin = {
+  id:"mobileLandscapeChartPlugin",
+  beforeUpdate(chart){
+    const landscape = window.matchMedia("(orientation: landscape)").matches;
+    const smallScreen = window.innerWidth <= 1024 || window.innerHeight <= 520;
+    if(landscape && smallScreen && chart.options && chart.options.plugins && chart.options.plugins.legend){
+      chart.options.plugins.legend.display = false;
+    }
+  }
+};
+
+if(typeof Chart !== "undefined" && !Chart.registry.plugins.get("mobileLandscapeChartPlugin")){
+  Chart.register(mobileLandscapeChartPlugin);
+}
+
+
 function updateChart(model){
   if(typeof Chart==="undefined") return;
 
@@ -5221,6 +5360,45 @@ function bindInlineScrollLinks(){
 
 document.addEventListener("DOMContentLoaded", bindInlineScrollLinks);
 setTimeout(bindInlineScrollLinks, 300);
+
+
+function forceLandscapeChartOnly(){
+  const landscape = window.matchMedia("(orientation: landscape)").matches;
+  const smallScreen = window.innerWidth <= 1024 || window.innerHeight <= 520;
+
+  if(landscape && smallScreen){
+    document.body.classList.add("chart-landscape-active");
+
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    const charts = document.getElementById("tab-charts");
+    if(charts) charts.classList.add("active");
+
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    const chartBtn = document.querySelector('[data-tab="charts"]');
+    if(chartBtn) chartBtn.classList.add("active");
+
+    if(typeof calculate === "function") calculate();
+
+    setTimeout(()=>{
+      if(mainChart && typeof mainChart.resize === "function"){
+        mainChart.resize(window.innerWidth, window.innerHeight);
+        mainChart.update("none");
+      }
+    }, 250);
+  }else{
+    document.body.classList.remove("chart-landscape-active");
+    if(mainChart && typeof mainChart.resize === "function"){
+      setTimeout(()=>mainChart.resize(), 150);
+    }
+  }
+}
+
+window.addEventListener("orientationchange", ()=>setTimeout(forceLandscapeChartOnly, 350));
+window.addEventListener("resize", ()=>{
+  clearTimeout(window.__forceLandscapeChartTimer);
+  window.__forceLandscapeChartTimer = setTimeout(forceLandscapeChartOnly, 200);
+});
+document.addEventListener("DOMContentLoaded", ()=>setTimeout(forceLandscapeChartOnly, 500));
 
 </script>
 
