@@ -2467,6 +2467,97 @@ body > .bottom-configuration-toolbar{
   }
 }
 
+
+/* Improved mobile pill tabs */
+.tabs{
+  display:flex;
+  gap:12px;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:4px 2px 10px;
+  margin-bottom:18px;
+  scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+
+.tabs::-webkit-scrollbar{
+  display:none;
+}
+
+.tab-btn{
+  position:relative;
+  flex:none;
+  border-radius:999px !important;
+  padding:14px 22px !important;
+  min-height:52px;
+  border:1px solid #ddd4cb !important;
+  background:linear-gradient(180deg,#ffffff 0%, #f7f4f0 100%);
+  color:#222;
+  font-weight:800 !important;
+  font-size:15px !important;
+  letter-spacing:-0.01em;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.9) inset,
+    0 2px 8px rgba(0,0,0,.04);
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    background .18s ease,
+    color .18s ease;
+}
+
+.tab-btn:hover{
+  transform:translateY(-1px);
+}
+
+.tab-btn.active{
+  background:linear-gradient(180deg,#1e1e1e 0%, #000000 100%) !important;
+  color:#fff !important;
+  border-color:#000 !important;
+  box-shadow:
+    0 10px 20px rgba(0,0,0,.18),
+    0 2px 0 rgba(255,255,255,.08) inset;
+}
+
+.tab-btn.active::after{
+  content:"";
+  position:absolute;
+  left:18px;
+  right:18px;
+  bottom:7px;
+  height:3px;
+  border-radius:999px;
+  background:rgba(255,255,255,.35);
+}
+
+@media(max-width:768px){
+
+  .tabs{
+    margin-inline:-6px;
+    padding-inline:6px;
+    scroll-snap-type:x proximity;
+  }
+
+  .tab-btn{
+    scroll-snap-align:start;
+    padding:13px 18px !important;
+    min-height:48px;
+    font-size:14px !important;
+    white-space:nowrap;
+  }
+}
+
+@media(max-width:480px){
+
+  .tab-btn{
+    padding:12px 16px !important;
+    min-height:46px;
+    font-size:13.5px !important;
+  }
+}
+
 </style>
 </head>
 
@@ -5545,6 +5636,14 @@ document.addEventListener("DOMContentLoaded", ()=>setTimeout(renderLandscapeFull
 document.addEventListener("change", e=>{
   if(e.target && e.target.id === "chartSelector"){
     setTimeout(renderLandscapeFullscreenChart, 100);
+  }
+});
+
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  const tabs = document.querySelector(".tabs");
+  if(tabs){
+    tabs.classList.add("tabs-enhanced");
   }
 });
 
