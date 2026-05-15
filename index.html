@@ -912,6 +912,32 @@ input[type=range]{
         </div>
 
         <div class="field">
+          <label>BOH Payroll Burden %</label>
+          <input type="number" id="bohBurdenPct" value="12" min="0" max="100" step="0.1">
+          <div class="note">Employer taxes, workers comp, payroll burden on BOH wages.</div>
+        </div>
+
+        <div class="field">
+          <label>FOH Payroll Burden %</label>
+          <input type="number" id="fohBurdenPct" value="10" min="0" max="100" step="0.1">
+          <div class="note">Employer taxes, workers comp, payroll burden on FOH wages.</div>
+        </div>
+
+        <div class="field">
+          <label>Tip Burden %</label>
+          <input type="number" id="tipBurdenPct" value="8" min="0" max="100" step="0.1">
+          <div class="note">Extra employer burden caused by taxable tips.</div>
+        </div>
+
+        <div class="field">
+          <label>Apply Burden to Tips?</label>
+          <select id="applyTipBurden">
+            <option value="yes" selected>Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <div class="field">
           <label>Monthly Fixed Costs ($)</label>
           <input type="number" id="fixed" value="8000" min="0" step="100">
         </div>
@@ -975,6 +1001,7 @@ input[type=range]{
       <div class="help">
         Break-even is calculated using contribution margin: 1 minus blended food/beverage cost minus POS fees.
         Expected variable costs change with expected sales.
+        True Labor Cost includes base payroll plus payroll burden and optional tip burden.
       </div>
     </div>
 
@@ -1026,8 +1053,8 @@ input[type=range]{
 <div class="vacation-list" id="vacationList"></div>
 
       <div class="btn-row">
-        <button class="primary" type="button" onclick="addVacationPeriod()">+ Add Period</button>
-        <button class="secondary" type="button" onclick="clearVacationPeriods()">Clear Periods</button>
+        <button class="primary" type="button" onclick="addVacationPeriod()">+ Add Vacation Period</button>
+        <button class="secondary" type="button" onclick="clearVacationPeriods()">Clear Vacation Periods</button>
       </div>
     </div>
 
@@ -1058,7 +1085,7 @@ input[type=range]{
               <th>Seasonality</th>
               <th>Expected Sales</th>
               <th>Fixed Used</th>
-              <th>Payroll</th>
+              <th>True Labor Cost</th>
               <th>Operational P/L</th>
               <th>Owner Gap</th>
               <th>Additional Sales Needed</th>
@@ -1082,18 +1109,18 @@ input[type=range]{
           <select id="chartSelector">
             <option value="profit">Break-Even, Expected Sales & Profit Gaps</option>
             <option value="cost">Cost Breakdown</option>
-            <option value="cash">Year Operating Cost Pie</option>
+            <option value="cash">Operating Cost + Tips + Sales Tax</option>
                       </select>
         </div>
       </div>
       <div class="help">
         The main chart includes the key values: True Break-Even Sales, Sales Required + Owner Profit,
-        Expected Sales, Operational Profit/Loss, Owner Profit Gap, Additional Sales Needed, and the Year Operating Cost Pie.
+        Expected Sales, Operational Profit/Loss, Owner Profit Gap, Additional Sales Needed, and the Operating Cost + Tips + Sales Tax.
         
       </div>
       <div class="chart-card">
         <div class="pie-total-display" id="pieTotalDisplay">
-          <span class="pie-total-label">Visible Operating Cost Total</span>
+          <span class="pie-total-label">Visible Operating Cost + Tips + Sales Tax Total</span>
           <span id="pieTotalValue">$0</span>
         </div>
         <canvas id="mainChart"></canvas>
@@ -1366,6 +1393,10 @@ function getInputs(overrides={}){
     tax:(Number(document.getElementById("tax").value)||0)/100,
     pos:(Number(document.getElementById("pos").value)||0)/100,
     tip:(Number(document.getElementById("tip").value)||0)/100,
+    bohBurdenPct:(Number(document.getElementById("bohBurdenPct")?.value)||0)/100,
+    fohBurdenPct:(Number(document.getElementById("fohBurdenPct")?.value)||0)/100,
+    tipBurdenPct:(Number(document.getElementById("tipBurdenPct")?.value)||0)/100,
+    applyTipBurden:(document.getElementById("applyTipBurden")?.value||"yes")==="yes",
     profitTarget:Number(document.getElementById("profitTarget").value)||0,
     ebitdaAddbacks:Number(document.getElementById("ebitdaAddbacks").value)||0,
     lockedMonthlySales:Number(document.getElementById("lockedMonthlySales").value)||0,
@@ -1389,7 +1420,7 @@ function runModel(options={}){
 
   const totals={
     regularWorkingDays:0,openDays:0,vacationDays:0,bohPayroll:0,fohPayroll:0,vacationPayroll:0,
-    adjustedPayroll:0,fixed:0,foodCost:0,bevCost:0,cogs:0,posFees:0,
+    adjustedPayroll:0,laborBurdenCost:0,trueLaborCost:0,fixed:0,foodCost:0,bevCost:0,cogs:0,posFees:0,
     breakEven:0,requiredProfit:0,expectedSales:0,operationalProfitLoss:0,ownerProfitGap:0,
     additionalSalesNeeded:0,tips:0,tax:0,gross:0,grossPlusTips:0,profitTarget:0,ebitda:0
   };
@@ -1406,6 +1437,10 @@ function runModel(options={}){
     const vacationPayroll=stats.vacationPayroll;
     const adjustedPayroll=bohUsed+fohUsed+vacationPayroll;
 
+    // Payroll burden is calculated on wages and optionally on tips.
+    // Tip burden is calculated later after expected tips are known.
+    const wageBurdenCost = (bohUsed * input.bohBurdenPct) + (fohUsed * input.fohBurdenPct);
+
     const breakEven=margin>0 ? (adjustedPayroll+fixed)/margin : 0;
     const requiredProfit=margin>0 ? (adjustedPayroll+fixed+input.profitTarget)/margin : 0;
     const expectedSales = input.useCapacityTarget==="yes"
@@ -1417,21 +1452,25 @@ function runModel(options={}){
     const cogs=foodCost+bevCost;
     const posFees=expectedSales*input.pos;
 
-    const operationalProfitLoss=expectedSales-cogs-posFees-adjustedPayroll-fixed;
+    const tips=expectedSales*input.tip;
+    const tipBurdenCost=input.applyTipBurden ? tips*input.tipBurdenPct : 0;
+    const laborBurdenCost=wageBurdenCost+tipBurdenCost;
+    const trueLaborCost=adjustedPayroll+laborBurdenCost;
+
+    const operationalProfitLoss=expectedSales-cogs-posFees-trueLaborCost-fixed;
     const ownerProfitGap=Math.max(0,input.profitTarget-operationalProfitLoss);
     const additionalSalesNeeded=margin>0 ? ownerProfitGap/margin : 0;
 
-    const tips=expectedSales*input.tip;
     const tax=expectedSales*input.tax;
     const gross=expectedSales+tax;
     const grossPlusTips=gross+tips;
 
     const dailyBE=stats.actualOpenDays>0 ? breakEven/stats.actualOpenDays : 0;
-    const primeCostPct=expectedSales>0 ? (cogs+adjustedPayroll)/expectedSales : 0;
+    const primeCostPct=expectedSales>0 ? (cogs+trueLaborCost)/expectedSales : 0;
 
     const row={monthName,monthIndex,seasonality:seasonality[monthIndex],regularWorkingDays:stats.regularWorkingDays,
       actualOpenDays:stats.actualOpenDays,vacationDays:stats.vacationDays,bohPayroll:bohUsed,fohPayroll:fohUsed,
-      vacationPayroll,adjustedPayroll,fixed,foodCost,bevCost,cogs,posFees,breakEven,dailyBE,requiredProfit,
+      vacationPayroll,adjustedPayroll,laborBurdenCost,trueLaborCost,wageBurdenCost,tipBurdenCost,fixed,foodCost,bevCost,cogs,posFees,breakEven,dailyBE,requiredProfit,
       expectedSales,operationalProfitLoss,ownerProfitGap,additionalSalesNeeded,tips,tax,gross,grossPlusTips,
       primeCostPct,hasMarginWarning};
 
@@ -1444,6 +1483,8 @@ function runModel(options={}){
     totals.fohPayroll+=fohUsed;
     totals.vacationPayroll+=vacationPayroll;
     totals.adjustedPayroll+=adjustedPayroll;
+    totals.laborBurdenCost+=laborBurdenCost;
+    totals.trueLaborCost+=trueLaborCost;
     totals.fixed+=fixed;
     totals.foodCost+=foodCost;
     totals.bevCost+=bevCost;
@@ -1534,7 +1575,7 @@ function renderMonthly(model){
         <td>${renderSeasonalityControl(r.monthIndex,r.seasonality)}</td>
         <td>${money(r.expectedSales)}</td>
         <td>${money(r.fixed)}</td>
-        <td>${money(r.adjustedPayroll)}</td>
+        <td>${money(r.trueLaborCost)}</td>
         <td class="${statusClass}">${money(r.operationalProfitLoss)}</td>
         <td class="${r.ownerProfitGap>0?'bad':'good'}">${money(r.ownerProfitGap)}</td>
         <td class="${r.additionalSalesNeeded>0?'bad':'good'}">${money(r.additionalSalesNeeded)}</td>
@@ -1551,6 +1592,10 @@ function renderMonthly(model){
             ${detail("BOH Payroll",money(r.bohPayroll))}
             ${detail("FOH Payroll",money(r.fohPayroll))}
             ${detail("Vacation Payroll",money(r.vacationPayroll))}
+            ${detail("Base Payroll",money(r.adjustedPayroll))}
+            ${detail("Labor Burden Cost",money(r.laborBurdenCost))}
+            ${detail("True Labor Cost",money(r.trueLaborCost))}
+            ${detail("Effective Labor %",pct(r.expectedSales>0 ? r.trueLaborCost/r.expectedSales : 0))}
             ${detail("Food Cost",money(r.foodCost))}
             ${detail("Beverage Cost",money(r.bevCost))}
             ${detail("POS Fees",money(r.posFees))}
@@ -1571,7 +1616,7 @@ function renderMonthly(model){
         <div class="metric-row"><span class="metric-label">Expected Sales</span><span class="metric-value">${money(r.expectedSales)}</span></div>
         <div class="metric-row"><span class="metric-label">Expected Cash Flow</span><span class="metric-value">${money(r.grossPlusTips)}</span></div>
         <div class="metric-row"><span class="metric-label">Fixed Used</span><span class="metric-value">${money(r.fixed)}</span></div>
-        <div class="metric-row"><span class="metric-label">Payroll</span><span class="metric-value">${money(r.adjustedPayroll)}</span></div>
+        <div class="metric-row"><span class="metric-label">True Labor Cost</span><span class="metric-value">${money(r.trueLaborCost)}</span></div>
         <div class="metric-row"><span class="metric-label">Operational P/L</span><span class="metric-value ${statusClass}">${money(r.operationalProfitLoss)}</span></div>
         <div class="metric-row"><span class="metric-label">Owner Gap</span><span class="metric-value ${r.ownerProfitGap>0?'bad':'good'}">${money(r.ownerProfitGap)}</span></div>
         <div class="metric-row"><span class="metric-label">Additional Sales Needed</span><span class="metric-value ${r.additionalSalesNeeded>0?'bad':'good'}">${money(r.additionalSalesNeeded)}</span></div>
@@ -1611,7 +1656,7 @@ function renderMonthly(model){
       <td>-</td>
       <td>${money(t.expectedSales)}</td>
       <td>${money(t.fixed)}</td>
-      <td>${money(t.adjustedPayroll)}</td>
+      <td>${money(t.trueLaborCost)}</td>
       <td class="${t.operationalProfitLoss<0?'bad':'good'}">${money(t.operationalProfitLoss)}</td>
       <td class="${t.ownerProfitGap>0?'bad':'good'}">${money(t.ownerProfitGap)}</td>
       <td class="${t.additionalSalesNeeded>0?'bad':'good'}">${money(t.additionalSalesNeeded)}</td>
@@ -1864,7 +1909,15 @@ function updateChart(model){
     const t=model.totals;
     config={
       type:"bar",
-      data:{labels:["Payroll","Fixed","Food","Beverage","POS"],datasets:[{label:"Year Total",data:[t.adjustedPayroll,t.fixed,t.foodCost,t.bevCost,t.posFees]}]},
+      data:{labels:["Payroll","Fixed","Food","Beverage","POS"],datasets:[{label:"Year Total",data:[
+            t.trueLaborCost,
+            t.fixed,
+            t.foodCost,
+            t.bevCost,
+            t.posFees,
+            t.tax,
+            t.tips
+          ]}]},
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}},scales:{y:{beginAtZero:true}}}
     };
   }else if(type==="cash"){
@@ -1873,26 +1926,32 @@ function updateChart(model){
       type:"pie",
       data:{
         labels:[
-          "Adjusted Payroll",
+          "True Labor Cost",
           "Fixed Costs",
           "Expected Food Cost",
           "Expected Beverage Cost",
-          "Expected POS Fees"
+          "Expected POS Fees",
+          "Sales Tax",
+          "Estimated Tips"
         ],
         datasets:[{
           data:[
-            t.adjustedPayroll,
+            t.trueLaborCost,
             t.fixed,
             t.foodCost,
             t.bevCost,
-            t.posFees
+            t.posFees,
+            t.tax,
+            t.tips
           ],
           backgroundColor:[
             "#3ba3e6",
             "#ff5f86",
             "#ff9f3a",
             "#ffd166",
-            "#4bc0c0"
+            "#4bc0c0",
+            "#8b5cf6",
+            "#14b8a6"
           ],
           borderColor:"#ffffff",
           borderWidth:2
@@ -1953,7 +2012,10 @@ function calculate(){
 function collectData(){
   return {
     bohPayroll:val("bohPayroll"),fohPayroll:val("fohPayroll"),fixed:val("fixed"),adjustedFixedCost:val("adjustedFixedCost"),
-    tax:val("tax"),pos:val("pos"),tip:val("tip"),profitTarget:val("profitTarget"),ebitdaAddbacks:val("ebitdaAddbacks"),year:val("year"),
+    tax:val("tax"),pos:val("pos"),tip:val("tip"),
+    bohBurdenPct:val("bohBurdenPct"),fohBurdenPct:val("fohBurdenPct"),
+    tipBurdenPct:val("tipBurdenPct"),applyTipBurden:val("applyTipBurden"),
+    profitTarget:val("profitTarget"),ebitdaAddbacks:val("ebitdaAddbacks"),year:val("year"),
     foodMix:val("foodMix"),bevMix:val("bevMix"),foodCost:val("foodCost"),bevCost:val("bevCost"),
     lockedMonthlySales:val("lockedMonthlySales"),useCapacityTarget:val("useCapacityTarget"),
     seatingCapacity:val("seatingCapacity"),turnsPerNight:val("turnsPerNight"),avgCheck:val("avgCheck"),daysOpenManual:val("daysOpenManual"),
@@ -1993,7 +2055,7 @@ function uploadData(file){
   reader.onload=e=>{
     try{
       const data=JSON.parse(e.target.result);
-      ["bohPayroll","fohPayroll","fixed","adjustedFixedCost","tax","pos","tip","profitTarget","ebitdaAddbacks","year",
+      ["bohPayroll","fohPayroll","fixed","adjustedFixedCost","tax","pos","tip","bohBurdenPct","fohBurdenPct","tipBurdenPct","applyTipBurden","profitTarget","ebitdaAddbacks","year",
        "foodMix","bevMix","foodCost","bevCost","lockedMonthlySales","useCapacityTarget","seatingCapacity","turnsPerNight",
        "avgCheck","daysOpenManual","summerStart","summerEnd","summerPayroll","bohReduction","fohReduction"].forEach(id=>setValue(id,data[id]));
 
