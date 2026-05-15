@@ -7,10 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 
-
 document.getElementById("downloadConfigDownload")?.addEventListener("click",(e)=>{ e.preventDefault(); downloadConfigDirect(); });
-
-
 
 // ===== Direct Configuration Save / Download / Open =====
 function getCurrentConfigurationForExport(){
@@ -19,7 +16,10 @@ function getCurrentConfigurationForExport(){
   // Prefer the app's existing complete collector if available.
   if(typeof collectData === "function"){
     try{
-      return collectData();
+      const collected = collectData();
+      collected.metadata = getMetadataForExport();
+      collected.seasonality = getSeasonalityForExport();
+      return collected;
     }catch(err){
       console.warn("collectData failed, using fallback.", err);
     }
@@ -35,6 +35,8 @@ function getCurrentConfigurationForExport(){
     }
   });
 
+  data.metadata = getMetadataForExport();
+
   data.closedDays = Array.from(document.querySelectorAll(".closedDay")).map(cb=>({
     value:cb.value,
     checked:cb.checked
@@ -45,7 +47,7 @@ function getCurrentConfigurationForExport(){
     checked:cb.checked
   }));
 
-  data.seasonality = typeof getSeasonality === "function" ? getSeasonality() : [];
+  data.seasonality = getSeasonalityForExport();
 
   data.vacations = Array.from(document.querySelectorAll(".vacation-card")).map(card=>({
     start:card.querySelector(".vacStart")?.value || "",
@@ -80,7 +82,7 @@ function downloadConfigurationFile(){
     const date = new Date().toISOString().split("T")[0];
 
     a.href = url;
-    a.download = "restaurant-financial-model-" + date + ".json";
+    a.download = buildMetadataFilename();
     a.style.display = "none";
 
     document.body.appendChild(a);
@@ -97,8 +99,6 @@ function downloadConfigurationFile(){
     alert("Could not download configuration.");
   }
 }
-
-
 
 function showSaveToast(message){
   let toast = document.getElementById("saveToast");
@@ -655,7 +655,6 @@ input[type=range]{
   accent-color:#111;
 }
 
-
 .mobile-details{
   display:none;
   margin-top:12px;
@@ -752,9 +751,6 @@ input[type=range]{
     min-width:62px!important;
   }
 }
-
-
-
 
 /* Landscape chart focus mode for phones/tablets */
 @media screen and (orientation: landscape) and (max-height: 900px){
@@ -861,7 +857,6 @@ input[type=range]{
   }
 }
 
-
 /* Operational Capacity Heatmap */
 .heatmap-grid{
   display:grid;
@@ -967,7 +962,6 @@ input[type=range]{
   }
 }
 
-
 /* Better proportional sizing for operating cost pie */
 .chart-card.pie-chart-card{
   display:flex;
@@ -996,7 +990,6 @@ input[type=range]{
   }
 }
 
-
 .pie-total-display{
   display:none;
   text-align:center;
@@ -1016,7 +1009,6 @@ input[type=range]{
 .chart-card.pie-chart-card{
   flex-direction:column;
 }
-
 
 /* Sticky Monthly Breakdown header */
 #tab-monthly .table-wrap{
@@ -1047,7 +1039,6 @@ input[type=range]{
     max-height:none;
   }
 }
-
 
 /* Mobile Year Totals Summary */
 .mobile-year-summary{
@@ -1094,7 +1085,6 @@ input[type=range]{
   }
 }
 
-
 .year-total-details{
   display:none;
 }
@@ -1111,7 +1101,6 @@ input[type=range]{
   border-radius:12px;
   padding:11px 14px;
 }
-
 
 /* Responsive chart sizing */
 .chart-card{
@@ -1157,7 +1146,6 @@ input[type=range]{
   }
 }
 
-
 /* Inline Operating Revenue Distribution pies in Monthly Details */
 .inline-pie-wrap{
   grid-column:1 / -1;
@@ -1196,7 +1184,6 @@ input[type=range]{
     height:240px;
   }
 }
-
 
 /* ===== UI Refresh (safe version) ===== */
 
@@ -1320,7 +1307,6 @@ input[type=range]{
   }
 }
 
-
 /* Configuration Toolbar */
 .configuration-toolbar{
   display:flex;
@@ -1405,7 +1391,6 @@ input[type=range]{
   }
 }
 
-
 .bottom-configuration-toolbar{
   margin-top:28px;
 }
@@ -1423,7 +1408,6 @@ input[type=range]{
   border-radius:12px;
   font-size:14px;
 }
-
 
 /* Configuration spacing cleanup */
 .configuration-toolbar{
@@ -1450,7 +1434,6 @@ input[type=range]{
     margin:10px 10px 16px 10px !important;
   }
 }
-
 
 /* Section alignment cleanup */
 .section,
@@ -1485,7 +1468,6 @@ input[type=range]{
   }
 }
 
-
 /* Bottom configuration alignment fix */
 .bottom-configuration-toolbar{
   width:100% !important;
@@ -1506,7 +1488,6 @@ input[type=range]{
   overflow:hidden;
 }
 
-
 /* Final bottom configuration alignment */
 .app > .bottom-configuration-toolbar{
   width:100% !important;
@@ -1524,7 +1505,6 @@ body > .bottom-configuration-toolbar{
 .bottom-configuration-toolbar{
   border-radius:24px !important;
 }
-
 
 /* Desktop Monthly Breakdown fit-to-screen */
 @media(min-width: 1024px){
@@ -1625,7 +1605,6 @@ body > .bottom-configuration-toolbar{
   }
 }
 
-
 /* Working configuration toolbar */
 #topConfigurationToolbar,
 .configuration-toolbar:not(.bottom-configuration-toolbar){
@@ -1683,7 +1662,6 @@ body > .bottom-configuration-toolbar{
   }
 }
 
-
 #resetConfigurationButton{
   background:#a11 !important;
 }
@@ -1691,7 +1669,6 @@ body > .bottom-configuration-toolbar{
 #resetConfigurationButton:hover{
   background:#811 !important;
 }
-
 
 /* Payroll Adjustment Periods upgrade - stable */
 .payroll-adjustment-card .help{
@@ -1713,7 +1690,6 @@ body > .bottom-configuration-toolbar{
     grid-template-columns:1fr;
   }
 }
-
 
 /* Merged Payroll & Labor Cost section */
 #tab-inputs h3{
@@ -1744,7 +1720,6 @@ body > .bottom-configuration-toolbar{
   }
 }
 
-
 /* Owner Targets section */
 #tab-inputs h3{
   border-top:1px solid rgba(0,0,0,.06);
@@ -1755,7 +1730,6 @@ body > .bottom-configuration-toolbar{
   border-top:none;
   padding-top:0;
 }
-
 
 /* Safe visual balance only - no structure or logic changes */
 #tab-inputs .section{
@@ -1790,7 +1764,6 @@ body > .bottom-configuration-toolbar{
     min-height:auto;
   }
 }
-
 
 /* Payroll Adjustment Periods - improved burden selector design */
 .payroll-adjustment-card{
@@ -1884,7 +1857,6 @@ body > .bottom-configuration-toolbar{
   }
 }
 
-
 /* Payroll grouping cleanup */
 .core-operating-section h3,
 .revenue-cogs-section h3,
@@ -1923,6 +1895,91 @@ body > .bottom-configuration-toolbar{
   }
 }
 
+/* Inline navigation links */
+.inline-nav-link{
+  display:inline-block;
+  margin-left:6px;
+  font-weight:600;
+  color:#111;
+  text-decoration:none;
+  border-bottom:1px solid rgba(0,0,0,.15);
+  transition:all .15s ease;
+}
+
+.inline-nav-link:hover{
+  color:#7a3b00;
+  border-bottom-color:#7a3b00;
+}
+
+/* Anchor scroll offset */
+#adjustedFixedCostMonthsSection,
+#coreOperatingAssumptionsTop{
+  scroll-margin-top:140px;
+}
+
+
+/* Space between Adjusted Fixed Cost Override and month checkboxes */
+#adjustedFixedCostField{
+  margin-bottom:18px;
+}
+
+.field:has(#adjustedFixedCostField){
+  margin-bottom:22px;
+}
+
+
+
+
+
+
+
+.core-operating-section .field{
+  margin-bottom:18px !important;
+}
+
+.core-operating-section .field + .field{
+  margin-top:10px !important;
+}
+
+
+}
+
+
+/* Clean balanced Core Operating Assumptions layout */
+.core-operating-section{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:24px;
+  align-items:start;
+}
+
+.core-operating-section .field{
+  margin:0;
+}
+
+.core-operating-section .field input,
+.core-operating-section .field select{
+  width:100%;
+}
+
+.core-operating-section .field label{
+  display:block;
+  margin-bottom:12px;
+}
+
+@media(max-width:900px){
+  .core-operating-section{
+    grid-template-columns:1fr;
+    gap:20px;
+  }
+}
+
+
+/* Metadata section */
+.metadata-section{
+  margin-bottom:24px;
+}
+
 </style>
 </head>
 
@@ -1936,14 +1993,12 @@ body > .bottom-configuration-toolbar{
     </div>
   </div>
 
-  
 <div class="configuration-toolbar">
   <div class="configuration-left">
     <div class="configuration-title">Configuration</div>
     
   </div>
 
-  
 <div class="configuration-actions">
     <button type="button" id="saveLocalConfig">Save</button>
     <button type="button" id="downloadConfigDownload" onclick="downloadConfigDirect()">Download</button>
@@ -1975,7 +2030,6 @@ body > .bottom-configuration-toolbar{
     </div>
   </div>
 
-  
 <div class="tabs">
   <button class="tab-btn active" data-tab="inputs">Inputs</button>
   <button class="tab-btn" data-tab="capacity">Capacity</button>
@@ -1984,13 +2038,26 @@ body > .bottom-configuration-toolbar{
   <button class="tab-btn" data-tab="charts">Charts</button>
 </div>
 
-
   <div class="tab-panel active" id="tab-inputs">
+<div class="section"><h2 id="coreOperatingAssumptionsTop">Core Operating Assumptions</h2>
     
+</div>
+
+<div class="section metadata-section">
+  <h2>Configuration Metadata</h2>
+  <div class="grid">
+    <div class="field">
+      <label>Restaurant Name</label>
+      <input type="text" id="metaRestaurantName" placeholder="Restaurant name">
+    </div>
+    <div class="field">
+      <label>Configuration Notes</label>
+      <input type="text" id="metaNotes" placeholder="Optional notes">
+    </div>
+  </div>
+</div>
+
 <div class="section core-operating-section">
-  <h2>Core Operating Assumptions</h2>
-  <div class="help">Set the owner target, EBITDA add-backs, fixed costs, taxes, POS fees, tips, and model year.</div>
-  <h3>Owner Targets & EBITDA</h3>
 
 <div class="grid">
 <div class="field">
@@ -2003,17 +2070,11 @@ body > .bottom-configuration-toolbar{
           <input type="number" id="ebitdaAddbacks" value="0" min="0" step="100">
         </div>
 </div>
-  <h3>Core Operating Assumptions</h3>
+  
       <div class="grid">
         <div class="field">
           <label>Monthly Fixed Costs ($)</label>
           <input type="number" id="fixed" value="8000" min="0" step="100">
-        </div>
-
-        <div class="field">
-          <label>Adjusted Fixed Cost Override ($)</label>
-          <input type="number" id="adjustedFixedCost" value="0" min="0" step="100">
-          <div class="note">Selected months will use this value instead of the regular fixed cost. $0 is valid.</div>
         </div>
 
         <div class="field">
@@ -2030,10 +2091,6 @@ body > .bottom-configuration-toolbar{
           <label>Estimated Tips Collected %</label>
           <input type="number" id="tip" value="19" min="0" max="100" step="0.1">
         </div>
-
-        
-
-        
 
         <div class="field">
           <label>Year</label>
@@ -2144,10 +2201,18 @@ body > .bottom-configuration-toolbar{
     </div>
 
     <div class="section">
-      <h2>Adjusted Fixed Cost Months</h2>
+      <h2 id="adjustedFixedCostMonthsSection">Adjusted Fixed Cost Months</h2>
       <div class="help">
         Select which months should use the Adjusted Fixed Cost Override. Unselected months use regular Monthly Fixed Costs.
       </div>
+<div class="field">
+          <label id="adjustedFixedCostField">Adjusted Fixed Cost Override ($)</label>
+          <input type="number" id="adjustedFixedCost" value="0" min="0" step="100">
+          <div class="note">
+Choose which months should use the Adjusted Fixed Cost Override.
+
+</div>
+        </div>
       <div class="checkbox-grid" id="adjustedFixedMonths">
         <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="0"> Jan</label>
         <label class="check-card"><input type="checkbox" class="adjustedFixedMonth" value="1"> Feb</label>
@@ -2168,7 +2233,6 @@ body > .bottom-configuration-toolbar{
       </div>
     </div>
 
-    
   </div>
 
   <div class="tab-panel" id="tab-monthly">
@@ -2231,62 +2295,91 @@ body > .bottom-configuration-toolbar{
     </div>
   </div>
 
+  
   <div class="tab-panel" id="tab-scenarios">
     <div class="section">
-      <h2>Scenario Comparison</h2>
-      <div class="scenario-grid">
-        <div class="scenario-card">
-          <h3>Current Model</h3>
-          <div class="metric-row"><span class="metric-label">Expected Sales</span><span class="metric-value" id="scenarioCurrentSales">$0</span></div>
-          <div class="metric-row"><span class="metric-label">Operational P/L</span><span class="metric-value" id="scenarioCurrentPL">$0</span></div>
-          <div class="metric-row"><span class="metric-label">Owner Gap</span><span class="metric-value" id="scenarioCurrentGap">$0</span></div>
-          <div class="metric-row"><span class="metric-label">Additional Sales Needed</span><span class="metric-value" id="scenarioCurrentAdd">$0</span></div>
+      <h2>Scenario Comparison Dashboard</h2>
+      <div class="help">
+        Compare the current Base Case against three configurable scenarios. Use the controls below to test changes in sales, payroll, fixed costs, and COGS.
+      </div>
+
+      <div class="scenario-comparison-grid">
+        <div class="scenario-card scenario-base-card">
+          <h3>Base Case</h3>
+          <div class="metric-row"><span class="metric-label">Expected Sales</span><span class="metric-value" id="scenarioBaseSales">$0</span></div>
+          <div class="metric-row"><span class="metric-label">True Labor Cost</span><span class="metric-value" id="scenarioBaseLabor">$0</span></div>
+          <div class="metric-row"><span class="metric-label">Fixed Costs</span><span class="metric-value" id="scenarioBaseFixed">$0</span></div>
+          <div class="metric-row"><span class="metric-label">COGS</span><span class="metric-value" id="scenarioBaseCogs">$0</span></div>
+          <div class="metric-row"><span class="metric-label">Operational P/L</span><span class="metric-value" id="scenarioBasePL">$0</span></div>
+          <div class="metric-row"><span class="metric-label">Owner Gap</span><span class="metric-value" id="scenarioBaseGap">$0</span></div>
+          <div class="metric-row"><span class="metric-label">Additional Sales Needed</span><span class="metric-value" id="scenarioBaseAdd">$0</span></div>
         </div>
 
         <div class="scenario-card">
-          <h3>Summer Closure</h3>
+          <h3>Scenario 1</h3>
           <div class="grid">
-            <div class="field">
-              <label>Start</label>
-              <input type="date" id="summerStart">
-            </div>
-            <div class="field">
-              <label>End</label>
-              <input type="date" id="summerEnd">
-            </div>
-            <div class="field">
-              <label>Closure Payroll ($)</label>
-              <input type="number" id="summerPayroll" value="0" min="0" step="100">
-            </div>
+            <div class="field"><label>Name</label><input id="scenario1Name" value="Slow Season / Closure"></div>
+            <div class="field"><label>Expected Sales Change %</label><input type="number" id="scenario1SalesChange" value="-30" step="1"></div>
+            <div class="field"><label>BOH Payroll Change %</label><input type="number" id="scenario1BohChange" value="-40" step="1"></div>
+            <div class="field"><label>FOH Payroll Change %</label><input type="number" id="scenario1FohChange" value="-30" step="1"></div>
+            <div class="field"><label>Fixed Cost Change %</label><input type="number" id="scenario1FixedChange" value="-10" step="1"></div>
+            <div class="field"><label>Food Cost %</label><input type="number" id="scenario1FoodCost" value="" placeholder="Use current" step="0.1"></div>
+            <div class="field"><label>Beverage Cost %</label><input type="number" id="scenario1BevCost" value="" placeholder="Use current" step="0.1"></div>
           </div>
-          <div class="metric-row"><span class="metric-label">Expected Sales</span><span class="metric-value" id="scenarioSummerSales">$0</span></div>
-          <div class="metric-row"><span class="metric-label">Operational P/L</span><span class="metric-value" id="scenarioSummerPL">$0</span></div>
-          <div class="metric-row"><span class="metric-label">Owner Gap</span><span class="metric-value" id="scenarioSummerGap">$0</span></div>
-          <div class="metric-row"><span class="metric-label">Additional Sales Needed</span><span class="metric-value" id="scenarioSummerAdd">$0</span></div>
         </div>
 
         <div class="scenario-card">
-          <h3>Reduced Payroll</h3>
+          <h3>Scenario 2</h3>
           <div class="grid">
-            <div class="field">
-              <label>BOH Reduction %</label>
-              <input type="number" id="bohReduction" value="15" min="0" max="100" step="1">
-            </div>
-            <div class="field">
-              <label>FOH Reduction %</label>
-              <input type="number" id="fohReduction" value="15" min="0" max="100" step="1">
-            </div>
+            <div class="field"><label>Name</label><input id="scenario2Name" value="Lean Payroll"></div>
+            <div class="field"><label>Expected Sales Change %</label><input type="number" id="scenario2SalesChange" value="0" step="1"></div>
+            <div class="field"><label>BOH Payroll Change %</label><input type="number" id="scenario2BohChange" value="-15" step="1"></div>
+            <div class="field"><label>FOH Payroll Change %</label><input type="number" id="scenario2FohChange" value="-15" step="1"></div>
+            <div class="field"><label>Fixed Cost Change %</label><input type="number" id="scenario2FixedChange" value="0" step="1"></div>
+            <div class="field"><label>Food Cost %</label><input type="number" id="scenario2FoodCost" value="" placeholder="Use current" step="0.1"></div>
+            <div class="field"><label>Beverage Cost %</label><input type="number" id="scenario2BevCost" value="" placeholder="Use current" step="0.1"></div>
           </div>
-          <div class="metric-row"><span class="metric-label">Expected Sales</span><span class="metric-value" id="scenarioReducedSales">$0</span></div>
-          <div class="metric-row"><span class="metric-label">Operational P/L</span><span class="metric-value" id="scenarioReducedPL">$0</span></div>
-          <div class="metric-row"><span class="metric-label">Owner Gap</span><span class="metric-value" id="scenarioReducedGap">$0</span></div>
-          <div class="metric-row"><span class="metric-label">Additional Sales Needed</span><span class="metric-value" id="scenarioReducedAdd">$0</span></div>
         </div>
+
+        <div class="scenario-card">
+          <h3>Scenario 3</h3>
+          <div class="grid">
+            <div class="field"><label>Name</label><input id="scenario3Name" value="Growth Case"></div>
+            <div class="field"><label>Expected Sales Change %</label><input type="number" id="scenario3SalesChange" value="20" step="1"></div>
+            <div class="field"><label>BOH Payroll Change %</label><input type="number" id="scenario3BohChange" value="10" step="1"></div>
+            <div class="field"><label>FOH Payroll Change %</label><input type="number" id="scenario3FohChange" value="10" step="1"></div>
+            <div class="field"><label>Fixed Cost Change %</label><input type="number" id="scenario3FixedChange" value="5" step="1"></div>
+            <div class="field"><label>Food Cost %</label><input type="number" id="scenario3FoodCost" value="" placeholder="Use current" step="0.1"></div>
+            <div class="field"><label>Beverage Cost %</label><input type="number" id="scenario3BevCost" value="" placeholder="Use current" step="0.1"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card scenario-chart-card">
+        <canvas id="scenarioComparisonChart"></canvas>
+      </div>
+
+      <div class="table-wrap scenario-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Expected Sales</th>
+              <th>True Labor Cost</th>
+              <th>Fixed Costs</th>
+              <th>COGS</th>
+              <th>Operational P/L</th>
+              <th>Owner Gap</th>
+              <th>Additional Sales Needed</th>
+            </tr>
+          </thead>
+          <tbody id="scenarioComparisonBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <div class="tab-panel" id="tab-capacity">
+<div class="tab-panel" id="tab-capacity">
     <div class="section">
       <h2>Capacity & Revenue Target</h2>
       <div class="help">
@@ -2355,13 +2448,13 @@ body > .bottom-configuration-toolbar{
     </div>
   </div>
 
-
 </div>
 
 <script>
 
 function applyConfigDirect(data){
   try{
+    applyMetadataFromImport(data);
     // Simple scalar fields
     Object.keys(data).forEach(key=>{
       if(["closedDays","adjustedFixedMonths","vacations","seasonality"].includes(key)) return;
@@ -2395,9 +2488,7 @@ function applyConfigDirect(data){
     }
 
     // Seasonality
-    if(Array.isArray(data.seasonality)){
-      window.pendingSeasonality = data.seasonality.map(v=>Number(v)||0);
-    }
+    applySeasonalityFromImport(data);
 
     // Payroll adjustment periods
     if(Array.isArray(data.vacations)){
@@ -2482,8 +2573,6 @@ function bindOpenConfigDirect(){
 document.addEventListener("DOMContentLoaded", bindOpenConfigDirect);
 setTimeout(bindOpenConfigDirect, 250);
 
-
-
 function resetConfigurationDirect(){
 
   const confirmed = confirm(
@@ -2558,6 +2647,85 @@ function resetConfigurationDirect(){
 }
 
 
+// ===== Metadata export / import helpers =====
+
+// ===== Seasonality export / import helpers =====
+function getSeasonalityForExport(){
+  if(typeof getSeasonality === "function"){
+    try{
+      return getSeasonality();
+    }catch(e){
+      console.warn("getSeasonality failed, using DOM fallback", e);
+    }
+  }
+
+  return Array.from(document.querySelectorAll(".seasonalityNumber")).map(input => Number(input.value) || 1);
+}
+
+function applySeasonalityFromImport(data){
+  if(!data || !Array.isArray(data.seasonality)) return;
+
+  window.pendingSeasonality = data.seasonality.map(v => Number(v) || 1);
+
+  document.querySelectorAll(".seasonalityNumber").forEach(input=>{
+    const month = Number(input.dataset.month);
+    if(!Number.isNaN(month) && data.seasonality[month] !== undefined){
+      input.value = Number(data.seasonality[month]).toFixed(2);
+    }
+  });
+
+  document.querySelectorAll(".seasonality").forEach(input=>{
+    const month = Number(input.dataset.month);
+    if(!Number.isNaN(month) && data.seasonality[month] !== undefined){
+      input.value = Number(data.seasonality[month]);
+    }
+  });
+}
+
+
+function getMetadataForExport(){
+  return {
+    modelVersion: "2.5",
+    savedAt: new Date().toISOString(),
+    restaurantName: document.getElementById("metaRestaurantName")?.value || "",
+    notes: document.getElementById("metaNotes")?.value || ""
+  };
+}
+
+function applyMetadataFromImport(data){
+  if(!data || !data.metadata) return;
+
+  const restaurant = document.getElementById("metaRestaurantName");
+  const notes = document.getElementById("metaNotes");
+
+  if(restaurant) restaurant.value = data.metadata.restaurantName || "";
+  if(notes) notes.value = data.metadata.notes || "";
+}
+
+
+
+function buildMetadataFilename(){
+  const metadata = typeof getMetadataForExport === "function"
+    ? getMetadataForExport()
+    : {
+        restaurantName: document.getElementById("metaRestaurantName")?.value || "",
+        notes: document.getElementById("metaNotes")?.value || ""
+      };
+
+  const safe = value => String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  const restaurant = safe(metadata.restaurantName) || "restaurant-financial-model";
+  const notes = safe(metadata.notes).substring(0, 40);
+
+  const date = new Date().toISOString().slice(0, 10);
+
+  return `${restaurant}${notes ? "-" + notes : ""}-${date}.json`;
+}
+
 
 function downloadConfigDirect(){
   try{
@@ -2566,6 +2734,8 @@ function downloadConfigDirect(){
     if(typeof collectData === "function"){
       try{
         data = collectData();
+        data.metadata = getMetadataForExport();
+        data.seasonality = getSeasonalityForExport();
       }catch(e){
         console.warn("collectData failed, using DOM fallback", e);
       }
@@ -2604,9 +2774,7 @@ function downloadConfigDirect(){
         applyTipBurden: card.querySelector(".applyPeriodTipBurden")?.checked ? "default" : "no"
       }));
 
-      if(typeof getSeasonality === "function"){
-        data.seasonality = getSeasonality();
-      }
+      data.seasonality = getSeasonalityForExport();
     }
 
     const json = JSON.stringify(data, null, 2);
@@ -2615,7 +2783,7 @@ function downloadConfigDirect(){
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = "restaurant-financial-model-" + new Date().toISOString().slice(0,10) + ".json";
+    link.download = buildMetadataFilename();
     link.style.display = "none";
     document.body.appendChild(link);
 
@@ -2635,7 +2803,6 @@ function downloadConfigDirect(){
     alert("Download failed. Please check the browser console for details.");
   }
 }
-
 
 const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 let vacationCounter = 0;
@@ -2680,7 +2847,6 @@ function setAdjustedFixedMonths(checked){
   document.querySelectorAll(".adjustedFixedMonth").forEach(cb=>cb.checked=checked);
   calculate();
 }
-
 
 function addVacationPeriod(data={}){
   vacationCounter++;
@@ -2795,8 +2961,6 @@ function clearVacationPeriods(){
   calculate();
 }
 
-
-
 function getVacationPeriods(extra=null){
   const periods=[];
 
@@ -2851,7 +3015,6 @@ function getVacationPeriods(extra=null){
   return periods;
 }
 
-
 function vacationForDate(date, periods){
   let isVacation=false, payroll=0;
   periods.forEach(p=>{
@@ -2863,7 +3026,6 @@ function vacationForDate(date, periods){
   });
   return {isVacation,payroll};
 }
-
 
 function monthStats(year, month, closedDays, periods){
   const daysInMonth=new Date(year,month+1,0).getDate();
@@ -2955,7 +3117,6 @@ function monthStats(year, month, closedDays, periods){
   };
 }
 
-
 function getSeasonality(){
   return months.map((_,i)=>{
     if(pendingSeasonality && pendingSeasonality[i]!==undefined) return Number(pendingSeasonality[i]);
@@ -2973,25 +3134,25 @@ function getInputs(overrides={}){
   return {
     bohPayroll: overrides.bohPayroll!==undefined ? overrides.bohPayroll : (Number(document.getElementById("bohPayroll").value)||0),
     fohPayroll: overrides.fohPayroll!==undefined ? overrides.fohPayroll : (Number(document.getElementById("fohPayroll").value)||0),
-    fixed: Number(document.getElementById("fixed").value)||0,
-    adjustedFixedCost: Number(document.getElementById("adjustedFixedCost").value)||0,
+    fixed: overrides.fixed!==undefined ? overrides.fixed : (Number(document.getElementById("fixed").value)||0),
+    adjustedFixedCost: overrides.adjustedFixedCost!==undefined ? overrides.adjustedFixedCost : (Number(document.getElementById("adjustedFixedCost").value)||0),
     adjustedFixedMonths:getAdjustedFixedMonths(),
-    tax:(Number(document.getElementById("tax").value)||0)/100,
-    pos:(Number(document.getElementById("pos").value)||0)/100,
-    tip:(Number(document.getElementById("tip").value)||0)/100,
+    tax: overrides.tax!==undefined ? overrides.tax : ((Number(document.getElementById("tax").value)||0)/100),
+    pos: overrides.pos!==undefined ? overrides.pos : ((Number(document.getElementById("pos").value)||0)/100),
+    tip: overrides.tip!==undefined ? overrides.tip : ((Number(document.getElementById("tip").value)||0)/100),
     bohBurdenPct:(Number(document.getElementById("bohBurdenPct")?.value)||0)/100,
     fohBurdenPct:(Number(document.getElementById("fohBurdenPct")?.value)||0)/100,
     tipBurdenPct:(Number(document.getElementById("tipBurdenPct")?.value)||0)/100,
     applyTipBurden:(document.getElementById("applyTipBurden")?.value||"yes")==="yes",
-    profitTarget:Number(document.getElementById("profitTarget").value)||0,
+    profitTarget: overrides.profitTarget!==undefined ? overrides.profitTarget : (Number(document.getElementById("profitTarget").value)||0),
     ebitdaAddbacks:Number(document.getElementById("ebitdaAddbacks").value)||0,
     lockedMonthlySales:Number(document.getElementById("lockedMonthlySales").value)||0,
     useCapacityTarget:document.getElementById("useCapacityTarget").value,
     year:Number(document.getElementById("year").value)||new Date().getFullYear(),
     foodMix:foodMixRaw/totalMix,
     bevMix:bevMixRaw/totalMix,
-    foodCostPct:(Number(document.getElementById("foodCost").value)||0)/100,
-    bevCostPct:(Number(document.getElementById("bevCost").value)||0)/100
+    foodCostPct: overrides.foodCostPct!==undefined ? overrides.foodCostPct : ((Number(document.getElementById("foodCost").value)||0)/100),
+    bevCostPct: overrides.bevCostPct!==undefined ? overrides.bevCostPct : ((Number(document.getElementById("bevCost").value)||0)/100)
   };
 }
 
@@ -3043,9 +3204,11 @@ function runModel(options={}){
 
     const breakEven=margin>0 ? (adjustedPayroll+fixed)/margin : 0;
     const requiredProfit=margin>0 ? (adjustedPayroll+fixed+input.profitTarget)/margin : 0;
-    const expectedSales = input.useCapacityTarget==="yes"
+    const expectedSalesBase = input.useCapacityTarget==="yes"
       ? input.lockedMonthlySales * seasonality[monthIndex]
       : breakEven * seasonality[monthIndex];
+
+    const expectedSales = expectedSalesBase * (options.expectedSalesMultiplier!==undefined ? options.expectedSalesMultiplier : 1);
 
     const foodCost=expectedSales*input.foodMix*input.foodCostPct;
     const bevCost=expectedSales*input.bevMix*input.bevCostPct;
@@ -3063,7 +3226,7 @@ function runModel(options={}){
     const trueLaborCost=adjustedPayroll+laborBurdenCost;
 
     const operationalProfitLoss=expectedSales-cogs-posFees-trueLaborCost-fixed;
-    const ownerProfitGap=Math.max(0,input.profitTarget-operationalProfitLoss);
+    const ownerProfitGap = input.profitTarget > 0 ? Math.max(0, input.profitTarget - operationalProfitLoss) : 0;
     const additionalSalesNeeded=margin>0 ? ownerProfitGap/margin : 0;
 
     const tax=expectedSales*input.tax;
@@ -3110,6 +3273,13 @@ function runModel(options={}){
   });
 
   totals.primeCostPct=totals.expectedSales>0 ? (totals.cogs+totals.adjustedPayroll)/totals.expectedSales : 0;
+
+  // Final yearly owner gap correction:
+  // Top KPI compares annual owner target against annual operational profit.
+  const annualOwnerTarget = input.profitTarget * 12;
+  totals.ownerProfitGap = annualOwnerTarget > 0 ? Math.max(0, annualOwnerTarget - totals.operationalProfitLoss) : 0;
+  totals.additionalSalesNeeded = totals.ownerProfitGap > 0 && margin > 0 ? totals.ownerProfitGap / margin : 0;
+
   return {rows,totals,hasMarginWarning,margin};
 }
 
@@ -3164,8 +3334,6 @@ function bindSeasonalityControls(){
     });
   });
 }
-
-
 
 const inlinePiePercentagePlugin = {
   id: "inlinePiePercentagePlugin",
@@ -3236,7 +3404,6 @@ function destroyInlinePieCharts(){
   });
   inlinePieCharts = {};
 }
-
 
 function updateInlinePieVisibleTotal(canvasId){
   const chart = inlinePieCharts[canvasId];
@@ -3341,7 +3508,6 @@ function renderVisibleInlinePieCharts(model){
     renderInlinePieChart("mobile-year-pie", model.totals);
   }
 }
-
 
 function renderMonthly(model){
   destroyInlinePieCharts();
@@ -3521,8 +3687,6 @@ function toggleDetails(i){
   }
 }
 
-
-
 function toggleYearDetails(){
   const row = document.getElementById("year-details-row");
   if(!row) return;
@@ -3533,7 +3697,6 @@ function toggleYearDetails(){
     renderInlinePieChart("year-pie", model.totals);
   }
 }
-
 
 function toggleMobileDetails(i, button){
   const detail = document.getElementById("mobile-details-" + i);
@@ -3547,7 +3710,6 @@ function toggleMobileDetails(i, button){
     renderInlinePieChart("mobile-month-pie-" + i, model.rows[i]);
   }
 }
-
 
 function updateSummary(model){
   const t=model.totals;
@@ -3600,7 +3762,6 @@ function updateCapacity(){
   document.getElementById("guestCapacityMonth").textContent=whole(monthlyGuests);
   document.getElementById("guestCapacityYear").textContent=whole(yearlyGuests);
 }
-
 
 function heatmapClass(utilization){
   if(utilization >= 1) return "heatmap-over";
@@ -3682,36 +3843,159 @@ function updateCapacityHeatmap(model){
 }
 
 
+let scenarioComparisonChart = null;
+
+function scenarioValue(id, fallback=0){
+  const el = document.getElementById(id);
+  if(!el) return fallback;
+  const value = el.value;
+  if(value === "" || value === null || value === undefined) return fallback;
+  return Number(value);
+}
+
+function buildScenario(index){
+  const input = getInputs();
+
+  const salesMultiplier = 1 + (scenarioValue(`scenario${index}SalesChange`, 0) / 100);
+  const bohMultiplier = 1 + (scenarioValue(`scenario${index}BohChange`, 0) / 100);
+  const fohMultiplier = 1 + (scenarioValue(`scenario${index}FohChange`, 0) / 100);
+  const fixedMultiplier = 1 + (scenarioValue(`scenario${index}FixedChange`, 0) / 100);
+
+  const foodCostEl = document.getElementById(`scenario${index}FoodCost`);
+  const bevCostEl = document.getElementById(`scenario${index}BevCost`);
+
+  const overrides = {
+    expectedSalesMultiplier: salesMultiplier,
+    bohPayroll: input.bohPayroll * bohMultiplier,
+    fohPayroll: input.fohPayroll * fohMultiplier,
+    fixed: input.fixed * fixedMultiplier
+  };
+
+  if(foodCostEl && foodCostEl.value !== ""){
+    overrides.foodCostPct = Number(foodCostEl.value) / 100;
+  }
+
+  if(bevCostEl && bevCostEl.value !== ""){
+    overrides.bevCostPct = Number(bevCostEl.value) / 100;
+  }
+
+  const name = document.getElementById(`scenario${index}Name`)?.value || `Scenario ${index}`;
+  return { name, model: runModel(overrides) };
+}
+
+function scenarioSummary(name, model){
+  return {
+    name,
+    expectedSales: model.totals.expectedSales,
+    trueLaborCost: model.totals.trueLaborCost,
+    fixed: model.totals.fixed,
+    cogs: model.totals.cogs,
+    operationalProfitLoss: model.totals.operationalProfitLoss,
+    ownerProfitGap: model.totals.ownerProfitGap,
+    additionalSalesNeeded: model.totals.additionalSalesNeeded
+  };
+}
+
 function updateScenarios(current){
-  scenarioFill("Current",current.totals);
+  const scenarios = [
+    scenarioSummary("Base Case", current),
+    scenarioSummary(buildScenario(1).name, buildScenario(1).model),
+    scenarioSummary(buildScenario(2).name, buildScenario(2).model),
+    scenarioSummary(buildScenario(3).name, buildScenario(3).model)
+  ];
 
-  const summerStart=parseDate(document.getElementById("summerStart").value);
-  const summerEnd=parseDate(document.getElementById("summerEnd").value);
-  const summerPayroll=Number(document.getElementById("summerPayroll").value)||0;
-  const summer=runModel({extraPeriod:{start:summerStart,end:summerEnd,payroll:summerPayroll}});
-  scenarioFill("Summer",summer.totals);
-
-  const input=getInputs();
-  const bohRed=(Number(document.getElementById("bohReduction").value)||0)/100;
-  const fohRed=(Number(document.getElementById("fohReduction").value)||0)/100;
-  const reduced=runModel({bohPayroll:input.bohPayroll*(1-bohRed),fohPayroll:input.fohPayroll*(1-fohRed)});
-  scenarioFill("Reduced",reduced.totals);
+  updateScenarioBaseCard(scenarios[0]);
+  renderScenarioComparisonTable(scenarios);
+  renderScenarioComparisonChart(scenarios);
 }
 
-function scenarioFill(name,t){
-  document.getElementById(`scenario${name}Sales`).textContent=money(t.expectedSales);
-  const pl=document.getElementById(`scenario${name}PL`);
-  pl.textContent=money(t.operationalProfitLoss);
-  pl.className="metric-value "+(t.operationalProfitLoss<0?"bad":"good");
-  const gap=document.getElementById(`scenario${name}Gap`);
-  gap.textContent=money(t.ownerProfitGap);
-  gap.className="metric-value "+(t.ownerProfitGap>0?"bad":"good");
-  const add=document.getElementById(`scenario${name}Add`);
-  add.textContent=money(t.additionalSalesNeeded);
-  add.className="metric-value "+(t.additionalSalesNeeded>0?"bad":"good");
+function updateScenarioBaseCard(s){
+  const set = (id, value, className="") => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.textContent = money(value);
+    if(className) el.className = "metric-value " + className;
+  };
+
+  set("scenarioBaseSales", s.expectedSales);
+  set("scenarioBaseLabor", s.trueLaborCost);
+  set("scenarioBaseFixed", s.fixed);
+  set("scenarioBaseCogs", s.cogs);
+  set("scenarioBasePL", s.operationalProfitLoss, s.operationalProfitLoss < 0 ? "bad" : "good");
+  set("scenarioBaseGap", s.ownerProfitGap, s.ownerProfitGap > 0 ? "bad" : "good");
+  set("scenarioBaseAdd", s.additionalSalesNeeded, s.additionalSalesNeeded > 0 ? "bad" : "good");
 }
 
+function renderScenarioComparisonTable(scenarios){
+  const body = document.getElementById("scenarioComparisonBody");
+  if(!body) return;
 
+  body.innerHTML = scenarios.map(s => `
+    <tr>
+      <td>${s.name}</td>
+      <td>${money(s.expectedSales)}</td>
+      <td>${money(s.trueLaborCost)}</td>
+      <td>${money(s.fixed)}</td>
+      <td>${money(s.cogs)}</td>
+      <td class="${s.operationalProfitLoss < 0 ? "bad" : "good"}">${money(s.operationalProfitLoss)}</td>
+      <td class="${s.ownerProfitGap > 0 ? "bad" : "good"}">${money(s.ownerProfitGap)}</td>
+      <td class="${s.additionalSalesNeeded > 0 ? "bad" : "good"}">${money(s.additionalSalesNeeded)}</td>
+    </tr>
+  `).join("");
+}
+
+function renderScenarioComparisonChart(scenarios){
+  const canvas = document.getElementById("scenarioComparisonChart");
+  if(!canvas || typeof Chart === "undefined") return;
+
+  if(scenarioComparisonChart){
+    scenarioComparisonChart.destroy();
+  }
+
+  scenarioComparisonChart = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: scenarios.map(s => s.name),
+      datasets: [
+        {
+          label: "Expected Sales",
+          data: scenarios.map(s => s.expectedSales)
+        },
+        {
+          label: "Operational P/L",
+          data: scenarios.map(s => s.operationalProfitLoss)
+        },
+        {
+          label: "Owner Gap",
+          data: scenarios.map(s => s.ownerProfitGap)
+        },
+        {
+          label: "Additional Sales Needed",
+          data: scenarios.map(s => s.additionalSalesNeeded)
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "top" },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: ${money(ctx.raw)}`
+          }
+        }
+      },
+      scales: {
+        y: {
+          ticks: {
+            callback: value => money(value)
+          }
+        }
+      }
+    }
+  });
+}
 
 
 const piePercentagePlugin = {
@@ -3782,8 +4066,6 @@ function updatePieVisibleTotal(){
   valueEl.textContent = money(total);
   display.style.display = "block";
 }
-
-
 
 function updateChart(model){
   if(typeof Chart==="undefined") return;
@@ -3927,9 +4209,6 @@ function updateChart(model){
   updatePieVisibleTotal();
 }
 
-
-
-
 function toggleMobileYearDetails(button){
   const details = document.getElementById("mobileYearDetails");
   if(!details) return;
@@ -3942,7 +4221,6 @@ function toggleMobileYearDetails(button){
     renderInlinePieChart("mobile-year-pie", model.totals);
   }
 }
-
 
 function updateMobileYearSummary(model){
   const t = model.totals;
@@ -3984,7 +4262,6 @@ function updateMobileYearSummary(model){
   setText("mobileDetailLaborPct", pct(t.expectedSales>0 ? (t.trueLaborCost || t.adjustedPayroll)/t.expectedSales : 0));
 }
 
-
 function calculate(){
   updateCapacity();
   const model=runModel();
@@ -3999,6 +4276,12 @@ function calculate(){
 
 function collectData(){
   return {
+    metadata:{
+      modelVersion:"2.5",
+      savedAt:new Date().toISOString(),
+      restaurantName:val("metaRestaurantName"),
+      notes:val("metaNotes")
+    },
     bohPayroll:val("bohPayroll"),fohPayroll:val("fohPayroll"),fixed:val("fixed"),adjustedFixedCost:val("adjustedFixedCost"),
     tax:val("tax"),pos:val("pos"),tip:val("tip"),
     bohBurdenPct:val("bohBurdenPct"),fohBurdenPct:val("fohBurdenPct"),
@@ -4008,6 +4291,10 @@ function collectData(){
     lockedMonthlySales:val("lockedMonthlySales"),useCapacityTarget:val("useCapacityTarget"),
     seatingCapacity:val("seatingCapacity"),turnsPerNight:val("turnsPerNight"),avgCheck:val("avgCheck"),daysOpenManual:val("daysOpenManual"),
     summerStart:val("summerStart"),summerEnd:val("summerEnd"),summerPayroll:val("summerPayroll"),bohReduction:val("bohReduction"),fohReduction:val("fohReduction"),
+    
+    scenario1Name:val("scenario1Name"),scenario1SalesChange:val("scenario1SalesChange"),scenario1BohChange:val("scenario1BohChange"),scenario1FohChange:val("scenario1FohChange"),scenario1FixedChange:val("scenario1FixedChange"),scenario1FoodCost:val("scenario1FoodCost"),scenario1BevCost:val("scenario1BevCost"),
+    scenario2Name:val("scenario2Name"),scenario2SalesChange:val("scenario2SalesChange"),scenario2BohChange:val("scenario2BohChange"),scenario2FohChange:val("scenario2FohChange"),scenario2FixedChange:val("scenario2FixedChange"),scenario2FoodCost:val("scenario2FoodCost"),scenario2BevCost:val("scenario2BevCost"),
+    scenario3Name:val("scenario3Name"),scenario3SalesChange:val("scenario3SalesChange"),scenario3BohChange:val("scenario3BohChange"),scenario3FohChange:val("scenario3FohChange"),scenario3FixedChange:val("scenario3FixedChange"),scenario3FoodCost:val("scenario3FoodCost"),scenario3BevCost:val("scenario3BevCost"),
     closedDays:Array.from(document.querySelectorAll(".closedDay")).map(cb=>({value:cb.value,checked:cb.checked})),
     adjustedFixedMonths:Array.from(document.querySelectorAll(".adjustedFixedMonth")).map(cb=>({value:cb.value,checked:cb.checked})),
     seasonality:getSeasonality(),
@@ -4050,7 +4337,10 @@ function uploadData(file){
   reader.onload=e=>{
     try{
       const data=JSON.parse(e.target.result);
-      ["bohPayroll","fohPayroll","fixed","adjustedFixedCost","tax","pos","tip","bohBurdenPct","fohBurdenPct","tipBurdenPct","applyTipBurden","profitTarget","ebitdaAddbacks","year",
+      
+      applySeasonalityFromImport(data);
+      applyMetadataFromImport(data);
+["bohPayroll","fohPayroll","fixed","adjustedFixedCost","tax","pos","tip","bohBurdenPct","fohBurdenPct","tipBurdenPct","applyTipBurden","profitTarget","ebitdaAddbacks","year",
        "foodMix","bevMix","foodCost","bevCost","lockedMonthlySales","useCapacityTarget","seatingCapacity","turnsPerNight",
        "avgCheck","daysOpenManual","summerStart","summerEnd","summerPayroll","bohReduction","fohReduction"].forEach(id=>setValue(id,data[id]));
 
@@ -4119,7 +4409,6 @@ document.getElementById("bevMix").addEventListener("input",()=>{
   document.getElementById("foodMix").value=Math.max(0,100-bev);
 });
 
-
 window.addEventListener("orientationchange", () => {
   setTimeout(() => {
     if(mainChart && typeof mainChart.resize === "function"){
@@ -4138,11 +4427,7 @@ window.addEventListener("resize", () => {
 addVacationPeriod();
 calculate();
 
-
-
 document.getElementById("downloadConfigDownload")?.addEventListener("click",(e)=>{ e.preventDefault(); downloadConfigDirect(); });
-
-
 
 // ===== Direct Configuration Save / Download / Open =====
 function getCurrentConfigurationForExport(){
@@ -4212,7 +4497,7 @@ function downloadConfigurationFile(){
     const date = new Date().toISOString().split("T")[0];
 
     a.href = url;
-    a.download = "restaurant-financial-model-" + date + ".json";
+    a.download = buildMetadataFilename();
     a.style.display = "none";
 
     document.body.appendChild(a);
@@ -4324,7 +4609,6 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 setTimeout(bindConfigurationActions, 250);
 
-
 // Stable tab navigation repair
 function bindTabsStableRepair(){
   document.querySelectorAll(".tab-btn").forEach(btn=>{
@@ -4349,11 +4633,35 @@ function bindTabsStableRepair(){
 document.addEventListener("DOMContentLoaded", bindTabsStableRepair);
 setTimeout(bindTabsStableRepair, 250);
 
+// Reliable in-page navigation for Core Operating Assumptions links
+function bindInlineScrollLinks(){
+  document.querySelectorAll("[data-scroll-target]").forEach(link=>{
+    link.onclick = function(e){
+      e.preventDefault();
+
+      const targetId = this.getAttribute("data-scroll-target");
+      const target = document.getElementById(targetId);
+
+      if(!target) return;
+
+      const stickyOffset = 120;
+      const y = target.getBoundingClientRect().top + window.pageYOffset - stickyOffset;
+
+      window.scrollTo({
+        top: y,
+        behavior: "smooth"
+      });
+
+      history.replaceState(null, "", "#" + targetId);
+    };
+  });
+}
+
+document.addEventListener("DOMContentLoaded", bindInlineScrollLinks);
+setTimeout(bindInlineScrollLinks, 300);
+
 </script>
 
-
-
-  
 </div>
 
 </body>
