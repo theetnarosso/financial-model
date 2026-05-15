@@ -4,7 +4,48 @@
 <meta charset="UTF-8">
 <title>Restaurant Financial Model</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js">
+function updateLandscapeChartMode(){
+  const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+  const isMobile = window.innerWidth <= 1024;
+  const chartsTab = document.getElementById("tab-charts");
+  const chartBtn = document.querySelector('[data-tab="charts"]');
+
+  if(isLandscape && isMobile){
+    document.body.classList.add("chart-landscape-active");
+
+    if(chartBtn && typeof activateTab === "function"){
+      activateTab("charts");
+    }else if(chartsTab){
+      chartsTab.style.display = "block";
+    }
+
+    if(mainChart && typeof mainChart.resize === "function"){
+      setTimeout(()=>mainChart.resize(),150);
+    }
+  }else{
+    document.body.classList.remove("chart-landscape-active");
+
+    if(mainChart && typeof mainChart.resize === "function"){
+      setTimeout(()=>mainChart.resize(),150);
+    }
+  }
+}
+
+window.addEventListener("orientationchange", ()=>{
+  setTimeout(updateLandscapeChartMode, 250);
+});
+
+window.addEventListener("resize", ()=>{
+  clearTimeout(window.__chartResizeTimer);
+  window.__chartResizeTimer = setTimeout(updateLandscapeChartMode, 180);
+});
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  setTimeout(updateLandscapeChartMode, 400);
+});
+
+</script>
 <script>
 
 document.getElementById("downloadConfigDownload")?.addEventListener("click",(e)=>{ e.preventDefault(); downloadConfigDirect(); });
@@ -2204,6 +2245,56 @@ body > .bottom-configuration-toolbar{
 @media(max-width:520px){
   .health-overview-grid{
     grid-template-columns:1fr;
+  }
+}
+
+
+/* Fullscreen chart experience on mobile landscape */
+@media screen and (max-width: 1024px) and (orientation: landscape){
+
+  body.chart-landscape-active{
+    overflow:hidden;
+  }
+
+  body.chart-landscape-active .hero,
+  body.chart-landscape-active .summary-grid,
+  body.chart-landscape-active .tabs,
+  body.chart-landscape-active .tab-panel:not(#tab-charts),
+  body.chart-landscape-active .section:not(.chart-focus-section),
+  body.chart-landscape-active .config-toolbar{
+    display:none !important;
+  }
+
+  body.chart-landscape-active #tab-charts{
+    display:block !important;
+    position:fixed !important;
+    inset:0 !important;
+    width:100vw !important;
+    height:100vh !important;
+    z-index:9999 !important;
+    background:#f5f3ef !important;
+    overflow:hidden !important;
+    padding:10px !important;
+  }
+
+  body.chart-landscape-active .chart-focus-section,
+  body.chart-landscape-active .chart-card{
+    height:100% !important;
+    min-height:100% !important;
+    margin:0 !important;
+    padding:10px !important;
+    border-radius:18px !important;
+  }
+
+  body.chart-landscape-active .chart-card canvas{
+    width:100% !important;
+    height:calc(100vh - 120px) !important;
+    max-height:none !important;
+  }
+
+  body.chart-landscape-active .chart-controls,
+  body.chart-landscape-active .help{
+    margin-bottom:10px !important;
   }
 }
 
