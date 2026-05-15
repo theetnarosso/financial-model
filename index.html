@@ -2420,6 +2420,53 @@ body > .bottom-configuration-toolbar{
   }
 }
 
+
+/* Dedicated chart-only fullscreen overlay for mobile landscape */
+#landscapeChartFullscreen{
+  display:none;
+}
+
+@media screen and (orientation: landscape) and (max-height: 520px){
+  html,
+  body{
+    width:100vw !important;
+    height:100vh !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow:hidden !important;
+    background:#fff !important;
+  }
+
+  body.landscape-chart-only *{
+    visibility:hidden !important;
+  }
+
+  body.landscape-chart-only #landscapeChartFullscreen,
+  body.landscape-chart-only #landscapeChartFullscreen *{
+    visibility:visible !important;
+  }
+
+  body.landscape-chart-only #landscapeChartFullscreen{
+    display:block !important;
+    position:fixed !important;
+    inset:0 !important;
+    z-index:2147483647 !important;
+    width:100vw !important;
+    height:100vh !important;
+    background:#fff !important;
+    padding:8px !important;
+    box-sizing:border-box !important;
+  }
+
+  body.landscape-chart-only #landscapeChartCanvas{
+    display:block !important;
+    width:100% !important;
+    height:100% !important;
+    max-width:100% !important;
+    max-height:100% !important;
+  }
+}
+
 </style>
 </head>
 
@@ -2734,7 +2781,8 @@ Choose which months should use the Adjusted Fixed Cost Override.
           <span class="pie-total-label"></span>
           <span id="pieTotalValue">$0</span>
         </div>
-        <canvas id="mainChart"></canvas><div style="margin-top:12px;text-align:center;color:#666;font-size:13px;">Visual distribution of operational revenue, costs, taxes, tips, and remaining operational profit. Percentages are shown on slices when space allows.</div>
+        <canvas id="mainChart"></canvas>
+        <div id="landscapeChartFullscreen"><canvas id="landscapeChartCanvas"></canvas></div><div style="margin-top:12px;text-align:center;color:#666;font-size:13px;">Visual distribution of operational revenue, costs, taxes, tips, and remaining operational profit. Percentages are shown on slices when space allows.</div>
       </div>
     </div>
   </div>
@@ -4908,6 +4956,7 @@ function updateChart(model){
 
   mainChart = new Chart(canvas, config);
   updatePieVisibleTotal();
+  setTimeout(renderLandscapeFullscreenChart, 50);
 }
 
 function toggleMobileYearDetails(button){
@@ -5399,6 +5448,105 @@ window.addEventListener("resize", ()=>{
   window.__forceLandscapeChartTimer = setTimeout(forceLandscapeChartOnly, 200);
 });
 document.addEventListener("DOMContentLoaded", ()=>setTimeout(forceLandscapeChartOnly, 500));
+
+
+let landscapeFullscreenChart = null;
+
+function getCurrentChartConfigClone(){
+  if(!mainChart) return null;
+  const config = {
+    type: mainChart.config.type,
+    data: JSON.parse(JSON.stringify(mainChart.config.data)),
+    options: JSON.parse(JSON.stringify(mainChart.config.options || {}))
+  };
+
+  config.options.responsive = true;
+  config.options.maintainAspectRatio = false;
+  config.options.layout = { padding: 12 };
+
+  config.options.plugins = config.options.plugins || {};
+  config.options.plugins.legend = config.options.plugins.legend || {};
+  config.options.plugins.legend.display = true;
+  config.options.plugins.legend.position = "top";
+
+  if(config.options.plugins.title){
+    config.options.plugins.title.display = true;
+  }else{
+    const selector = document.getElementById("chartSelector");
+    const selectedText = selector && selector.options[selector.selectedIndex]
+      ? selector.options[selector.selectedIndex].text
+      : "Chart";
+
+    config.options.plugins.title = {
+      display: true,
+      text: selectedText === "Break-Even, Expected Sales & Profit Gaps"
+        ? "Monthly Break-Even vs Expected Sales / Profit Gaps"
+        : selectedText,
+      font: { size: 20, weight: "bold" },
+      padding: { bottom: 12 }
+    };
+  }
+
+  if(config.options.scales && config.options.scales.x && config.options.scales.x.ticks){
+    config.options.scales.x.ticks.maxRotation = 35;
+    config.options.scales.x.ticks.minRotation = 25;
+  }
+
+  return config;
+}
+
+function renderLandscapeFullscreenChart(){
+  const overlay = document.getElementById("landscapeChartFullscreen");
+  const canvas = document.getElementById("landscapeChartCanvas");
+  if(!overlay || !canvas || typeof Chart === "undefined") return;
+
+  const landscape = window.matchMedia("(orientation: landscape)").matches;
+  const mobileLandscape = landscape && window.innerHeight <= 520;
+
+  if(!mobileLandscape){
+    document.body.classList.remove("landscape-chart-only");
+    if(landscapeFullscreenChart){
+      landscapeFullscreenChart.destroy();
+      landscapeFullscreenChart = null;
+    }
+    return;
+  }
+
+  document.body.classList.add("landscape-chart-only");
+
+  if(typeof calculate === "function"){
+    calculate();
+  }
+
+  const config = getCurrentChartConfigClone();
+  if(!config) return;
+
+  if(landscapeFullscreenChart){
+    landscapeFullscreenChart.destroy();
+  }
+
+  landscapeFullscreenChart = new Chart(canvas, config);
+
+  setTimeout(()=>{
+    if(landscapeFullscreenChart){
+      landscapeFullscreenChart.resize();
+      landscapeFullscreenChart.update("none");
+    }
+  }, 120);
+}
+
+window.addEventListener("orientationchange", ()=>setTimeout(renderLandscapeFullscreenChart, 450));
+window.addEventListener("resize", ()=>{
+  clearTimeout(window.__landscapeFullscreenTimer);
+  window.__landscapeFullscreenTimer = setTimeout(renderLandscapeFullscreenChart, 250);
+});
+
+document.addEventListener("DOMContentLoaded", ()=>setTimeout(renderLandscapeFullscreenChart, 600));
+document.addEventListener("change", e=>{
+  if(e.target && e.target.id === "chartSelector"){
+    setTimeout(renderLandscapeFullscreenChart, 100);
+  }
+});
 
 </script>
 
