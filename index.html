@@ -3267,6 +3267,67 @@ body{
   }
 }
 
+
+/* Monthly Breakdown mobile controls: left aligned and 40% smaller */
+@media(max-width:720px){
+  #tab-monthly .mobile-months .month-card .inline-seasonality{
+    align-items:flex-start !important;
+    justify-content:flex-start !important;
+    text-align:left !important;
+    width:100% !important;
+    margin:8px 0 18px 0 !important;
+    padding-left:0 !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .inline-seasonality input[type="range"]{
+    margin-left:0 !important;
+    margin-right:auto !important;
+    width:180px !important;
+    max-width:48vw !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonality-controls{
+    display:grid !important;
+    grid-template-columns:38px 64px 38px !important;
+    justify-content:start !important;
+    justify-items:start !important;
+    align-items:center !important;
+    gap:8px !important;
+    width:auto !important;
+    max-width:100% !important;
+    margin:0 !important;
+    padding-left:0 !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonality-btn{
+    width:38px !important;
+    min-width:38px !important;
+    max-width:38px !important;
+    height:38px !important;
+    min-height:38px !important;
+    max-height:38px !important;
+    border-radius:11px !important;
+    border:2px solid #dddddd !important;
+    font-size:19px !important;
+    padding:0 !important;
+    margin:0 !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonalityNumber{
+    width:64px !important;
+    min-width:64px !important;
+    max-width:64px !important;
+    height:38px !important;
+    min-height:38px !important;
+    max-height:38px !important;
+    border-radius:11px !important;
+    font-size:15px !important;
+    line-height:38px !important;
+    padding:0 !important;
+    margin:0 !important;
+  }
+}
+
 </style>
 </head>
 
