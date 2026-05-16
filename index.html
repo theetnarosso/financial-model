@@ -3071,143 +3071,6 @@ body{
 
 
 
-/* EXACT Monthly Breakdown mobile seasonality controls */
-@media(max-width:720px){
-  #tab-monthly .mobile-months .month-card{
-    overflow:hidden !important;
-  }
-
-  #tab-monthly .mobile-months .month-card .inline-seasonality{
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:center !important;
-    justify-content:center !important;
-    width:100% !important;
-    min-width:0 !important;
-    gap:16px !important;
-    margin:12px auto 22px !important;
-  }
-
-  #tab-monthly .mobile-months .month-card .inline-seasonality input[type="range"]{
-    width:240px !important;
-    max-width:58vw !important;
-    height:22px !important;
-    margin:0 auto 8px !important;
-  }
-
-  #tab-monthly .mobile-months .month-card .seasonality-controls{
-    display:grid !important;
-    grid-template-columns:86px 166px 86px !important;
-    column-gap:18px !important;
-    align-items:center !important;
-    justify-content:center !important;
-    width:auto !important;
-    max-width:100% !important;
-    margin:0 auto !important;
-  }
-
-  #tab-monthly .mobile-months .month-card .seasonality-btn{
-    width:86px !important;
-    min-width:86px !important;
-    max-width:86px !important;
-    height:86px !important;
-    min-height:86px !important;
-    max-height:86px !important;
-    padding:0 !important;
-    border-radius:26px !important;
-    border:4px solid #dedede !important;
-    background:#ffffff !important;
-    color:#222222 !important;
-    font-size:36px !important;
-    font-weight:900 !important;
-    line-height:1 !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    box-shadow:none !important;
-    appearance:none !important;
-    -webkit-appearance:none !important;
-  }
-
-  #tab-monthly .mobile-months .month-card .seasonalityNumber{
-    width:166px !important;
-    min-width:166px !important;
-    max-width:166px !important;
-    height:86px !important;
-    min-height:86px !important;
-    max-height:86px !important;
-    padding:0 !important;
-    border-radius:26px !important;
-    border:0 !important;
-    background:#0b0b0b !important;
-    color:#ffffff !important;
-    font-size:30px !important;
-    font-weight:900 !important;
-    line-height:86px !important;
-    text-align:center !important;
-    box-shadow:none !important;
-    appearance:textfield !important;
-    -moz-appearance:textfield !important;
-  }
-
-  #tab-monthly .mobile-months .month-card .seasonalityNumber::-webkit-outer-spin-button,
-  #tab-monthly .mobile-months .month-card .seasonalityNumber::-webkit-inner-spin-button{
-    -webkit-appearance:none !important;
-    margin:0 !important;
-  }
-}
-
-@media(max-width:390px){
-  #tab-monthly .mobile-months .month-card .seasonality-controls{
-    grid-template-columns:78px 142px 78px !important;
-    column-gap:12px !important;
-  }
-
-  #tab-monthly .mobile-months .month-card .seasonality-btn{
-    width:78px !important;
-    min-width:78px !important;
-    max-width:78px !important;
-    height:78px !important;
-    min-height:78px !important;
-    max-height:78px !important;
-    border-radius:24px !important;
-    font-size:34px !important;
-  }
-
-  #tab-monthly .mobile-months .month-card .seasonalityNumber{
-    width:142px !important;
-    min-width:142px !important;
-    max-width:142px !important;
-    height:78px !important;
-    min-height:78px !important;
-    max-height:78px !important;
-    border-radius:24px !important;
-    font-size:28px !important;
-    line-height:78px !important;
-  }
-}
-
-
-/* Remove accidental global number steppers inside Monthly Breakdown seasonality */
-#tab-monthly .inline-seasonality .static-number-buttons,
-#tab-monthly .inline-seasonality .static-step-btn{
-  display:none !important;
-  visibility:hidden !important;
-  pointer-events:none !important;
-}
-
-#tab-monthly .inline-seasonality .static-number-row{
-  display:block !important;
-  width:auto !important;
-  margin:0 !important;
-  padding:0 !important;
-}
-
-#tab-monthly .inline-seasonality .static-number-row .seasonalityNumber{
-  display:block !important;
-  margin:0 auto !important;
-}
-
 /* Keep the true seasonality controls centered and prevent overflow */
 @media(max-width:720px){
   #tab-monthly .mobile-months .month-card .seasonality-controls{
@@ -3217,6 +3080,190 @@ body{
 
   #tab-monthly .mobile-months .month-card .inline-seasonality{
     overflow:hidden !important;
+  }
+}
+
+
+/* Mobile Monthly Breakdown compact centered controls */
+@media(max-width:720px){
+  #tab-monthly .mobile-months .month-card{
+    padding:22px 20px !important;
+    border-radius:24px !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .inline-seasonality{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:100% !important;
+    min-width:0 !important;
+    gap:12px !important;
+    margin:8px auto 24px !important;
+    overflow:visible !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .inline-seasonality input[type="range"]{
+    width:220px !important;
+    max-width:58vw !important;
+    height:20px !important;
+    margin:0 auto 8px !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonality-controls{
+    display:grid !important;
+    grid-template-columns:64px 112px 64px !important;
+    justify-content:center !important;
+    align-items:center !important;
+    gap:14px !important;
+    width:auto !important;
+    max-width:100% !important;
+    margin:0 auto !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonality-btn{
+    width:64px !important;
+    min-width:64px !important;
+    max-width:64px !important;
+    height:64px !important;
+    min-height:64px !important;
+    max-height:64px !important;
+    padding:0 !important;
+    border-radius:18px !important;
+    border:3px solid #dedede !important;
+    background:#ffffff !important;
+    color:#222222 !important;
+    font-size:30px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    box-shadow:0 2px 6px rgba(0,0,0,.03) !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    appearance:none !important;
+    -webkit-appearance:none !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonalityNumber{
+    width:112px !important;
+    min-width:112px !important;
+    max-width:112px !important;
+    height:64px !important;
+    min-height:64px !important;
+    max-height:64px !important;
+    padding:0 !important;
+    border-radius:18px !important;
+    border:0 !important;
+    background:#0b0b0b !important;
+    color:#ffffff !important;
+    font-size:24px !important;
+    font-weight:900 !important;
+    line-height:64px !important;
+    text-align:center !important;
+    box-shadow:0 5px 14px rgba(0,0,0,.12) !important;
+    appearance:textfield !important;
+    -moz-appearance:textfield !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonalityNumber::-webkit-outer-spin-button,
+  #tab-monthly .mobile-months .month-card .seasonalityNumber::-webkit-inner-spin-button{
+    -webkit-appearance:none !important;
+    margin:0 !important;
+  }
+
+  /* Remove accidental global number steppers from this area */
+  #tab-monthly .mobile-months .month-card .static-number-buttons,
+  #tab-monthly .mobile-months .month-card .static-step-btn{
+    display:none !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .static-number-row{
+    display:block !important;
+    width:auto !important;
+    margin:0 !important;
+    padding:0 !important;
+  }
+}
+
+@media(max-width:390px){
+  #tab-monthly .mobile-months .month-card .seasonality-controls{
+    grid-template-columns:58px 104px 58px !important;
+    gap:12px !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonality-btn{
+    width:58px !important;
+    min-width:58px !important;
+    max-width:58px !important;
+    height:58px !important;
+    min-height:58px !important;
+    max-height:58px !important;
+    border-radius:16px !important;
+    font-size:28px !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonalityNumber{
+    width:104px !important;
+    min-width:104px !important;
+    max-width:104px !important;
+    height:58px !important;
+    min-height:58px !important;
+    max-height:58px !important;
+    border-radius:16px !important;
+    line-height:58px !important;
+    font-size:22px !important;
+  }
+}
+
+
+/* Smaller centered Monthly Breakdown controls */
+@media(max-width:720px){
+  #tab-monthly .mobile-months .month-card .seasonality-controls{
+    grid-template-columns:48px 84px 48px !important;
+    justify-content:center !important;
+    align-items:center !important;
+    gap:10px !important;
+    width:100% !important;
+    margin:0 auto !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .inline-seasonality{
+    align-items:center !important;
+    justify-content:center !important;
+    text-align:center !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonality-btn{
+    width:48px !important;
+    min-width:48px !important;
+    max-width:48px !important;
+    height:48px !important;
+    min-height:48px !important;
+    max-height:48px !important;
+    border-radius:14px !important;
+    font-size:24px !important;
+    border:2px solid #dddddd !important;
+    margin:0 auto !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonalityNumber{
+    width:84px !important;
+    min-width:84px !important;
+    max-width:84px !important;
+    height:48px !important;
+    min-height:48px !important;
+    max-height:48px !important;
+    border-radius:14px !important;
+    font-size:18px !important;
+    line-height:48px !important;
+    margin:0 auto !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .inline-seasonality input[type="range"]{
+    display:block !important;
+    margin:0 auto 10px auto !important;
   }
 }
 
