@@ -48,6 +48,46 @@ document.addEventListener("DOMContentLoaded", ()=>{
 </script>
 <script>
 
+function stepRelatedNumberInput(button, direction){
+  try{
+    const row = button.closest(".static-number-row") || button.closest(".number-control-row") || button.closest(".field");
+    if(!row) return false;
+
+    const input = row.querySelector('input[type="number"]');
+    if(!input) return false;
+
+    const stepAttr = input.getAttribute("step");
+    const step = stepAttr && stepAttr !== "any" && !Number.isNaN(Number(stepAttr)) ? Number(stepAttr) : 1;
+
+    const minAttr = input.getAttribute("min");
+    const maxAttr = input.getAttribute("max");
+    const min = minAttr !== null && minAttr !== "" ? Number(minAttr) : -Infinity;
+    const max = maxAttr !== null && maxAttr !== "" ? Number(maxAttr) : Infinity;
+
+    const current = input.value !== "" && !Number.isNaN(Number(input.value)) ? Number(input.value) : 0;
+    let next = current + ((Number(direction) || 1) * step);
+
+    if(Number.isFinite(min)) next = Math.max(min, next);
+    if(Number.isFinite(max)) next = Math.min(max, next);
+
+    const decimals = String(step).includes(".") ? String(step).split(".")[1].length : 0;
+    input.value = decimals ? next.toFixed(decimals) : String(Math.round(next));
+
+    input.dispatchEvent(new Event("input", {bubbles:true}));
+    input.dispatchEvent(new Event("change", {bubbles:true}));
+
+    if(typeof calculate === "function"){
+      calculate();
+    }
+
+    return false;
+  }catch(err){
+    console.error("Stepper error:", err);
+    return false;
+  }
+}
+
+
 document.getElementById("downloadConfigDownload")?.addEventListener("click",(e)=>{ e.preventDefault(); downloadConfigDirect(); });
 
 // ===== Direct Configuration Save / Download / Open =====
@@ -2570,6 +2610,616 @@ body > .bottom-configuration-toolbar{
   }
 }
 
+
+
+/* Touchscreen number data-entry rows */
+.number-control-row{
+  display:grid;
+  grid-template-columns:minmax(170px, 1fr) minmax(220px, 420px);
+  gap:22px;
+  align-items:center;
+  width:100%;
+  margin-top:10px;
+}
+
+.number-control-buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.number-step-btn{
+  width:100%;
+  min-height:76px;
+  border:0;
+  border-radius:22px;
+  background:#9a9a9a;
+  color:#fff;
+  font-size:44px;
+  font-weight:900;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  box-shadow:0 6px 16px rgba(0,0,0,.10);
+  -webkit-tap-highlight-color:transparent;
+}
+
+.number-step-btn:active{
+  transform:scale(.97);
+  background:#111;
+}
+
+.number-control-row input[type="number"]{
+  width:100% !important;
+  min-height:72px !important;
+  font-size:24px !important;
+  padding:14px 20px !important;
+  border-radius:18px !important;
+  appearance:textfield;
+  -moz-appearance:textfield;
+}
+
+.number-control-row input[type="number"]::-webkit-outer-spin-button,
+.number-control-row input[type="number"]::-webkit-inner-spin-button{
+  -webkit-appearance:none;
+  margin:0;
+}
+
+@media(max-width:900px){
+  .number-control-row{
+    grid-template-columns:minmax(140px, 1fr) minmax(190px, 320px);
+    gap:16px;
+  }
+
+  .number-step-btn{
+    min-height:68px;
+    font-size:38px;
+    border-radius:20px;
+  }
+
+  .number-control-row input[type="number"]{
+    min-height:66px !important;
+    font-size:22px !important;
+  }
+}
+
+@media(max-width:560px){
+  .number-control-row{
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+
+  .number-control-buttons{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .number-step-btn{
+    min-height:62px;
+    font-size:34px;
+  }
+}
+
+
+/* Permanent visible number input steppers */
+.static-number-row{
+  display:grid;
+  grid-template-columns:minmax(160px, 1fr) minmax(220px, 420px);
+  gap:22px;
+  align-items:center;
+  width:100%;
+  margin-top:10px;
+}
+
+.static-number-buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.static-step-btn{
+  min-height:76px;
+  border:0;
+  border-radius:22px;
+  background:#999;
+  color:#fff;
+  font-size:44px;
+  font-weight:900;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.static-step-btn:active{
+  background:#111;
+  transform:scale(.97);
+}
+
+.static-number-row input[type="number"]{
+  width:100% !important;
+  min-height:72px !important;
+  font-size:24px !important;
+  padding:14px 20px !important;
+  border-radius:18px !important;
+  appearance:textfield;
+  -moz-appearance:textfield;
+}
+
+.static-number-row input[type="number"]::-webkit-outer-spin-button,
+.static-number-row input[type="number"]::-webkit-inner-spin-button{
+  -webkit-appearance:none;
+  margin:0;
+}
+
+@media(max-width:900px){
+  .static-number-row{
+    grid-template-columns:minmax(140px, 1fr) minmax(190px, 320px);
+    gap:16px;
+  }
+
+  .static-step-btn{
+    min-height:68px;
+    font-size:38px;
+    border-radius:20px;
+  }
+}
+
+@media(max-width:560px){
+  .static-number-row{
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+
+  .static-step-btn{
+    min-height:62px;
+    font-size:34px;
+  }
+}
+
+
+/* Desktop normal inputs, mobile touch steppers */
+.static-number-row{
+  display:block !important;
+  width:100%;
+  margin-top:0 !important;
+}
+
+.static-number-buttons{
+  display:none !important;
+}
+
+.static-number-row input[type="number"]{
+  width:100% !important;
+  min-height:52px !important;
+  font-size:16px !important;
+  padding:10px 14px !important;
+  border-radius:12px !important;
+  appearance:auto !important;
+  -moz-appearance:auto !important;
+}
+
+/* Show large +/- only on mobile/tablet width */
+@media(max-width:768px){
+  .static-number-row{
+    display:grid !important;
+    grid-template-columns:minmax(120px,1fr) minmax(170px,260px);
+    gap:12px;
+    align-items:center;
+    margin-top:10px !important;
+  }
+
+  .static-number-buttons{
+    display:grid !important;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+
+  .static-step-btn{
+    display:flex !important;
+    min-height:58px;
+    border:0;
+    border-radius:18px;
+    background:#999;
+    color:#fff;
+    font-size:32px;
+    font-weight:900;
+    cursor:pointer;
+    align-items:center;
+    justify-content:center;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  .static-step-btn:active{
+    background:#111;
+    transform:scale(.97);
+  }
+
+  .static-number-row input[type="number"]{
+    min-height:58px !important;
+    font-size:20px !important;
+    padding:12px 16px !important;
+    border-radius:16px !important;
+    appearance:textfield !important;
+    -moz-appearance:textfield !important;
+  }
+
+  .static-number-row input[type="number"]::-webkit-outer-spin-button,
+  .static-number-row input[type="number"]::-webkit-inner-spin-button{
+    -webkit-appearance:none;
+    margin:0;
+  }
+}
+
+@media(max-width:520px){
+  .static-number-row{
+    grid-template-columns:1fr;
+  }
+
+  .static-step-btn{
+    min-height:56px;
+  }
+}
+
+
+/* Ensure mobile +/- buttons are clickable */
+.static-step-btn{
+  pointer-events:auto !important;
+  touch-action:manipulation !important;
+  user-select:none !important;
+}
+
+
+/* Stepper click reliability */
+.static-number-row,
+.static-number-buttons,
+.static-step-btn{
+  pointer-events:auto !important;
+}
+
+.static-step-btn{
+  position:relative !important;
+  z-index:50 !important;
+  cursor:pointer !important;
+}
+
+
+
+/* Correct layering: inputs slide under sticky KPI summary */
+.sticky-summary,
+.summary-grid,
+.kpi{
+  position:relative;
+  z-index:1000 !important;
+}
+
+.tabs{
+  position:relative;
+  z-index:900 !important;
+}
+
+.tab-panel,
+.section,
+.field,
+.static-number-row,
+.static-number-buttons,
+.static-step-btn{
+  position:relative;
+  z-index:auto !important;
+}
+
+.static-step-btn{
+  pointer-events:auto !important;
+  touch-action:manipulation !important;
+}
+
+body{
+  isolation:isolate;
+}
+
+
+/* Sticky KPI summary row */
+.sticky-summary{
+  position:sticky !important;
+  top:0 !important;
+  z-index:3000 !important;
+  background:rgba(245,242,238,.96) !important;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  padding-top:10px !important;
+  padding-bottom:10px !important;
+  margin-bottom:18px !important;
+}
+
+.sticky-summary .summary-grid{
+  position:relative;
+  z-index:3001 !important;
+}
+
+.sticky-summary .kpi{
+  position:relative;
+  z-index:3002 !important;
+}
+
+/* Keep content underneath sticky KPIs */
+.tab-panel,
+.section,
+.field,
+.static-number-row,
+.static-number-buttons,
+.static-step-btn{
+  z-index:auto !important;
+}
+
+@media(max-width:768px){
+  .sticky-summary{
+    top:0 !important;
+    padding-top:8px !important;
+    padding-bottom:8px !important;
+  }
+}
+
+
+/* Monthly Breakdown seasonality controls styled like mobile touch controls */
+.mobile-month-card .inline-seasonality,
+.monthly-mobile-card .inline-seasonality,
+#mobileMonthlyCards .inline-seasonality{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:14px !important;
+  width:100% !important;
+  margin:8px 0 18px !important;
+}
+
+.mobile-month-card .seasonality,
+.monthly-mobile-card .seasonality,
+#mobileMonthlyCards .seasonality{
+  width:min(260px, 70vw) !important;
+  margin:0 auto !important;
+}
+
+.mobile-month-card .seasonality-controls,
+.monthly-mobile-card .seasonality-controls,
+#mobileMonthlyCards .seasonality-controls{
+  display:grid !important;
+  grid-template-columns:1fr 1.5fr 1fr !important;
+  gap:10px !important;
+  width:min(560px, 92vw) !important;
+  align-items:center !important;
+}
+
+.mobile-month-card .seasonality-btn,
+.monthly-mobile-card .seasonality-btn,
+#mobileMonthlyCards .seasonality-btn{
+  min-height:74px !important;
+  border:0 !important;
+  border-radius:22px !important;
+  background:#9a9a9a !important;
+  color:#fff !important;
+  font-size:42px !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+  box-shadow:none !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  cursor:pointer !important;
+  -webkit-tap-highlight-color:transparent !important;
+}
+
+.mobile-month-card .seasonality-btn:active,
+.monthly-mobile-card .seasonality-btn:active,
+#mobileMonthlyCards .seasonality-btn:active{
+  transform:scale(.97) !important;
+  background:#111 !important;
+}
+
+.mobile-month-card .seasonalityNumber,
+.monthly-mobile-card .seasonalityNumber,
+#mobileMonthlyCards .seasonalityNumber{
+  min-height:74px !important;
+  border:0 !important;
+  border-radius:22px !important;
+  background:#111 !important;
+  color:#fff !important;
+  font-size:30px !important;
+  font-weight:900 !important;
+  text-align:center !important;
+  padding:0 14px !important;
+  appearance:textfield !important;
+  -moz-appearance:textfield !important;
+}
+
+.mobile-month-card .seasonalityNumber::-webkit-outer-spin-button,
+.mobile-month-card .seasonalityNumber::-webkit-inner-spin-button,
+.monthly-mobile-card .seasonalityNumber::-webkit-outer-spin-button,
+.monthly-mobile-card .seasonalityNumber::-webkit-inner-spin-button,
+#mobileMonthlyCards .seasonalityNumber::-webkit-outer-spin-button,
+#mobileMonthlyCards .seasonalityNumber::-webkit-inner-spin-button{
+  -webkit-appearance:none !important;
+  margin:0 !important;
+}
+
+/* Desktop monthly table keeps compact controls */
+.desktop-table .inline-seasonality .seasonality-controls,
+.table-wrap .inline-seasonality .seasonality-controls{
+  display:flex;
+  gap:8px;
+}
+
+.desktop-table .inline-seasonality .seasonality-btn,
+.table-wrap .inline-seasonality .seasonality-btn{
+  min-height:auto;
+  border-radius:10px;
+  font-size:14px;
+}
+
+
+/* Remove duplicated large grey +/- controls from Monthly Breakdown */
+.mobile-month-card .static-number-buttons,
+.monthly-mobile-card .static-number-buttons,
+#mobileMonthlyCards .static-number-buttons,
+.mobile-month-card .static-step-btn,
+.monthly-mobile-card .static-step-btn,
+#mobileMonthlyCards .static-step-btn{
+  display:none !important;
+}
+
+
+
+/* EXACT Monthly Breakdown mobile seasonality controls */
+@media(max-width:720px){
+  #tab-monthly .mobile-months .month-card{
+    overflow:hidden !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .inline-seasonality{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:100% !important;
+    min-width:0 !important;
+    gap:16px !important;
+    margin:12px auto 22px !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .inline-seasonality input[type="range"]{
+    width:240px !important;
+    max-width:58vw !important;
+    height:22px !important;
+    margin:0 auto 8px !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonality-controls{
+    display:grid !important;
+    grid-template-columns:86px 166px 86px !important;
+    column-gap:18px !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:auto !important;
+    max-width:100% !important;
+    margin:0 auto !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonality-btn{
+    width:86px !important;
+    min-width:86px !important;
+    max-width:86px !important;
+    height:86px !important;
+    min-height:86px !important;
+    max-height:86px !important;
+    padding:0 !important;
+    border-radius:26px !important;
+    border:4px solid #dedede !important;
+    background:#ffffff !important;
+    color:#222222 !important;
+    font-size:36px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    box-shadow:none !important;
+    appearance:none !important;
+    -webkit-appearance:none !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonalityNumber{
+    width:166px !important;
+    min-width:166px !important;
+    max-width:166px !important;
+    height:86px !important;
+    min-height:86px !important;
+    max-height:86px !important;
+    padding:0 !important;
+    border-radius:26px !important;
+    border:0 !important;
+    background:#0b0b0b !important;
+    color:#ffffff !important;
+    font-size:30px !important;
+    font-weight:900 !important;
+    line-height:86px !important;
+    text-align:center !important;
+    box-shadow:none !important;
+    appearance:textfield !important;
+    -moz-appearance:textfield !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonalityNumber::-webkit-outer-spin-button,
+  #tab-monthly .mobile-months .month-card .seasonalityNumber::-webkit-inner-spin-button{
+    -webkit-appearance:none !important;
+    margin:0 !important;
+  }
+}
+
+@media(max-width:390px){
+  #tab-monthly .mobile-months .month-card .seasonality-controls{
+    grid-template-columns:78px 142px 78px !important;
+    column-gap:12px !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonality-btn{
+    width:78px !important;
+    min-width:78px !important;
+    max-width:78px !important;
+    height:78px !important;
+    min-height:78px !important;
+    max-height:78px !important;
+    border-radius:24px !important;
+    font-size:34px !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .seasonalityNumber{
+    width:142px !important;
+    min-width:142px !important;
+    max-width:142px !important;
+    height:78px !important;
+    min-height:78px !important;
+    max-height:78px !important;
+    border-radius:24px !important;
+    font-size:28px !important;
+    line-height:78px !important;
+  }
+}
+
+
+/* Remove accidental global number steppers inside Monthly Breakdown seasonality */
+#tab-monthly .inline-seasonality .static-number-buttons,
+#tab-monthly .inline-seasonality .static-step-btn{
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+#tab-monthly .inline-seasonality .static-number-row{
+  display:block !important;
+  width:auto !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+
+#tab-monthly .inline-seasonality .static-number-row .seasonalityNumber{
+  display:block !important;
+  margin:0 auto !important;
+}
+
+/* Keep the true seasonality controls centered and prevent overflow */
+@media(max-width:720px){
+  #tab-monthly .mobile-months .month-card .seasonality-controls{
+    overflow:visible !important;
+    max-width:100% !important;
+  }
+
+  #tab-monthly .mobile-months .month-card .inline-seasonality{
+    overflow:hidden !important;
+  }
+}
+
 </style>
 </head>
 
@@ -2656,39 +3306,88 @@ body > .bottom-configuration-toolbar{
 <div class="grid">
 <div class="field">
           <label>Monthly Owner Profit Target ($)</label>
-          <input type="number" id="profitTarget" value="0" min="0" step="100">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="profitTarget" value="0" min="0" step="100">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
 
 <div class="field">
           <label>EBITDA Add-Backs / Non-Operating Costs Monthly ($)</label>
-          <input type="number" id="ebitdaAddbacks" value="0" min="0" step="100">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="ebitdaAddbacks" value="0" min="0" step="100">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
 </div>
   
       <div class="grid">
         <div class="field">
           <label>Monthly Fixed Costs ($)</label>
-          <input type="number" id="fixed" value="8000" min="0" step="100">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="fixed" value="8000" min="0" step="100">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
 
         <div class="field">
           <label>Sales Tax %</label>
-          <input type="number" id="tax" value="7" min="0" max="100" step="0.1">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="tax" value="7" min="0" max="100" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
 
         <div class="field">
           <label>POS Fees %</label>
-          <input type="number" id="pos" value="3" min="0" max="100" step="0.1">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="pos" value="3" min="0" max="100" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
 
         <div class="field">
           <label>Estimated Tips Collected %</label>
-          <input type="number" id="tip" value="19" min="0" max="100" step="0.1">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="tip" value="19" min="0" max="100" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
 
         <div class="field">
           <label>Year</label>
-          <input type="number" id="year" value="2026" min="2000" max="2100" step="1">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="year" value="2026" min="2000" max="2100" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
       </div>
 </div>
@@ -2700,19 +3399,47 @@ body > .bottom-configuration-toolbar{
       <div class="grid">
         <div class="field">
           <label>Food Sales Mix %</label>
-          <input type="number" id="foodMix" value="75" min="0" max="100" step="1">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="foodMix" value="75" min="0" max="100" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
         <div class="field">
           <label>Beverage Sales Mix %</label>
-          <input type="number" id="bevMix" value="25" min="0" max="100" step="1">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="bevMix" value="25" min="0" max="100" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
         <div class="field">
           <label>Food Cost %</label>
-          <input type="number" id="foodCost" value="30" min="0" max="100" step="0.1">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="foodCost" value="30" min="0" max="100" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
         <div class="field">
           <label>Beverage Cost %</label>
-          <input type="number" id="bevCost" value="25" min="0" max="100" step="0.1">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="bevCost" value="25" min="0" max="100" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
       </div>
       <div class="help">
@@ -2729,12 +3456,26 @@ body > .bottom-configuration-toolbar{
       <div class="grid">
         <div class="field">
           <label>BOH Monthly Payroll ($)</label>
-          <input type="number" id="bohPayroll" value="18000" min="0" step="100">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="bohPayroll" value="18000" min="0" step="100">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
 
         <div class="field">
           <label>FOH Minimum Monthly Payroll ($)</label>
-          <input type="number" id="fohPayroll" value="7000" min="0" step="100">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="fohPayroll" value="7000" min="0" step="100">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
 
       </div>
@@ -2742,19 +3483,40 @@ body > .bottom-configuration-toolbar{
       <div class="grid">
         <div class="field">
           <label>BOH Payroll Burden %</label>
-          <input type="number" id="bohBurdenPct" value="12" min="0" max="100" step="0.1">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="bohBurdenPct" value="12" min="0" max="100" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
           <div class="note">Employer taxes, workers comp, payroll burden on BOH wages.</div>
         </div>
 
         <div class="field">
           <label>FOH Payroll Burden %</label>
-          <input type="number" id="fohBurdenPct" value="10" min="0" max="100" step="0.1">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="fohBurdenPct" value="10" min="0" max="100" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
           <div class="note">Employer taxes, workers comp, payroll burden on FOH wages.</div>
         </div>
 
         <div class="field">
           <label>Tip Burden %</label>
-          <input type="number" id="tipBurdenPct" value="8" min="0" max="100" step="0.1">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="tipBurdenPct" value="8" min="0" max="100" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
           <div class="note">Extra employer burden caused by taxable tips.</div>
         </div>
 
@@ -2801,7 +3563,14 @@ body > .bottom-configuration-toolbar{
       </div>
 <div class="field">
           <label id="adjustedFixedCostField">Adjusted Fixed Cost Override ($)</label>
-          <input type="number" id="adjustedFixedCost" value="0" min="0" step="100">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="adjustedFixedCost" value="0" min="0" step="100">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
           <div class="note">
 Choose which months should use the Adjusted Fixed Cost Override.
 
@@ -2942,12 +3711,54 @@ Choose which months should use the Adjusted Fixed Cost Override.
           <h3>Scenario 1</h3>
           <div class="grid">
             <div class="field"><label>Name</label><input id="scenario1Name" value="Slow Season / Closure"></div>
-            <div class="field"><label>Expected Sales Change %</label><input type="number" id="scenario1SalesChange" value="-30" step="1"></div>
-            <div class="field"><label>BOH Payroll Change %</label><input type="number" id="scenario1BohChange" value="-40" step="1"></div>
-            <div class="field"><label>FOH Payroll Change %</label><input type="number" id="scenario1FohChange" value="-30" step="1"></div>
-            <div class="field"><label>Fixed Cost Change %</label><input type="number" id="scenario1FixedChange" value="-10" step="1"></div>
-            <div class="field"><label>Food Cost %</label><input type="number" id="scenario1FoodCost" value="" placeholder="Use current" step="0.1"></div>
-            <div class="field"><label>Beverage Cost %</label><input type="number" id="scenario1BevCost" value="" placeholder="Use current" step="0.1"></div>
+            <div class="field"><label>Expected Sales Change %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario1SalesChange" value="-30" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>BOH Payroll Change %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario1BohChange" value="-40" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>FOH Payroll Change %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario1FohChange" value="-30" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>Fixed Cost Change %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario1FixedChange" value="-10" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>Food Cost %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario1FoodCost" value="" placeholder="Use current" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>Beverage Cost %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario1BevCost" value="" placeholder="Use current" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
           </div>
         </div>
 
@@ -2955,12 +3766,54 @@ Choose which months should use the Adjusted Fixed Cost Override.
           <h3>Scenario 2</h3>
           <div class="grid">
             <div class="field"><label>Name</label><input id="scenario2Name" value="Lean Payroll"></div>
-            <div class="field"><label>Expected Sales Change %</label><input type="number" id="scenario2SalesChange" value="0" step="1"></div>
-            <div class="field"><label>BOH Payroll Change %</label><input type="number" id="scenario2BohChange" value="-15" step="1"></div>
-            <div class="field"><label>FOH Payroll Change %</label><input type="number" id="scenario2FohChange" value="-15" step="1"></div>
-            <div class="field"><label>Fixed Cost Change %</label><input type="number" id="scenario2FixedChange" value="0" step="1"></div>
-            <div class="field"><label>Food Cost %</label><input type="number" id="scenario2FoodCost" value="" placeholder="Use current" step="0.1"></div>
-            <div class="field"><label>Beverage Cost %</label><input type="number" id="scenario2BevCost" value="" placeholder="Use current" step="0.1"></div>
+            <div class="field"><label>Expected Sales Change %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario2SalesChange" value="0" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>BOH Payroll Change %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario2BohChange" value="-15" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>FOH Payroll Change %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario2FohChange" value="-15" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>Fixed Cost Change %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario2FixedChange" value="0" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>Food Cost %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario2FoodCost" value="" placeholder="Use current" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>Beverage Cost %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario2BevCost" value="" placeholder="Use current" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
           </div>
         </div>
 
@@ -2968,12 +3821,54 @@ Choose which months should use the Adjusted Fixed Cost Override.
           <h3>Scenario 3</h3>
           <div class="grid">
             <div class="field"><label>Name</label><input id="scenario3Name" value="Growth Case"></div>
-            <div class="field"><label>Expected Sales Change %</label><input type="number" id="scenario3SalesChange" value="20" step="1"></div>
-            <div class="field"><label>BOH Payroll Change %</label><input type="number" id="scenario3BohChange" value="10" step="1"></div>
-            <div class="field"><label>FOH Payroll Change %</label><input type="number" id="scenario3FohChange" value="10" step="1"></div>
-            <div class="field"><label>Fixed Cost Change %</label><input type="number" id="scenario3FixedChange" value="5" step="1"></div>
-            <div class="field"><label>Food Cost %</label><input type="number" id="scenario3FoodCost" value="" placeholder="Use current" step="0.1"></div>
-            <div class="field"><label>Beverage Cost %</label><input type="number" id="scenario3BevCost" value="" placeholder="Use current" step="0.1"></div>
+            <div class="field"><label>Expected Sales Change %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario3SalesChange" value="20" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>BOH Payroll Change %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario3BohChange" value="10" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>FOH Payroll Change %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario3FohChange" value="10" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>Fixed Cost Change %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario3FixedChange" value="5" step="1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>Food Cost %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario3FoodCost" value="" placeholder="Use current" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
+            <div class="field"><label>Beverage Cost %</label>
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="scenario3BevCost" value="" placeholder="Use current" step="0.1">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div></div>
           </div>
         </div>
       </div>
@@ -3012,7 +3907,14 @@ Choose which months should use the Adjusted Fixed Cost Override.
       <div class="grid">
         <div class="field">
           <label>Lock Monthly Net Sales Target ($)</label>
-          <input type="number" id="lockedMonthlySales" value="50000" min="0" step="100">
+          
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" id="lockedMonthlySales" value="50000" min="0" step="100">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
         </div>
 
         <div class="field">
@@ -3524,12 +4426,26 @@ function addVacationPeriod(data={}){
 
       <div class="field">
         <label>BOH Payroll During Period ($)</label>
-        <input type="number" class="periodBOH" value="${bohPayroll}" min="0" step="100">
+        
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" class="periodBOH" value="${bohPayroll}" min="0" step="100">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
       </div>
 
       <div class="field">
         <label>FOH Payroll During Period ($)</label>
-        <input type="number" class="periodFOH" value="${fohPayroll}" min="0" step="100">
+        
+<div class="static-number-row">
+  <input data-static-stepper="1" type="number" class="periodFOH" value="${fohPayroll}" min="0" step="100">
+  <div class="static-number-buttons">
+    <button type="button" class="static-step-btn" data-step-dir="-1" onclick="stepRelatedNumberInput(this,-1)">−</button>
+    <button type="button" class="static-step-btn" data-step-dir="1" onclick="stepRelatedNumberInput(this,1)">+</button>
+  </div>
+</div>
       </div>
 
       <div class="burden-toggle-row">
@@ -3911,9 +4827,10 @@ function renderSeasonalityControl(monthIndex,value){
     <div class="inline-seasonality">
       <input type="range" class="seasonality" data-month="${monthIndex}" min="0" max="3.5" step="0.10" value="${value}">
       <div class="seasonality-controls">
-        <button type="button" class="seasonality-btn" data-step="-0.01" data-month="${monthIndex}">-0.01</button>
-        <input type="number" class="seasonalityNumber" data-month="${monthIndex}" min="0" max="3.5" step="0.01" value="${Number(value).toFixed(2)}">
-        <button type="button" class="seasonality-btn" data-step="0.01" data-month="${monthIndex}">+0.01</button>
+        <button type="button" class="seasonality-btn" data-step="-0.01" data-month="${monthIndex}">−</button>
+        
+<input data-static-stepper="1" type="number" class="seasonalityNumber" data-month="${monthIndex}" min="0" max="3.5" step="0.01" value="${Number(value).toFixed(2)}">
+        <button type="button" class="seasonality-btn" data-step="0.01" data-month="${monthIndex}">+</button>
       </div>
     </div>
   `;
@@ -5670,6 +6587,70 @@ document.addEventListener("DOMContentLoaded", ()=>{
     tabs.classList.add("tabs-enhanced");
   }
 });
+
+
+
+document.addEventListener("DOMContentLoaded", ()=>setTimeout(initTouchSteppers, 250));
+document.addEventListener("change", ()=>setTimeout(initTouchSteppers, 50));
+
+
+
+document.addEventListener("DOMContentLoaded", initStaticNumberSteppers);
+setTimeout(initStaticNumberSteppers, 300);
+setTimeout(initStaticNumberSteppers, 1000);
+
+
+// Robust delegated +/- control handler
+(function(){
+  function stepNumberInput(button){
+    const row = button.closest(".static-number-row");
+    if(!row) return;
+
+    const input = row.querySelector('input[type="number"]');
+    if(!input) return;
+
+    const dir = Number(button.getAttribute("data-step-dir")) || 1;
+    const stepAttr = input.getAttribute("step");
+    const step = stepAttr && stepAttr !== "any" && !Number.isNaN(Number(stepAttr)) ? Number(stepAttr) : 1;
+
+    const minAttr = input.getAttribute("min");
+    const maxAttr = input.getAttribute("max");
+    const min = minAttr !== null && minAttr !== "" ? Number(minAttr) : -Infinity;
+    const max = maxAttr !== null && maxAttr !== "" ? Number(maxAttr) : Infinity;
+
+    const current = input.value !== "" && !Number.isNaN(Number(input.value)) ? Number(input.value) : 0;
+    let next = current + (dir * step);
+
+    if(Number.isFinite(min)) next = Math.max(min, next);
+    if(Number.isFinite(max)) next = Math.min(max, next);
+
+    const decimals = String(step).includes(".") ? String(step).split(".")[1].length : 0;
+    input.value = decimals ? next.toFixed(decimals) : String(Math.round(next));
+
+    input.dispatchEvent(new Event("input", {bubbles:true}));
+    input.dispatchEvent(new Event("change", {bubbles:true}));
+
+    if(typeof calculate === "function"){
+      calculate();
+    }
+  }
+
+  document.addEventListener("click", function(e){
+    const button = e.target.closest ? e.target.closest(".static-step-btn") : null;
+    if(!button) return;
+    e.preventDefault();
+    e.stopPropagation();
+    stepNumberInput(button);
+  }, true);
+
+  document.addEventListener("touchend", function(e){
+    const button = e.target.closest ? e.target.closest(".static-step-btn") : null;
+    if(!button) return;
+    e.preventDefault();
+    e.stopPropagation();
+    stepNumberInput(button);
+  }, {capture:true, passive:false});
+})();
 
 </script>
 
