@@ -3380,6 +3380,445 @@ body{
   }
 }
 
+
+/* Increase Monthly Breakdown mobile +/- controls by 30% */
+@media screen and (max-width: 720px){
+
+  body #tab-monthly .mobile-months .month-card .seasonality-controls{
+    gap:12px !important;
+  }
+
+  body #tab-monthly .mobile-months .month-card .seasonality-btn{
+    width:47px !important;
+    height:47px !important;
+    min-width:47px !important;
+    min-height:47px !important;
+    max-width:47px !important;
+    max-height:47px !important;
+    border-radius:13px !important;
+    font-size:24px !important;
+    line-height:47px !important;
+  }
+
+  body #tab-monthly .mobile-months .month-card .seasonalityNumber{
+    width:96px !important;
+    height:47px !important;
+    min-width:96px !important;
+    min-height:47px !important;
+    max-width:96px !important;
+    max-height:47px !important;
+    border-radius:13px !important;
+    font-size:20px !important;
+    line-height:47px !important;
+  }
+}
+
+
+/* Executive Report tab */
+.report-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px;}
+.print-report-btn{border:0;border-radius:14px;background:#111;color:#fff;padding:14px 18px;font-weight:900;cursor:pointer;}
+#printReportArea{background:#fff;border:1px solid var(--border);border-radius:22px;padding:26px;}
+.print-report-title{border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:18px;}
+.print-report-title h1{margin:0 0 6px;font-size:30px;}
+#reportMetaLine{color:var(--muted);font-size:14px;}
+.report-kpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px;}
+.report-kpi{border:1px solid var(--border);border-radius:16px;padding:14px;background:#fafafa;}
+.report-kpi span{display:block;color:var(--muted);font-size:13px;margin-bottom:6px;}
+.report-kpi strong{font-size:24px;}
+.report-block{margin-top:18px;break-inside:avoid;}
+.report-block h3{margin:0 0 10px;font-size:20px;}
+.report-conclusion p{margin:0 0 10px;line-height:1.45;}
+.report-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.report-table{width:100%;border-collapse:collapse;font-size:14px;}
+.report-table th,.report-table td{border-bottom:1px solid #e5e5e5;padding:9px 8px;text-align:left;}
+.report-table td:last-child,.report-table th:not(:first-child){text-align:right;font-weight:800;}
+.report-chart-print{height:360px;}
+.report-chart-print canvas{height:300px !important;}
+@media(max-width:800px){.report-header,.report-two-col{grid-template-columns:1fr;flex-direction:column;}.report-kpi-grid{grid-template-columns:1fr;}}
+@media print{
+  @page{size:letter;margin:0.45in;}
+  body{background:#fff !important;padding:0 !important;}
+  .hero,.configuration-toolbar,.sticky-summary,.tabs,.tab-panel:not(#tab-report),#tab-report > .section > .report-header,.print-report-btn{display:none !important;}
+  #tab-report{display:block !important;}
+  #tab-report .section{box-shadow:none !important;border:0 !important;padding:0 !important;margin:0 !important;}
+  #printReportArea{border:0 !important;padding:0 !important;border-radius:0 !important;}
+  .report-kpi-grid{grid-template-columns:repeat(3,1fr) !important;}
+  .report-two-col{grid-template-columns:1fr 1fr !important;}
+  .report-chart-print{page-break-inside:avoid;height:320px !important;}
+  .report-chart-print canvas{height:270px !important;}
+}
+
+
+/* Report layout alignment fix */
+#tab-report .report-section{
+  max-width:1200px !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  overflow:hidden !important;
+}
+
+#printReportArea{
+  max-width:1120px !important;
+  margin:0 auto !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+
+.report-two-col{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:18px !important;
+  width:100% !important;
+  align-items:start !important;
+}
+
+.report-block{
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+}
+
+.report-table{
+  width:100% !important;
+  max-width:100% !important;
+  table-layout:fixed !important;
+  border-collapse:collapse !important;
+}
+
+.report-table th,
+.report-table td{
+  box-sizing:border-box !important;
+  overflow-wrap:anywhere !important;
+  word-break:normal !important;
+}
+
+.report-table td:first-child,
+.report-table th:first-child{
+  width:58% !important;
+}
+
+.report-table td:last-child,
+.report-table th:last-child{
+  width:42% !important;
+  text-align:right !important;
+}
+
+#reportScenarioBody td,
+#reportScenarioBody th,
+#tab-report thead th{
+  font-size:13px !important;
+}
+
+#tab-report .report-block h3{
+  text-align:left !important;
+}
+
+.report-chart-print{
+  width:100% !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+}
+
+@media(max-width:900px){
+  .report-two-col{
+    grid-template-columns:1fr !important;
+  }
+
+  .report-kpi-grid{
+    grid-template-columns:1fr 1fr !important;
+  }
+
+  #printReportArea{
+    padding:18px !important;
+  }
+}
+
+@media(max-width:560px){
+  .report-kpi-grid{
+    grid-template-columns:1fr !important;
+  }
+
+  .report-table{
+    font-size:12.5px !important;
+  }
+
+  .report-table th,
+  .report-table td{
+    padding:8px 6px !important;
+  }
+}
+
+/* Print-specific report layout fix */
+@media print{
+  #tab-report,
+  #tab-report .report-section,
+  #printReportArea{
+    width:100% !important;
+    max-width:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow:visible !important;
+    box-sizing:border-box !important;
+  }
+
+  .report-two-col{
+    grid-template-columns:1fr 1fr !important;
+    gap:0.25in !important;
+    width:100% !important;
+  }
+
+  .report-table{
+    width:100% !important;
+    table-layout:fixed !important;
+    font-size:10.5pt !important;
+  }
+
+  .report-table th,
+  .report-table td{
+    padding:6px 5px !important;
+    overflow-wrap:anywhere !important;
+  }
+
+  .report-kpi-grid{
+    grid-template-columns:repeat(3,1fr) !important;
+    gap:8px !important;
+  }
+
+  .report-kpi{
+    padding:10px !important;
+  }
+
+  .report-kpi strong{
+    font-size:18pt !important;
+  }
+
+  .report-block{
+    page-break-inside:avoid !important;
+    break-inside:avoid !important;
+  }
+}
+
+
+.report-scenario-table td:first-child,
+.report-scenario-table th:first-child{
+  width:auto !important;
+  text-align:left !important;
+}
+
+.report-scenario-table td:not(:first-child),
+.report-scenario-table th:not(:first-child){
+  text-align:right !important;
+  width:auto !important;
+}
+
+
+/* Report snapshot value visibility fix */
+.report-table .report-label-cell{
+  width:62% !important;
+  text-align:left !important;
+  color:#222 !important;
+}
+
+.report-table .report-value-cell{
+  width:38% !important;
+  text-align:right !important;
+  font-weight:900 !important;
+  color:#111 !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+}
+
+.report-two-col .report-table{
+  table-layout:fixed !important;
+}
+
+.report-two-col .report-table td{
+  display:table-cell !important;
+}
+
+@media print{
+  .report-table .report-value-cell{
+    color:#000 !important;
+    font-weight:900 !important;
+    white-space:nowrap !important;
+  }
+}
+
+
+/* Force report values visible */
+#tab-report .report-table td.report-value-cell{
+  display:table-cell !important;
+  color:#111 !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  text-align:right !important;
+  font-weight:900 !important;
+  white-space:nowrap !important;
+  min-width:90px !important;
+}
+
+#tab-report .report-table td.report-label-cell{
+  display:table-cell !important;
+  color:#222 !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+
+#tab-report .report-table tr{
+  display:table-row !important;
+}
+
+#tab-report .report-table tbody{
+  display:table-row-group !important;
+}
+
+
+/* Final fix: keep snapshot values visible in Report + PDF */
+#tab-report .report-two-col .report-table,
+#tab-report .report-two-col .report-table tbody{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+}
+
+#tab-report .report-two-col .report-table tr{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
+  column-gap:16px !important;
+  align-items:center !important;
+  width:100% !important;
+  border-bottom:1px solid #e5e5e5 !important;
+}
+
+#tab-report .report-two-col .report-table td{
+  display:block !important;
+  border-bottom:0 !important;
+  padding:9px 8px !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow:visible !important;
+}
+
+#tab-report .report-two-col .report-table .report-label-cell{
+  text-align:left !important;
+  color:#222 !important;
+  font-weight:500 !important;
+}
+
+#tab-report .report-two-col .report-table .report-value-cell{
+  text-align:right !important;
+  color:#111 !important;
+  font-weight:900 !important;
+  white-space:nowrap !important;
+  min-width:max-content !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+
+@media print{
+  #tab-report .report-two-col .report-table,
+  #tab-report .report-two-col .report-table tbody{
+    display:block !important;
+    width:100% !important;
+  }
+
+  #tab-report .report-two-col .report-table tr{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto !important;
+    column-gap:12px !important;
+    width:100% !important;
+  }
+
+  #tab-report .report-two-col .report-table td{
+    display:block !important;
+    color:#000 !important;
+  }
+
+  #tab-report .report-two-col .report-table .report-value-cell{
+    color:#000 !important;
+    font-weight:900 !important;
+    white-space:nowrap !important;
+  }
+}
+
+
+/* Restore centered visible value column inside report snapshots */
+#tab-report .report-two-col{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:28px !important;
+  align-items:start !important;
+}
+
+#tab-report .report-two-col .report-block{
+  width:100% !important;
+  min-width:0 !important;
+}
+
+#tab-report .report-two-col .report-table{
+  width:100% !important;
+  table-layout:fixed !important;
+  border-collapse:collapse !important;
+}
+
+#tab-report .report-two-col .report-table tbody{
+  display:table-row-group !important;
+}
+
+#tab-report .report-two-col .report-table tr{
+  display:table-row !important;
+}
+
+#tab-report .report-two-col .report-table td{
+  display:table-cell !important;
+  padding:10px 12px !important;
+  border-bottom:1px solid #e5e5e5 !important;
+  vertical-align:middle !important;
+}
+
+#tab-report .report-two-col .report-table .report-label-cell{
+  width:68% !important;
+  text-align:left !important;
+  color:#222 !important;
+}
+
+#tab-report .report-two-col .report-table .report-value-cell{
+  width:32% !important;
+  text-align:right !important;
+  font-weight:900 !important;
+  color:#111 !important;
+  white-space:nowrap !important;
+  padding-right:18px !important;
+}
+
+@media print{
+  #tab-report .report-two-col{
+    grid-template-columns:1fr 1fr !important;
+    gap:22px !important;
+  }
+
+  #tab-report .report-two-col .report-table{
+    width:100% !important;
+    table-layout:fixed !important;
+  }
+
+  #tab-report .report-two-col .report-table tr{
+    display:table-row !important;
+  }
+
+  #tab-report .report-two-col .report-table td{
+    display:table-cell !important;
+    color:#000 !important;
+  }
+
+  #tab-report .report-two-col .report-table .report-value-cell{
+    color:#000 !important;
+    font-weight:900 !important;
+    text-align:right !important;
+    padding-right:14px !important;
+  }
+}
+
 </style>
 </head>
 
@@ -3440,6 +3879,7 @@ body{
   <button class="tab-btn" data-tab="monthly">Monthly Breakdown</button>
   <button class="tab-btn" data-tab="scenarios">Scenario</button>
   <button class="tab-btn" data-tab="charts">Charts</button>
+    <button class="tab-btn" data-tab="report">Report</button>
 </div>
 
   <div class="tab-panel active" id="tab-inputs">
@@ -3820,7 +4260,85 @@ Choose which months should use the Adjusted Fixed Cost Override.
   </div>
 
   
-  <div class="tab-panel" id="tab-scenarios">
+  
+  <div class="tab-panel" id="tab-report">
+    <div class="section report-section">
+      <div class="report-header">
+        <div>
+          <h2>Executive Summary Report</h2>
+          <div class="help">Print-ready conclusion, assumptions snapshot, KPI summary, scenario comparison, and charts.</div>
+        </div>
+        <button type="button" class="print-report-btn" onclick="printExecutiveReport()">Print Report</button>
+      </div>
+
+      <div id="printReportArea">
+        <div class="print-report-title">
+          <h1>Restaurant Financial Model Report</h1>
+          <div id="reportMetaLine">Generated report</div>
+        </div>
+
+        <div class="report-kpi-grid">
+          <div class="report-kpi"><span>Yearly Expected Sales</span><strong id="reportExpectedSales">$0</strong></div>
+          <div class="report-kpi"><span>Operating Profit / Loss</span><strong id="reportOperationalPL">$0</strong></div>
+          <div class="report-kpi"><span>Owner Income Shortfall</span><strong id="reportOwnerGap">$0</strong></div>
+          <div class="report-kpi"><span>Additional Net Sales Required</span><strong id="reportAdditionalSales">$0</strong></div>
+          <div class="report-kpi"><span>Prime Cost %</span><strong id="reportPrimeCost">0%</strong></div>
+          <div class="report-kpi"><span>Labor %</span><strong id="reportLaborPct">0%</strong></div>
+        </div>
+
+        <div class="report-block">
+          <h3>Financial Conclusion</h3>
+          <div id="reportConclusion" class="report-conclusion"></div>
+        </div>
+
+        <div class="report-two-col">
+          <div class="report-block">
+            <h3>Core Assumptions Snapshot</h3>
+            <table class="report-table"><tbody id="reportAssumptionsBody"></tbody></table>
+          </div>
+          <div class="report-block">
+            <h3>Labor & Cost Snapshot</h3>
+            <table class="report-table"><tbody id="reportCostBody"></tbody></table>
+          </div>
+        </div>
+
+        <div class="report-block">
+          <h3>Scenario Comparison</h3>
+          <table class="report-table report-scenario-table">
+            <colgroup>
+              <col style="width:32%">
+              <col style="width:17%">
+              <col style="width:17%">
+              <col style="width:17%">
+              <col style="width:17%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Scenario</th>
+                <th>Sales</th>
+                <th>Operating P/L</th>
+                <th>Owner Shortfall</th>
+                <th>Additional Sales</th>
+              </tr>
+            </thead>
+            <tbody id="reportScenarioBody"></tbody>
+          </table>
+        </div>
+
+        <div class="report-block report-chart-print">
+          <h3>Cost Breakdown</h3>
+          <canvas id="reportCostChart"></canvas>
+        </div>
+
+        <div class="report-block report-chart-print">
+          <h3>Monthly Trend</h3>
+          <canvas id="reportTrendChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<div class="tab-panel" id="tab-scenarios">
 
 <div class="section model-health-section">
   <div class="health-dashboard-header">
@@ -5540,7 +6058,220 @@ function updateModelHealthCheck(model){
 
 
 
+
+let reportCostChart = null;
+let reportTrendChart = null;
+
+function safePct(value){
+  return ((Number(value)||0)*100).toFixed(1) + "%";
+}
+
+function getReportScenarios(currentModel){
+  try{
+    if(typeof buildScenario === "function" && typeof scenarioSummary === "function"){
+      return [
+        scenarioSummary("Base Case", currentModel),
+        scenarioSummary(buildScenario(1).name, buildScenario(1).model),
+        scenarioSummary(buildScenario(2).name, buildScenario(2).model),
+        scenarioSummary(buildScenario(3).name, buildScenario(3).model)
+      ];
+    }
+  }catch(e){
+    console.warn("Scenario report fallback used", e);
+  }
+
+  return [{
+    name:"Base Case",
+    expectedSales:currentModel.totals.expectedSales,
+    operationalProfitLoss:currentModel.totals.operationalProfitLoss,
+    ownerProfitGap:currentModel.totals.ownerProfitGap,
+    additionalSalesNeeded:currentModel.totals.additionalSalesNeeded
+  }];
+}
+
+function updateReport(model){
+  if(!model || !model.totals) return;
+
+  const t = model.totals;
+  const expectedSales = t.expectedSales || 0;
+  const labor = t.trueLaborCost || t.adjustedPayroll || 0;
+  const cogs = t.cogs || 0;
+  const laborPct = expectedSales > 0 ? labor / expectedSales : 0;
+  const primeCostPct = expectedSales > 0 ? (labor + cogs) / expectedSales : 0;
+
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = value;
+  };
+
+  set("reportExpectedSales", money(t.expectedSales));
+  set("reportOperationalPL", money(t.operationalProfitLoss));
+  set("reportOwnerGap", money(t.ownerProfitGap));
+  set("reportAdditionalSales", money(t.additionalSalesNeeded));
+  set("reportPrimeCost", safePct(primeCostPct));
+  set("reportLaborPct", safePct(laborPct));
+
+  const meta = typeof getMetadataForExport === "function" ? getMetadataForExport() : {};
+  const metaLine = document.getElementById("reportMetaLine");
+  if(metaLine){
+    const name = meta.restaurantName ? meta.restaurantName + " · " : "";
+    metaLine.textContent = `${name}Generated ${new Date().toLocaleDateString()} · Model Version ${meta.modelVersion || "2.5"}`;
+  }
+
+  const conclusion = document.getElementById("reportConclusion");
+  if(conclusion){
+    const parts = [];
+    parts.push(`The model projects ${money(t.expectedSales)} in yearly expected sales.`);
+
+    if((t.operationalProfitLoss || 0) < 0){
+      parts.push(`At the current configuration, the operation shows an estimated operating loss of ${money(t.operationalProfitLoss)} before owner compensation.`);
+    }else{
+      parts.push(`At the current configuration, the operation shows an estimated operating profit of ${money(t.operationalProfitLoss)} before owner compensation.`);
+    }
+
+    if((t.ownerProfitGap || 0) > 0){
+      parts.push(`The owner income target is not fully reached, leaving an estimated shortfall of ${money(t.ownerProfitGap)}. The model estimates that approximately ${money(t.additionalSalesNeeded)} in additional net sales would be required to close that gap.`);
+    }else{
+      parts.push(`The owner income target is currently met under the annual model assumptions.`);
+    }
+
+    if(laborPct > 0.38){
+      parts.push(`Labor is a major pressure point at ${safePct(laborPct)} of expected sales.`);
+    }
+
+    if(primeCostPct > 0.68){
+      parts.push(`Prime cost is elevated at ${safePct(primeCostPct)}, which may compress operating profitability.`);
+    }else{
+      parts.push(`Prime cost is estimated at ${safePct(primeCostPct)}.`);
+    }
+
+    conclusion.innerHTML = parts.map(p=>`<p>${p}</p>`).join("");
+  }
+
+  const getNum = (id) => {
+    const el = document.getElementById(id);
+    return el ? (Number(el.value) || 0) : 0;
+  };
+
+  const getText = (id) => {
+    const el = document.getElementById(id);
+    return el ? (el.value || "") : "";
+  };
+
+  const assumptions = [
+    ["Monthly Owner Profit Target", money(getNum("profitTarget"))],
+    ["Monthly Fixed Costs", money(getNum("fixed"))],
+    ["Sales Tax", (getNum("tax")).toFixed(1) + "%"],
+    ["POS Fees", (getNum("pos")).toFixed(1) + "%"],
+    ["Estimated Tips Collected", (getNum("tip")).toFixed(1) + "%"],
+    ["Model Year", getText("year") || "—"],
+    ["Food Sales Mix", (getNum("foodMix")).toFixed(1) + "%"],
+    ["Beverage Sales Mix", (getNum("bevMix")).toFixed(1) + "%"]
+  ];
+
+  const costs = [
+    ["BOH Payroll", money(t.bohPayroll || getNum("bohPayroll") * 12)],
+    ["FOH Payroll", money(t.fohPayroll || getNum("fohPayroll") * 12)],
+    ["True Labor Cost", money(labor)],
+    ["Food Cost", money(t.foodCost || 0)],
+    ["Beverage Cost", money(t.bevCost || 0)],
+    ["COGS", money(cogs)],
+    ["POS Fees", money(t.posFees || 0)],
+    ["Sales Tax", money(t.tax || 0)]
+  ];
+
+  const fillTable = (id, rows) => {
+    const body = document.getElementById(id);
+    if(!body) return;
+    body.innerHTML = rows.map(([label,value])=>`<tr><td class="report-label-cell">${label}</td><td class="report-value-cell" data-report-value="${value}">${value}</td></tr>`).join("");
+  };
+
+  fillTable("reportAssumptionsBody", assumptions);
+  fillTable("reportCostBody", costs);
+
+  const scenarioBody = document.getElementById("reportScenarioBody");
+  if(scenarioBody){
+    const scenarios = getReportScenarios(model);
+    scenarioBody.innerHTML = scenarios.map(s=>`
+      <tr>
+        <td>${s.name}</td>
+        <td>${money(s.expectedSales)}</td>
+        <td>${money(s.operationalProfitLoss)}</td>
+        <td>${money(s.ownerProfitGap)}</td>
+        <td>${money(s.additionalSalesNeeded)}</td>
+      </tr>
+    `).join("");
+  }
+
+  renderReportCharts(model);
+}
+
+function renderReportCharts(model){
+  if(typeof Chart === "undefined" || !model || !model.totals) return;
+
+  const t = model.totals;
+  const costCanvas = document.getElementById("reportCostChart");
+  const trendCanvas = document.getElementById("reportTrendChart");
+
+  if(costCanvas){
+    if(reportCostChart) reportCostChart.destroy();
+
+    const trueLabor = t.trueLaborCost || t.adjustedPayroll || 0;
+    const bohPayroll = t.bohPayroll || 0;
+    const fohPayroll = t.fohPayroll || 0;
+    const payrollBurden = Math.max(0, trueLabor - bohPayroll - fohPayroll);
+
+    reportCostChart = new Chart(costCanvas, {
+      type:"bar",
+      data:{
+        labels:["Labor","Fixed","Food","Beverage","POS","Tax","Tips"],
+        datasets:[
+          {label:"BOH", data:[bohPayroll,0,0,0,0,0,0]},
+          {label:"FOH", data:[fohPayroll,0,0,0,0,0,0]},
+          {label:"Payroll Burden", data:[payrollBurden,0,0,0,0,0,0]},
+          {label:"Other Costs", data:[0,t.fixed,t.foodCost,t.bevCost,t.posFees,t.tax,t.tips]}
+        ]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{legend:{position:"top"}},
+        scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,ticks:{callback:value=>money(value)}}}
+      }
+    });
+  }
+
+  if(trendCanvas){
+    if(reportTrendChart) reportTrendChart.destroy();
+
+    reportTrendChart = new Chart(trendCanvas, {
+      type:"line",
+      data:{
+        labels:months,
+        datasets:[
+          {label:"Expected Sales", data:model.rows.map(r=>r.expectedSales), tension:.25},
+          {label:"Break-Even Sales", data:model.rows.map(r=>r.breakEven), tension:.25},
+          {label:"Operating P/L", data:model.rows.map(r=>r.operationalProfitLoss), tension:.25}
+        ]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{legend:{position:"top"}},
+        scales:{y:{ticks:{callback:value=>money(value)}}}
+      }
+    });
+  }
+}
+
+function printExecutiveReport(){
+  if(typeof calculate === "function") calculate();
+  window.print();
+}
+
+
 function updateSummary(model){
+  updateReport(model);
   updateModelHealthCheck(model);
   const t=model.totals;
   setKPI("sumExpectedSales",t.expectedSales);
@@ -6811,6 +7542,36 @@ setTimeout(initStaticNumberSteppers, 1000);
     stepNumberInput(button);
   }, {capture:true, passive:false});
 })();
+
+
+function refreshReportIfVisible(){
+  const report = document.getElementById("tab-report");
+  if(report && report.classList.contains("active") && typeof calculate === "function"){
+    calculate();
+  }
+}
+
+document.addEventListener("click", e=>{
+  const btn = e.target.closest ? e.target.closest('[data-tab="report"]') : null;
+  if(btn) setTimeout(refreshReportIfVisible, 120);
+});
+
+
+function forceRefreshReport(){
+  try{
+    if(typeof runModel === "function" && typeof updateReport === "function"){
+      updateReport(runModel());
+    }else if(typeof calculate === "function"){
+      calculate();
+    }
+  }catch(e){
+    console.warn("Report refresh failed", e);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", ()=>setTimeout(forceRefreshReport, 700));
+document.addEventListener("input", ()=>setTimeout(forceRefreshReport, 50));
+document.addEventListener("change", ()=>setTimeout(forceRefreshReport, 50));
 
 </script>
 
