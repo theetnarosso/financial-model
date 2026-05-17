@@ -4,48 +4,7 @@
 <meta charset="UTF-8">
 <title>Restaurant Financial Model</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/chart.js">
-function updateLandscapeChartMode(){
-  const isLandscape = window.matchMedia("(orientation: landscape)").matches;
-  const isMobile = window.innerWidth <= 1024;
-  const chartsTab = document.getElementById("tab-charts");
-  const chartBtn = document.querySelector('[data-tab="charts"]');
-
-  if(isLandscape && isMobile){
-    document.body.classList.add("chart-landscape-active");
-
-    if(chartBtn && typeof activateTab === "function"){
-      activateTab("charts");
-    }else if(chartsTab){
-      chartsTab.style.display = "block";
-    }
-
-    if(mainChart && typeof mainChart.resize === "function"){
-      setTimeout(()=>mainChart.resize(),150);
-    }
-  }else{
-    document.body.classList.remove("chart-landscape-active");
-
-    if(mainChart && typeof mainChart.resize === "function"){
-      setTimeout(()=>mainChart.resize(),150);
-    }
-  }
-}
-
-window.addEventListener("orientationchange", ()=>{
-  setTimeout(updateLandscapeChartMode, 250);
-});
-
-window.addEventListener("resize", ()=>{
-  clearTimeout(window.__chartResizeTimer);
-  window.__chartResizeTimer = setTimeout(updateLandscapeChartMode, 180);
-});
-
-document.addEventListener("DOMContentLoaded", ()=>{
-  setTimeout(updateLandscapeChartMode, 400);
-});
-
-</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 
 function stepRelatedNumberInput(button, direction){
@@ -830,111 +789,6 @@ input[type=range]{
   .seasonalityNumber{
     width:62px!important;
     min-width:62px!important;
-  }
-}
-
-/* Landscape chart focus mode for phones/tablets */
-@media screen and (orientation: landscape) and (max-height: 900px){
-  html,
-  body{
-    width:100vw !important;
-    height:100vh !important;
-    margin:0 !important;
-    padding:0 !important;
-    overflow:hidden !important;
-    background:#fff !important;
-  }
-
-  .app{
-    width:100vw !important;
-    height:100vh !important;
-    max-width:none !important;
-    margin:0 !important;
-    padding:0 !important;
-    overflow:hidden !important;
-  }
-
-  .hero,
-  .sticky-summary,
-  .tabs,
-  #tab-inputs,
-  #tab-monthly,
-  #tab-scenarios,
-  #tab-capacity{
-    display:none !important;
-  }
-
-  #tab-charts{
-    display:block !important;
-    width:100vw !important;
-    height:100vh !important;
-  }
-
-  #tab-charts .section{
-    width:100vw !important;
-    height:100vh !important;
-    margin:0 !important;
-    padding:6px !important;
-    border-radius:0 !important;
-    box-shadow:none !important;
-    background:#fff !important;
-    display:flex !important;
-    flex-direction:column !important;
-    overflow:hidden !important;
-  }
-
-  #tab-charts h2,
-  #tab-charts .help{
-    display:none !important;
-  }
-
-  .chart-controls{
-    flex:0 0 42px !important;
-    height:42px !important;
-    margin:0 !important;
-    padding:3px 6px !important;
-    display:flex !important;
-    align-items:center !important;
-    background:#fff !important;
-    z-index:10 !important;
-  }
-
-  .chart-controls .field{
-    max-width:360px !important;
-    width:360px !important;
-  }
-
-  .chart-controls label{
-    display:none !important;
-  }
-
-  .chart-controls select{
-    height:34px !important;
-    padding:5px 10px !important;
-    font-size:14px !important;
-    border-radius:10px !important;
-  }
-
-  .chart-card{
-    flex:1 1 auto !important;
-    width:100vw !important;
-    height:calc(100vh - 42px) !important;
-    min-height:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-    border:0 !important;
-    border-radius:0 !important;
-    box-shadow:none !important;
-    overflow:hidden !important;
-    background:#fff !important;
-  }
-
-  .chart-card canvas{
-    width:100vw !important;
-    height:calc(100vh - 42px) !important;
-    min-height:0 !important;
-    max-height:none !important;
-    display:block !important;
   }
 }
 
@@ -2289,225 +2143,6 @@ body > .bottom-configuration-toolbar{
 }
 
 
-/* Fullscreen chart experience on mobile landscape */
-@media screen and (max-width: 1024px) and (orientation: landscape){
-
-  body.chart-landscape-active{
-    overflow:hidden;
-  }
-
-  body.chart-landscape-active .hero,
-  body.chart-landscape-active .summary-grid,
-  body.chart-landscape-active .tabs,
-  body.chart-landscape-active .tab-panel:not(#tab-charts),
-  body.chart-landscape-active .section:not(.chart-focus-section),
-  body.chart-landscape-active .config-toolbar{
-    display:none !important;
-  }
-
-  body.chart-landscape-active #tab-charts{
-    display:block !important;
-    position:fixed !important;
-    inset:0 !important;
-    width:100vw !important;
-    height:100vh !important;
-    z-index:9999 !important;
-    background:#f5f3ef !important;
-    overflow:hidden !important;
-    padding:10px !important;
-  }
-
-  body.chart-landscape-active .chart-focus-section,
-  body.chart-landscape-active .chart-card{
-    height:100% !important;
-    min-height:100% !important;
-    margin:0 !important;
-    padding:10px !important;
-    border-radius:18px !important;
-  }
-
-  body.chart-landscape-active .chart-card canvas{
-    width:100% !important;
-    height:calc(100vh - 120px) !important;
-    max-height:none !important;
-  }
-
-  body.chart-landscape-active .chart-controls,
-  body.chart-landscape-active .help{
-    margin-bottom:10px !important;
-  }
-}
-
-
-/* STRICT mobile landscape chart-only fullscreen */
-@media screen and (orientation: landscape) and (max-width: 1024px), 
-       screen and (orientation: landscape) and (max-height: 520px){
-
-  html,
-  body{
-    width:100vw !important;
-    height:100vh !important;
-    margin:0 !important;
-    padding:0 !important;
-    overflow:hidden !important;
-    background:#fff !important;
-  }
-
-  .app{
-    width:100vw !important;
-    height:100vh !important;
-    max-width:none !important;
-    margin:0 !important;
-    padding:0 !important;
-    overflow:hidden !important;
-    background:#fff !important;
-  }
-
-  .hero,
-  .configuration-toolbar,
-  .sticky-summary,
-  .summary-grid,
-  .tabs,
-  #tab-inputs,
-  #tab-capacity,
-  #tab-monthly,
-  #tab-scenarios,
-  #topConfigurationToolbar,
-  .model-health-section{
-    display:none !important;
-  }
-
-  #tab-charts{
-    display:block !important;
-    position:fixed !important;
-    inset:0 !important;
-    width:100vw !important;
-    height:100vh !important;
-    margin:0 !important;
-    padding:0 !important;
-    overflow:hidden !important;
-    background:#fff !important;
-    z-index:999999 !important;
-  }
-
-  #tab-charts .section{
-    display:block !important;
-    width:100vw !important;
-    height:100vh !important;
-    max-width:none !important;
-    margin:0 !important;
-    padding:0 !important;
-    border:0 !important;
-    border-radius:0 !important;
-    box-shadow:none !important;
-    background:#fff !important;
-    overflow:hidden !important;
-  }
-
-  #tab-charts h2,
-  #tab-charts .help,
-  #tab-charts .chart-controls,
-  #tab-charts .chart-card > div:not(.pie-total-display),
-  #tab-charts .chart-card > div[style]{
-    display:none !important;
-  }
-
-  #tab-charts .chart-card{
-    display:block !important;
-    position:fixed !important;
-    inset:0 !important;
-    width:100vw !important;
-    height:100vh !important;
-    max-height:none !important;
-    min-height:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-    border:0 !important;
-    border-radius:0 !important;
-    box-shadow:none !important;
-    background:#fff !important;
-    overflow:hidden !important;
-  }
-
-  #tab-charts .chart-card canvas{
-    display:block !important;
-    position:absolute !important;
-    inset:0 !important;
-    width:100vw !important;
-    height:100vh !important;
-    max-width:100vw !important;
-    max-height:100vh !important;
-    min-height:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-  }
-
-  #tab-charts .pie-total-display{
-    position:absolute !important;
-    top:4px !important;
-    left:0 !important;
-    right:0 !important;
-    z-index:2 !important;
-    margin:0 !important;
-    padding:0 !important;
-    font-size:18px !important;
-    line-height:1.1 !important;
-    background:rgba(255,255,255,.72) !important;
-  }
-
-  #tab-charts .pie-total-label{
-    display:none !important;
-  }
-}
-
-
-/* Dedicated chart-only fullscreen overlay for mobile landscape */
-#landscapeChartFullscreen{
-  display:none;
-}
-
-@media screen and (orientation: landscape) and (max-height: 520px){
-  html,
-  body{
-    width:100vw !important;
-    height:100vh !important;
-    margin:0 !important;
-    padding:0 !important;
-    overflow:hidden !important;
-    background:#fff !important;
-  }
-
-  body.landscape-chart-only *{
-    visibility:hidden !important;
-  }
-
-  body.landscape-chart-only #landscapeChartFullscreen,
-  body.landscape-chart-only #landscapeChartFullscreen *{
-    visibility:visible !important;
-  }
-
-  body.landscape-chart-only #landscapeChartFullscreen{
-    display:block !important;
-    position:fixed !important;
-    inset:0 !important;
-    z-index:2147483647 !important;
-    width:100vw !important;
-    height:100vh !important;
-    background:#fff !important;
-    padding:10px 14px 12px !important;
-    box-sizing:border-box !important;
-  }
-
-  body.landscape-chart-only #landscapeChartCanvas{
-    display:block !important;
-    width:100% !important;
-    height:100% !important;
-    max-width:100% !important;
-    max-height:100% !important;
-  }
-}
-
-
 /* Improved mobile pill tabs */
 .tabs{
   display:flex;
@@ -2597,19 +2232,6 @@ body > .bottom-configuration-toolbar{
     font-size:13.5px !important;
   }
 }
-
-
-/* Landscape chart-only mode keeps chart labels/legend inside canvas */
-@media screen and (orientation: landscape) and (max-height: 520px){
-  body.landscape-chart-only #landscapeChartFullscreen{
-    background:#ffffff !important;
-  }
-
-  body.landscape-chart-only #landscapeChartCanvas{
-    background:#ffffff !important;
-  }
-}
-
 
 
 /* Touchscreen number data-entry rows */
@@ -4636,7 +4258,7 @@ body{
 
 /* Final print chart image fallback for all report charts */
 .print-chart-img{
-  display:none;
+  display:none !important;
   width:100%;
   max-width:100%;
   height:auto;
@@ -4761,6 +4383,632 @@ body{
   .report-revenue-footer-percent{
     font-size:10pt !important;
     color:#000 !important;
+  }
+}
+
+
+/* ===== Executive Report V2 ===== */
+.report-section-v2{
+  max-width:1180px;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+
+.report-v2-toolbar{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  margin-bottom:18px;
+}
+
+.report-v2-help{
+  margin:8px 0 0;
+}
+
+.print-report-btn{
+  background:#111;
+  color:#fff;
+  border-radius:14px;
+  padding:14px 18px;
+  white-space:nowrap;
+}
+
+.report-v2{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:24px;
+  padding:28px;
+  overflow:hidden;
+}
+
+.report-page{
+  margin-bottom:28px;
+}
+
+.report-title-row{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  align-items:flex-start;
+  border-bottom:3px solid #111;
+  padding-bottom:14px;
+  margin-bottom:18px;
+}
+
+.report-title-row h1{
+  margin:0 0 6px;
+  font-size:32px;
+}
+
+.report-health-pill{
+  border-radius:999px;
+  padding:10px 16px;
+  font-weight:900;
+  background:#eee;
+  white-space:nowrap;
+}
+
+.report-health-pill.good{background:#dcfce7;color:#166534!important}
+.report-health-pill.warn{background:#fef3c7;color:#92400e!important}
+.report-health-pill.bad{background:#fee2e2;color:#991b1b!important}
+
+.report-kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.report-kpi{
+  border:1px solid #ddd;
+  border-radius:18px;
+  background:linear-gradient(180deg,#fff,#fafafa);
+  padding:14px;
+}
+
+.report-kpi span{
+  display:block;
+  color:#666;
+  font-size:12px;
+  margin-bottom:6px;
+}
+
+.report-kpi strong{
+  font-size:25px;
+  letter-spacing:-.02em;
+}
+
+.report-block{
+  margin-top:20px;
+  break-inside:avoid;
+}
+
+.report-block h3{
+  margin:0 0 10px;
+  font-size:22px;
+}
+
+.report-block-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:10px;
+}
+
+.report-block-header h3{
+  margin-bottom:4px;
+}
+
+.report-block-header p{
+  margin:0;
+  color:#666;
+  line-height:1.35;
+}
+
+.report-mini-total{
+  font-size:28px;
+  font-weight:900;
+  color:#111;
+  white-space:nowrap;
+}
+
+.executive-summary-grid,
+.report-data-grid,
+.report-bridge,
+.report-sensitivity-grid{
+  border:1px solid #ddd;
+  border-radius:16px;
+  overflow:hidden;
+  background:#fff;
+}
+
+.executive-summary-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.report-data-row,
+.report-bridge-row,
+.report-category-row,
+.report-category-header,
+.report-category-footer{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:12px;
+  padding:10px 12px;
+  border-bottom:1px solid #e5e5e5;
+}
+
+.report-data-row:last-child,
+.report-bridge-row:last-child{
+  border-bottom:0;
+}
+
+.report-data-row span,
+.report-bridge-row span{
+  color:#333;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.report-data-row strong,
+.report-bridge-row strong{
+  text-align:right;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.report-insight-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+}
+
+.report-insight-card{
+  border:1px solid #ddd;
+  border-radius:16px;
+  padding:13px;
+  background:#fff;
+}
+
+.report-insight-card strong{
+  display:block;
+  margin-bottom:6px;
+}
+
+.report-insight-card span{
+  color:#555;
+  font-size:13px;
+  line-height:1.35;
+}
+
+.report-insight-card.good{border-color:#bbf7d0;background:#fbfffc}
+.report-insight-card.warn{border-color:#fde68a;background:#fffdf5}
+.report-insight-card.bad{border-color:#fecaca;background:#fffafa}
+
+.report-two-col,
+.report-revenue-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:20px;
+  align-items:start;
+}
+
+.report-bridge-row.positive strong{color:#166534}
+.report-bridge-row.negative strong{color:#9f2f16}
+
+.report-chart-block{
+  border:1px solid #ddd;
+  border-radius:20px;
+  padding:18px;
+  background:#fff;
+}
+
+.report-chart-block canvas{
+  width:100%!important;
+  height:320px!important;
+  max-height:320px!important;
+}
+
+.report-category-grid{
+  margin-top:14px;
+  border:1px solid #ddd;
+  border-radius:16px;
+  overflow:hidden;
+}
+
+.report-category-header,
+.report-category-row,
+.report-category-footer{
+  grid-template-columns:minmax(0,1fr) 160px 80px;
+}
+
+.report-category-header{
+  background:#f3f3f3;
+  font-weight:900;
+}
+
+.report-category-footer{
+  background:#eef6ff;
+  font-weight:900;
+  border-bottom:0;
+}
+
+.report-category-row > div:first-child,
+.report-category-header > span:first-child,
+.report-category-footer > span:first-child{
+  text-align:left;
+}
+
+.report-category-row > strong,
+.report-category-header > span:not(:first-child),
+.report-category-footer > strong{
+  text-align:right;
+  white-space:nowrap;
+}
+
+.report-color-dot{
+  display:inline-block;
+  width:11px;
+  height:11px;
+  border-radius:999px;
+  margin-right:8px;
+  vertical-align:middle;
+}
+
+.report-donut-wrap{
+  min-height:320px;
+}
+
+.print-only-revenue-pie{
+  display:none;
+}
+
+.print-chart-img{
+  display:none !important;
+  width:100%;
+  max-width:100%;
+  height:auto;
+  object-fit:contain;
+}
+
+.report-table{
+  width:100%;
+  min-width:0!important;
+  table-layout:fixed;
+  border-collapse:collapse;
+}
+
+.report-table th,
+.report-table td{
+  padding:10px 8px;
+  border-bottom:1px solid #e5e5e5;
+  white-space:normal;
+}
+
+.report-table th:first-child,
+.report-table td:first-child{
+  position:static!important;
+  background:transparent!important;
+  text-align:left;
+}
+
+.report-table th:not(:first-child),
+.report-table td:not(:first-child){
+  text-align:right;
+}
+
+.report-sensitivity-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:0;
+}
+
+.report-sensitivity-card{
+  padding:13px;
+  border-right:1px solid #e5e5e5;
+}
+
+.report-sensitivity-card:last-child{
+  border-right:0;
+}
+
+.report-sensitivity-card strong{
+  display:block;
+  margin-bottom:5px;
+}
+
+.report-sensitivity-card span{
+  font-size:13px;
+  color:#555;
+  line-height:1.35;
+}
+
+@media(max-width:900px){
+  .report-kpi-grid,
+  .executive-summary-grid,
+  .report-insight-grid,
+  .report-two-col,
+  .report-revenue-layout,
+  .report-sensitivity-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+/* ===== Clean PDF Print Rules ===== */
+@media print{
+  @page{size:letter portrait;margin:.45in;}
+
+  html,body{
+    background:#fff!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+  }
+
+  .hero,.configuration-toolbar,.sticky-summary,.tabs,
+  .tab-panel:not(#tab-report),#tab-report > .section > .report-v2-toolbar,.print-report-btn{
+    display:none!important;
+  }
+
+  #tab-report,#tab-report .report-section-v2,#printReportArea,.report-v2{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    box-shadow:none!important;
+    overflow:visible!important;
+  }
+
+  .report-page{
+    page-break-after:always;
+    margin:0!important;
+  }
+
+  .report-page:last-child{
+    page-break-after:auto;
+  }
+
+  .report-title-row{
+    margin-bottom:10px!important;
+    padding-bottom:8px!important;
+  }
+
+  .report-title-row h1{font-size:20pt!important}
+  #reportMetaLine{font-size:9pt!important}
+
+  .report-health-pill{
+    padding:6px 10px!important;
+    font-size:9pt!important;
+  }
+
+  .report-kpi-grid{
+    grid-template-columns:repeat(3,1fr)!important;
+    gap:7px!important;
+    margin-bottom:10px!important;
+  }
+
+  .report-kpi{
+    padding:7px!important;
+    border-radius:8px!important;
+  }
+
+  .report-kpi span{font-size:7.6pt!important}
+  .report-kpi strong{font-size:14pt!important}
+
+  .report-block{
+    margin-top:11px!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid!important;
+  }
+
+  .report-block h3{font-size:13.5pt!important;margin-bottom:6px!important}
+  .report-block-header p{font-size:8pt!important}
+  .report-mini-total{font-size:16pt!important}
+
+  .executive-summary-grid,
+  .report-two-col,
+  .report-insight-grid,
+  .report-sensitivity-grid{
+    display:grid!important;
+  }
+
+  .executive-summary-grid{grid-template-columns:1fr 1fr!important}
+  .report-two-col{grid-template-columns:1fr 1fr!important;gap:14px!important}
+  .report-insight-grid{grid-template-columns:repeat(4,1fr)!important;gap:7px!important}
+  .report-sensitivity-grid{grid-template-columns:repeat(4,1fr)!important}
+
+  .report-data-row,.report-bridge-row{
+    padding:5px 6px!important;
+    font-size:8.2pt!important;
+  }
+
+  .report-insight-card{
+    padding:7px!important;
+    border-radius:8px!important;
+  }
+
+  .report-insight-card strong{font-size:8.5pt!important}
+  .report-insight-card span{font-size:7.5pt!important}
+
+  .report-chart-block{
+    padding:10px!important;
+    border-radius:10px!important;
+    page-break-inside:avoid!important;
+    break-inside:avoid!important;
+  }
+
+  .report-chart-block canvas{
+    display:none!important;
+  }
+
+  .print-chart-img{
+    display:block!important;
+    width:100%!important;
+    max-height:3.15in!important;
+    object-fit:contain!important;
+    margin:0 auto!important;
+  }
+
+  .report-revenue-layout{
+    grid-template-columns:1fr 1fr!important;
+    gap:14px!important;
+  }
+
+  .report-donut-wrap canvas,
+  .report-donut-wrap .print-chart-img{
+    display:none!important;
+  }
+
+  .print-only-revenue-pie{
+    display:block!important;
+  }
+
+  .print-pie-grid{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    justify-items:center!important;
+    gap:5px!important;
+  }
+
+  .print-revenue-svg{
+    width:2.2in!important;
+    height:2.2in!important;
+  }
+
+  .print-pie-legend-row{
+    display:grid!important;
+    grid-template-columns:8px minmax(0,1fr) auto!important;
+    gap:5px!important;
+    padding:2px 0!important;
+    border-bottom:1px solid #ddd!important;
+    font-size:7.7pt!important;
+  }
+
+  .print-pie-dot{width:7px!important;height:7px!important;border-radius:999px!important}
+  .print-pie-label{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+
+  .report-category-header,
+  .report-category-row,
+  .report-category-footer{
+    grid-template-columns:minmax(0,1fr) 82px 45px!important;
+    padding:0!important;
+  }
+
+  .report-category-header > *,
+  .report-category-row > *,
+  .report-category-footer > *{
+    padding:4px 5px!important;
+    font-size:7.8pt!important;
+  }
+
+  .report-table th,.report-table td{
+    padding:5px 4px!important;
+    font-size:8pt!important;
+  }
+
+  .report-table th:first-child,.report-table td:first-child{
+    width:30%!important;
+  }
+
+  .report-sensitivity-card{
+    padding:7px!important;
+  }
+
+  .report-sensitivity-card strong{font-size:8.5pt!important}
+  .report-sensitivity-card span{font-size:7.5pt!important}
+}
+
+@media print{
+  .revenue-pie-report-block{
+    padding:10px 12px !important;
+  }
+
+  .revenue-pie-report-block .report-revenue-layout{
+    display:grid !important;
+    grid-template-columns:1.9in minmax(0,1fr) !important;
+    gap:12px !important;
+    align-items:center !important;
+    min-height:0 !important;
+  }
+
+  .revenue-pie-report-block .report-donut-wrap{
+    min-height:auto !important;
+    width:1.9in !important;
+    align-self:center !important;
+  }
+
+  .revenue-pie-report-block .print-pie-grid{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    justify-items:center !important;
+    gap:0 !important;
+  }
+
+  .revenue-pie-report-block .print-pie-legend{
+    display:none !important;
+  }
+
+  .revenue-pie-report-block .print-revenue-svg{
+    width:1.82in !important;
+    height:1.82in !important;
+  }
+
+  .revenue-pie-report-block #reportRevenueDistributionGrid{
+    display:block !important;
+    margin-top:0 !important;
+    min-width:0 !important;
+    border-radius:8px !important;
+    border-color:#d7dce2 !important;
+    align-self:center !important;
+  }
+
+  .revenue-pie-report-block #reportRevenueDistributionGrid .report-category-header,
+  .revenue-pie-report-block #reportRevenueDistributionGrid .report-category-row,
+  .revenue-pie-report-block #reportRevenueDistributionGrid .report-category-footer{
+    display:grid !important;
+    grid-template-columns:minmax(1.55in,1fr) .82in .38in !important;
+    line-height:1.12 !important;
+  }
+
+  .revenue-pie-report-block #reportRevenueDistributionGrid .report-category-header > *,
+  .revenue-pie-report-block #reportRevenueDistributionGrid .report-category-row > *,
+  .revenue-pie-report-block #reportRevenueDistributionGrid .report-category-footer > *{
+    padding:4px 5px !important;
+    font-size:7.4pt !important;
+  }
+
+  .revenue-pie-report-block #reportRevenueDistributionGrid .report-category-header > *{
+    font-size:7.9pt !important;
+  }
+
+  .revenue-pie-report-block #reportRevenueDistributionGrid .report-category-footer > *{
+    font-size:7.7pt !important;
+  }
+
+  .revenue-pie-report-block #reportRevenueDistributionGrid .report-category-row > div:first-child{
+    display:flex !important;
+    align-items:center !important;
+    gap:4px !important;
+    white-space:nowrap !important;
+  }
+
+  .revenue-pie-report-block #reportRevenueDistributionGrid .report-category-header > span:first-child,
+  .revenue-pie-report-block #reportRevenueDistributionGrid .report-category-footer > span:first-child{
+    white-space:nowrap !important;
+  }
+
+  .revenue-pie-report-block #reportRevenueDistributionGrid .report-color-dot{
+    width:6px !important;
+    height:6px !important;
+    min-width:6px !important;
+    margin-right:0 !important;
   }
 }
 
@@ -5199,120 +5447,146 @@ Choose which months should use the Adjusted Fixed Cost Override.
           <span id="pieTotalValue">$0</span>
         </div>
         <canvas id="mainChart"></canvas>
-        <div id="landscapeChartFullscreen"><canvas id="landscapeChartCanvas"></canvas></div><div style="margin-top:12px;text-align:center;color:#666;font-size:13px;">Visual distribution of operational revenue, costs, taxes, tips, and remaining operational profit. Percentages are shown on slices when space allows.</div>
+        <div style="margin-top:12px;text-align:center;color:#666;font-size:13px;">Visual distribution of operational revenue, costs, taxes, tips, and remaining operational profit. Percentages are shown on slices when space allows.</div>
       </div>
     </div>
   </div>
 
-  
-  
   <div class="tab-panel" id="tab-report">
-    <div class="section report-section">
-      <div class="report-header">
+    <div class="section report-section-v2">
+      <div class="report-v2-toolbar">
         <div>
-          <h2>Executive Summary Report</h2>
-          <div class="help">Print-ready conclusion, assumptions snapshot, KPI summary, scenario comparison, and charts.</div>
+          <h2>Executive Financial Report</h2>
+          <div class="help report-v2-help">A print-ready financial summary with key conclusions, assumptions, cost structure, revenue distribution, monthly trends, and scenario comparison.</div>
         </div>
         <button type="button" class="print-report-btn" onclick="printExecutiveReport()">Print Report</button>
       </div>
 
-      <div id="printReportArea">
-        <div class="print-report-title">
-          <h1>Restaurant Financial Model Report</h1>
-          <div id="reportMetaLine">Generated report</div>
-        </div>
-
-        <div class="report-kpi-grid">
-          <div class="report-kpi"><span>Yearly Expected Sales</span><strong id="reportExpectedSales">$0</strong></div>
-          <div class="report-kpi"><span>Operating Profit / Loss</span><strong id="reportOperationalPL">$0</strong></div>
-          <div class="report-kpi"><span>Owner Income Shortfall</span><strong id="reportOwnerGap">$0</strong></div>
-          <div class="report-kpi"><span>Additional Net Sales Required</span><strong id="reportAdditionalSales">$0</strong></div>
-          <div class="report-kpi"><span>Prime Cost %</span><strong id="reportPrimeCost">0%</strong></div>
-          <div class="report-kpi"><span>Labor %</span><strong id="reportLaborPct">0%</strong></div>
-        </div>
-
-        <div class="report-block">
-          <h3>Financial Conclusion</h3>
-          <div id="reportConclusion" class="report-conclusion"></div>
-        </div>
-
-        <div class="report-two-col">
-          <div class="report-block">
-            <h3>Core Assumptions Snapshot</h3>
-            <table class="report-table screen-snapshot-table"><tbody id="reportAssumptionsBody"></tbody></table>
-            <div id="printAssumptionsGrid" class="print-snapshot-grid"></div>
-          </div>
-          <div class="report-block">
-            <h3>Labor & Cost Snapshot</h3>
-            <table class="report-table screen-snapshot-table"><tbody id="reportCostBody"></tbody></table>
-            <div id="printCostGrid" class="print-snapshot-grid"></div>
-          </div>
-        </div>
-
-        <div class="report-block">
-          <h3>Scenario Comparison</h3>
-          <table class="report-table report-scenario-table">
-            <colgroup>
-              <col style="width:32%">
-              <col style="width:17%">
-              <col style="width:17%">
-              <col style="width:17%">
-              <col style="width:17%">
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Scenario</th>
-                <th>Sales</th>
-                <th>Operating P/L</th>
-                <th>Owner Shortfall</th>
-                <th>Additional Sales</th>
-              </tr>
-            </thead>
-            <tbody id="reportScenarioBody"></tbody>
-          </table>
-        </div>
-
-        <div class="report-block report-chart-print">
-          <h3>Cost Breakdown</h3>
-          <canvas id="reportCostChart"></canvas><img id="reportCostChartPrintImage" class="print-chart-img" alt="reportCostChart print image">
-          <div class="report-revenue-grid report-cost-grid">
-            <div class="report-revenue-grid-header">
-              <div>Category</div>
-              <div>Amount</div>
-              <div>%</div>
+      <div id="printReportArea" class="report-v2">
+        <section class="report-page report-page-summary">
+          <div class="report-title-row">
+            <div>
+              <h1>Restaurant Financial Model Report</h1>
+              <div id="reportMetaLine">Generated report</div>
             </div>
-            <div id="reportCostBreakdownBody" class="report-revenue-grid-body"></div>
+            <div class="report-health-pill" id="reportHealthPill">Model Health</div>
           </div>
-        </div>
 
-        <div class="report-block report-chart-print revenue-pie-report-block">
-          <h3>Operating Revenue Distribution</h3>
-          <div id="reportRevenuePieTotal" class="report-pie-total"></div>
-          <div class="report-revenue-layout">
-            <div class="report-pie-wrap">
-              <canvas id="reportRevenuePieChart"></canvas>
-              <div id="reportRevenuePiePrintSvg" class="print-only-revenue-pie"></div><img id="reportRevenuePieChartPrintImage" class="print-chart-img" alt="reportRevenuePieChart print image">
+          <div class="report-kpi-grid">
+            <div class="report-kpi"><span>Yearly Expected Sales</span><strong id="reportExpectedSales">$0</strong></div>
+            <div class="report-kpi"><span>Operating Profit / Loss</span><strong id="reportOperationalPL">$0</strong></div>
+            <div class="report-kpi"><span>Owner Income Shortfall</span><strong id="reportOwnerGap">$0</strong></div>
+            <div class="report-kpi"><span>Additional Net Sales Required</span><strong id="reportAdditionalSales">$0</strong></div>
+            <div class="report-kpi"><span>Prime Cost %</span><strong id="reportPrimeCost">0%</strong></div>
+            <div class="report-kpi"><span>Labor %</span><strong id="reportLaborPct">0%</strong></div>
+          </div>
+
+          <div class="report-block report-executive-summary">
+            <h3>Executive Summary</h3>
+            <div id="reportExecutiveSummary" class="executive-summary-grid"></div>
+          </div>
+
+          <div class="report-block">
+            <h3>Financial Insights</h3>
+            <div id="reportInsightCards" class="report-insight-grid"></div>
+          </div>
+
+          <div class="report-two-col">
+            <div class="report-block">
+              <h3>Core Assumptions Snapshot</h3>
+              <div id="reportAssumptionsGrid" class="report-data-grid"></div>
             </div>
-            <div class="report-revenue-grid">
-              <div class="report-revenue-grid-header">
-                <div>Category</div>
-                <div>Amount</div>
-                <div>%</div>
+
+            <div class="report-block">
+              <h3>Labor & Cost Snapshot</h3>
+              <div id="reportCostGrid" class="report-data-grid"></div>
+            </div>
+          </div>
+
+          <div class="report-block">
+            <h3>EBITDA / Operating Profit Bridge</h3>
+            <div id="reportEbitdaBridge" class="report-bridge"></div>
+          </div>
+        </section>
+
+        <section class="report-page report-page-charts">
+          <div class="report-block report-chart-block">
+            <div class="report-block-header">
+              <div>
+                <h3>Cost Breakdown</h3>
+                <p>Major annual cost categories shown as a percent of total operating costs.</p>
               </div>
-              <div id="reportRevenueDistributionBody" class="report-revenue-grid-body"></div>
-              <div id="reportRevenueDistributionFooter" class="report-revenue-footer"></div>
-              <div id="reportRevenueNote" class="report-revenue-note"></div>
+              <div id="reportCostTotal" class="report-mini-total">$0</div>
+            </div>
+            <canvas id="reportCostChart"></canvas>
+            <img id="reportCostChartPrintImage" class="print-chart-img" alt="Cost breakdown print image">
+            <div id="reportCostBreakdownGrid" class="report-category-grid"></div>
+          </div>
+
+          <div class="report-block report-chart-block revenue-pie-report-block">
+            <div class="report-block-header">
+              <div>
+                <h3>Operating Revenue Distribution</h3>
+                <p>How the operating revenue is absorbed by costs, taxes, tips, and profit/loss.</p>
+              </div>
+              <div id="reportRevenuePieTotal" class="report-mini-total">$0</div>
+            </div>
+            <div class="report-revenue-layout">
+              <div class="report-donut-wrap">
+                <canvas id="reportRevenuePieChart"></canvas>
+                <img id="reportRevenuePieChartPrintImage" class="print-chart-img" alt="Revenue distribution print image">
+                <div id="reportRevenuePiePrintSvg" class="print-only-revenue-pie"></div>
+              </div>
+              <div id="reportRevenueDistributionGrid" class="report-category-grid"></div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div class="report-block report-chart-print">
-          <h3>Monthly Trend</h3>
-          <canvas id="reportTrendChart"></canvas><img id="reportTrendChartPrintImage" class="print-chart-img" alt="reportTrendChart print image">
-        </div>
+        <section class="report-page report-page-scenarios">
+          <div class="report-block report-chart-block">
+            <div class="report-block-header">
+              <div>
+                <h3>Monthly Trend</h3>
+                <p>Expected sales, break-even position, and operating profit/loss across the year.</p>
+              </div>
+            </div>
+            <canvas id="reportTrendChart"></canvas>
+            <img id="reportTrendChartPrintImage" class="print-chart-img" alt="Monthly trend print image">
+          </div>
+
+          <div class="report-block">
+            <h3>Scenario Comparison</h3>
+            <table class="report-table report-scenario-table">
+              <colgroup>
+                <col style="width:30%">
+                <col style="width:17.5%">
+                <col style="width:17.5%">
+                <col style="width:17.5%">
+                <col style="width:17.5%">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Scenario</th>
+                  <th>Sales</th>
+                  <th>Operating P/L</th>
+                  <th>Owner Shortfall</th>
+                  <th>Additional Sales</th>
+                </tr>
+              </thead>
+              <tbody id="reportScenarioBody"></tbody>
+            </table>
+          </div>
+
+          <div class="report-block">
+            <h3>What-If Sensitivity Snapshot</h3>
+            <div id="reportSensitivityGrid" class="report-sensitivity-grid"></div>
+          </div>
+        </section>
       </div>
     </div>
   </div>
+
+
 
 <div class="tab-panel" id="tab-scenarios">
 
@@ -5714,6 +5988,10 @@ function applyConfigDirect(data){
     console.error("Apply configuration failed:", err);
     alert("The JSON file opened, but the configuration could not be applied.");
   }
+}
+
+function applyConfigurationDataSafe(data){
+  return applyConfigDirect(data);
 }
 
 function openConfigDirectFromFile(file){
@@ -7046,12 +7324,49 @@ function safeDestroyChart(chart){
   }
 }
 
+
 let reportCostChart = null;
 let reportTrendChart = null;
 let reportRevenuePieChart = null;
 
 function safePct(value){
   return ((Number(value)||0)*100).toFixed(1) + "%";
+}
+
+function reportPct(value){
+  return (Number(value)||0).toFixed(1) + "%";
+}
+
+function reportGetNum(id){
+  const el = document.getElementById(id);
+  return el ? (Number(el.value) || 0) : 0;
+}
+
+function reportGetText(id){
+  const el = document.getElementById(id);
+  return el ? (el.value || "") : "";
+}
+
+function reportRow(label, value, color){
+  const dot = color ? `<span class="report-color-dot" style="background:${color}"></span>` : "";
+  return `
+    <div class="report-data-row">
+      <span>${dot}${label}</span>
+      <strong>${value}</strong>
+    </div>
+  `;
+}
+
+function reportCategoryRow(item, total){
+  const pct = total > 0 ? (item.value / total) * 100 : 0;
+  const displayValue = item.displayValue !== undefined ? item.displayValue : item.value;
+  return `
+    <div class="report-category-row">
+      <div><span class="report-color-dot" style="background:${item.color}"></span>${item.label}</div>
+      <strong>${money(displayValue)}</strong>
+      <strong>${pct.toFixed(1)}%</strong>
+    </div>
+  `;
 }
 
 function getReportScenarios(currentModel){
@@ -7081,23 +7396,44 @@ function updateReport(model){
   if(!model || !model.totals) return;
 
   const t = model.totals;
-  const expectedSales = t.expectedSales || 0;
-  const labor = t.trueLaborCost || t.adjustedPayroll || 0;
-  const cogs = t.cogs || 0;
+  const expectedSales = Number(t.expectedSales) || 0;
+  const labor = Number(t.trueLaborCost || t.adjustedPayroll || 0);
+  const cogs = Number(t.cogs || 0);
+  const foodCost = Number(t.foodCost || 0);
+  const bevCost = Number(t.bevCost || 0);
+  const fixed = Number(t.fixed || reportGetNum("fixed") * 12 || 0);
+  const posFees = Number(t.posFees || 0);
+  const tax = Number(t.tax || 0);
+  const tips = Number(t.tips || 0);
+  const operatingPL = Number(t.operationalProfitLoss || 0);
+  const ownerGap = Number(t.ownerProfitGap || 0);
+  const addSales = Number(t.additionalSalesNeeded || 0);
   const laborPct = expectedSales > 0 ? labor / expectedSales : 0;
+  const cogsPct = expectedSales > 0 ? cogs / expectedSales : 0;
   const primeCostPct = expectedSales > 0 ? (labor + cogs) / expectedSales : 0;
+  const opMargin = expectedSales > 0 ? operatingPL / expectedSales : 0;
 
   const set = (id, value) => {
     const el = document.getElementById(id);
     if(el) el.textContent = value;
   };
 
-  set("reportExpectedSales", money(t.expectedSales));
-  set("reportOperationalPL", money(t.operationalProfitLoss));
-  set("reportOwnerGap", money(t.ownerProfitGap));
-  set("reportAdditionalSales", money(t.additionalSalesNeeded));
+  set("reportExpectedSales", money(expectedSales));
+  set("reportOperationalPL", money(operatingPL));
+  set("reportOwnerGap", money(ownerGap));
+  set("reportAdditionalSales", money(addSales));
   set("reportPrimeCost", safePct(primeCostPct));
   set("reportLaborPct", safePct(laborPct));
+
+  const healthPill = document.getElementById("reportHealthPill");
+  if(healthPill){
+    let status = "Strong";
+    let cls = "good";
+    if(operatingPL < 0 || primeCostPct > .75){ status = "Needs Attention"; cls = "bad"; }
+    else if(primeCostPct > .65 || ownerGap > 0){ status = "Watch Closely"; cls = "warn"; }
+    healthPill.textContent = status;
+    healthPill.className = "report-health-pill " + cls;
+  }
 
   const meta = typeof getMetadataForExport === "function" ? getMetadataForExport() : {};
   const metaLine = document.getElementById("reportMetaLine");
@@ -7106,89 +7442,109 @@ function updateReport(model){
     metaLine.textContent = `${name}Generated ${new Date().toLocaleDateString()} · Model Version ${meta.modelVersion || "2.5"}`;
   }
 
-  const conclusion = document.getElementById("reportConclusion");
-  if(conclusion){
-    const parts = [];
-    parts.push(`The model projects ${money(t.expectedSales)} in yearly expected sales.`);
-
-    if((t.operationalProfitLoss || 0) < 0){
-      parts.push(`At the current configuration, the operation shows an estimated operating loss of ${money(t.operationalProfitLoss)} before owner compensation.`);
-    }else{
-      parts.push(`At the current configuration, the operation shows an estimated operating profit of ${money(t.operationalProfitLoss)} before owner compensation.`);
-    }
-
-    if((t.ownerProfitGap || 0) > 0){
-      parts.push(`The owner income target is not fully reached, leaving an estimated shortfall of ${money(t.ownerProfitGap)}. The model estimates that approximately ${money(t.additionalSalesNeeded)} in additional net sales would be required to close that gap.`);
-    }else{
-      parts.push(`The owner income target is currently met under the annual model assumptions.`);
-    }
-
-    if(laborPct > 0.38){
-      parts.push(`Labor is a major pressure point at ${safePct(laborPct)} of expected sales.`);
-    }
-
-    if(primeCostPct > 0.68){
-      parts.push(`Prime cost is elevated at ${safePct(primeCostPct)}, which may compress operating profitability.`);
-    }else{
-      parts.push(`Prime cost is estimated at ${safePct(primeCostPct)}.`);
-    }
-
-    conclusion.innerHTML = parts.map(p=>`<p>${p}</p>`).join("");
+  const executive = document.getElementById("reportExecutiveSummary");
+  if(executive){
+    const breakEven = expectedSales - operatingPL;
+    executive.innerHTML = [
+      reportRow("Expected Annual Sales", money(expectedSales)),
+      reportRow("Estimated Operating Result", money(operatingPL)),
+      reportRow("Approx. Annual Break-Even Sales", money(breakEven)),
+      reportRow("Operating Margin", safePct(opMargin)),
+      reportRow("Prime Cost Ratio", safePct(primeCostPct)),
+      reportRow("Owner Shortfall", money(ownerGap))
+    ].join("");
   }
 
-  const getNum = (id) => {
-    const el = document.getElementById(id);
-    return el ? (Number(el.value) || 0) : 0;
-  };
+  const insights = document.getElementById("reportInsightCards");
+  if(insights){
+    const items = [];
+    items.push({
+      title: operatingPL >= 0 ? "Profitability" : "Profitability Risk",
+      text: operatingPL >= 0
+        ? `The model shows an estimated operating profit of ${money(operatingPL)}.`
+        : `The model shows an estimated operating loss of ${money(operatingPL)}.`,
+      cls: operatingPL >= 0 ? "good" : "bad"
+    });
+    items.push({
+      title:"Prime Cost",
+      text: primeCostPct > .68
+        ? `Prime cost is elevated at ${safePct(primeCostPct)} and may compress profit.`
+        : `Prime cost is estimated at ${safePct(primeCostPct)}, which appears controlled.`,
+      cls: primeCostPct > .68 ? "warn" : "good"
+    });
+    items.push({
+      title:"Labor Load",
+      text: laborPct > .38
+        ? `Labor appears high at ${safePct(laborPct)} of expected sales.`
+        : `Labor is estimated at ${safePct(laborPct)} of expected sales.`,
+      cls: laborPct > .38 ? "warn" : "good"
+    });
+    items.push({
+      title:"Owner Target",
+      text: ownerGap > 0
+        ? `The owner income target has an estimated shortfall of ${money(ownerGap)}.`
+        : "The owner income target is currently met under the model assumptions.",
+      cls: ownerGap > 0 ? "warn" : "good"
+    });
 
-  const getText = (id) => {
-    const el = document.getElementById(id);
-    return el ? (el.value || "") : "";
-  };
-
-  const assumptions = [
-    ["Monthly Owner Profit Target", money(getNum("profitTarget"))],
-    ["Monthly Fixed Costs", money(getNum("fixed"))],
-    ["Sales Tax", (getNum("tax")).toFixed(1) + "%"],
-    ["POS Fees", (getNum("pos")).toFixed(1) + "%"],
-    ["Estimated Tips Collected", (getNum("tip")).toFixed(1) + "%"],
-    ["Model Year", getText("year") || "—"],
-    ["Food Sales Mix", (getNum("foodMix")).toFixed(1) + "%"],
-    ["Beverage Sales Mix", (getNum("bevMix")).toFixed(1) + "%"]
-  ];
-
-  const costs = [
-    ["BOH Payroll", money(t.bohPayroll || getNum("bohPayroll") * 12)],
-    ["FOH Payroll", money(t.fohPayroll || getNum("fohPayroll") * 12)],
-    ["True Labor Cost", money(labor)],
-    ["Food Cost", money(t.foodCost || 0)],
-    ["Beverage Cost", money(t.bevCost || 0)],
-    ["COGS", money(cogs)],
-    ["POS Fees", money(t.posFees || 0)],
-    ["Sales Tax", money(t.tax || 0)]
-  ];
-
-  const fillTable = (id, rows) => {
-    const body = document.getElementById(id);
-    if(!body) return;
-    body.innerHTML = rows.map(([label,value])=>`<tr><td class="report-label-cell">${label}</td><td class="report-value-cell">${value}</td></tr>`).join("");
-  };
-
-  const fillPrintGrid = (id, rows) => {
-    const grid = document.getElementById(id);
-    if(!grid) return;
-    grid.innerHTML = rows.map(([label,value])=>`
-      <div class="print-snapshot-row">
-        <span class="print-snapshot-label">${label}</span>
-        <strong class="print-snapshot-value">${value}</strong>
+    insights.innerHTML = items.map(item=>`
+      <div class="report-insight-card ${item.cls}">
+        <strong>${item.title}</strong>
+        <span>${item.text}</span>
       </div>
     `).join("");
-  };
+  }
 
-  fillTable("reportAssumptionsBody", assumptions);
-  fillTable("reportCostBody", costs);
-  fillPrintGrid("printAssumptionsGrid", assumptions);
-  fillPrintGrid("printCostGrid", costs);
+  const assumptions = [
+    ["Monthly Owner Profit Target", money(reportGetNum("profitTarget"))],
+    ["Monthly Fixed Costs", money(reportGetNum("fixed"))],
+    ["Sales Tax", reportGetNum("tax").toFixed(1) + "%"],
+    ["POS Fees", reportGetNum("pos").toFixed(1) + "%"],
+    ["Estimated Tips Collected", reportGetNum("tip").toFixed(1) + "%"],
+    ["Model Year", reportGetText("year") || "—"],
+    ["Food Sales Mix", reportGetNum("foodMix").toFixed(1) + "%"],
+    ["Beverage Sales Mix", reportGetNum("bevMix").toFixed(1) + "%"]
+  ];
+
+  const bohPayroll = Number(t.bohPayroll || reportGetNum("bohPayroll") * 12 || 0);
+  const fohPayroll = Number(t.fohPayroll || reportGetNum("fohPayroll") * 12 || 0);
+  const payrollBurden = Math.max(0, labor - bohPayroll - fohPayroll);
+
+  const costs = [
+    ["BOH Payroll", money(bohPayroll)],
+    ["FOH Payroll", money(fohPayroll)],
+    ["Payroll Burden", money(payrollBurden)],
+    ["True Labor Cost", money(labor)],
+    ["Food Cost", money(foodCost)],
+    ["Beverage Cost", money(bevCost)],
+    ["COGS", money(cogs)],
+    ["POS Fees", money(posFees)],
+    ["Sales Tax", money(tax)]
+  ];
+
+  const assumptionsGrid = document.getElementById("reportAssumptionsGrid");
+  if(assumptionsGrid) assumptionsGrid.innerHTML = assumptions.map(([l,v])=>reportRow(l,v)).join("");
+
+  const costGrid = document.getElementById("reportCostGrid");
+  if(costGrid) costGrid.innerHTML = costs.map(([l,v])=>reportRow(l,v)).join("");
+
+  const bridge = document.getElementById("reportEbitdaBridge");
+  if(bridge){
+    const rows = [
+      ["Net Sales", expectedSales, "positive"],
+      ["COGS", -cogs, "negative"],
+      ["True Labor Cost", -labor, "negative"],
+      ["Fixed Costs", -fixed, "negative"],
+      ["POS Fees", -posFees, "negative"],
+      ["Operating Profit / Loss", operatingPL, operatingPL >= 0 ? "positive" : "negative"]
+    ];
+    bridge.innerHTML = rows.map(([label,value,cls])=>`
+      <div class="report-bridge-row ${cls}">
+        <span>${label}</span>
+        <strong>${money(value)}</strong>
+      </div>
+    `).join("");
+  }
 
   const scenarioBody = document.getElementById("reportScenarioBody");
   if(scenarioBody){
@@ -7204,33 +7560,41 @@ function updateReport(model){
     `).join("");
   }
 
-  try{
-    renderReportCharts(model);
-    buildPrintRevenuePieSvg(model);
-  }catch(reportChartError){
-    console.warn("Report chart rendering failed:", reportChartError);
-  }
-}
+  const sensitivity = document.getElementById("reportSensitivityGrid");
+  if(sensitivity){
+    const variableRate = expectedSales > 0 ? ((foodCost + bevCost + posFees) / expectedSales) : 0;
+    const contributionMargin = Math.max(0.01, 1 - variableRate);
+    const plusTenSales = expectedSales * .10;
+    const laborReduction = labor * .05;
+    const avgCheckBoost = expectedSales * .06;
 
+    sensitivity.innerHTML = [
+      ["+10% Sales", `Potential revenue increase of ${money(plusTenSales)}.`],
+      ["-5% Labor", `Potential profit improvement of about ${money(laborReduction)}.`],
+      ["+6% Avg Check", `Potential annual sales lift of about ${money(avgCheckBoost)}.`],
+      ["Owner Gap Coverage", ownerGap > 0 ? `${money(ownerGap / contributionMargin)} estimated sales needed before tax/tips.` : "Owner target currently covered."]
+    ].map(([title,text])=>`
+      <div class="report-sensitivity-card">
+        <strong>${title}</strong>
+        <span>${text}</span>
+      </div>
+    `).join("");
+  }
+
+  renderReportCharts(model);
+  buildPrintRevenuePieSvg(model);
+}
 
 function polarToCartesian(cx, cy, r, angleDeg){
   const angleRad = (angleDeg - 90) * Math.PI / 180.0;
-  return {
-    x: cx + (r * Math.cos(angleRad)),
-    y: cy + (r * Math.sin(angleRad))
-  };
+  return { x: cx + (r * Math.cos(angleRad)), y: cy + (r * Math.sin(angleRad)) };
 }
 
 function describeArc(cx, cy, r, startAngle, endAngle){
   const start = polarToCartesian(cx, cy, r, endAngle);
   const end = polarToCartesian(cx, cy, r, startAngle);
   const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
-  return [
-    "M", cx, cy,
-    "L", start.x, start.y,
-    "A", r, r, 0, largeArcFlag, 0, end.x, end.y,
-    "Z"
-  ].join(" ");
+  return ["M", cx, cy, "L", start.x, start.y, "A", r, r, 0, largeArcFlag, 0, end.x, end.y, "Z"].join(" ");
 }
 
 function buildPrintRevenuePieSvg(model){
@@ -7238,9 +7602,8 @@ function buildPrintRevenuePieSvg(model){
   if(!target || !model || !model.totals) return;
 
   const t = model.totals;
-  const trueLabor = t.trueLaborCost || t.adjustedPayroll || 0;
+  const trueLabor = Number(t.trueLaborCost || t.adjustedPayroll || 0);
   const operatingResult = Number(t.operationalProfitLoss) || 0;
-
   const operatingItem = operatingResult >= 0
     ? {label:"Operational Profit", value:operatingResult, displayValue:operatingResult, color:"#22c55e"}
     : {label:"Operational Loss", value:Math.abs(operatingResult), displayValue:operatingResult, color:"#b91c1c"};
@@ -7256,19 +7619,27 @@ function buildPrintRevenuePieSvg(model){
     operatingItem
   ].filter(item => Number(item.value) > 0);
 
-  const total = items.reduce((sum,item)=>sum + (Number(item.value)||0), 0);
-  if(total <= 0){
-    target.innerHTML = "";
-    return;
-  }
+  const total = items.reduce((sum,item)=>sum + Number(item.value||0), 0);
+  if(total <= 0){ target.innerHTML = ""; return; }
 
   let angle = 0;
-  const cx = 150, cy = 150, r = 120;
+  const cx = 150, cy = 150, outer = 120, inner = 62;
   const paths = items.map(item=>{
     const slice = (item.value / total) * 360;
-    const path = describeArc(cx, cy, r, angle, angle + slice);
+    const startOuter = polarToCartesian(cx, cy, outer, angle);
+    const endOuter = polarToCartesian(cx, cy, outer, angle + slice);
+    const startInner = polarToCartesian(cx, cy, inner, angle);
+    const endInner = polarToCartesian(cx, cy, inner, angle + slice);
+    const largeArc = slice > 180 ? "1" : "0";
+    const d = [
+      "M", startOuter.x, startOuter.y,
+      "A", outer, outer, 0, largeArc, 1, endOuter.x, endOuter.y,
+      "L", endInner.x, endInner.y,
+      "A", inner, inner, 0, largeArc, 0, startInner.x, startInner.y,
+      "Z"
+    ].join(" ");
     angle += slice;
-    return `<path d="${path}" fill="${item.color}" stroke="#ffffff" stroke-width="3"></path>`;
+    return `<path d="${d}" fill="${item.color}" stroke="#ffffff" stroke-width="3"></path>`;
   }).join("");
 
   const legend = items.map(item=>{
@@ -7284,78 +7655,77 @@ function buildPrintRevenuePieSvg(model){
 
   target.innerHTML = `
     <div class="print-pie-grid">
-      <svg viewBox="0 0 300 300" class="print-revenue-svg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Operating Revenue Distribution">
-        ${paths}
-      </svg>
-      <div class="print-pie-legend">
-        ${legend}
+      <div class="print-svg-wrap">
+        <svg viewBox="0 0 300 300" class="print-revenue-svg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Operating Revenue Distribution">
+          ${paths}
+          <circle cx="150" cy="150" r="58" fill="#ffffff"></circle>
+          <text x="150" y="144" text-anchor="middle" font-size="16" font-weight="900" fill="#111">TOTAL</text>
+          <text x="150" y="166" text-anchor="middle" font-size="20" font-weight="900" fill="#111">${money(total)}</text>
+        </svg>
       </div>
+      <div class="print-pie-legend">${legend}</div>
     </div>
   `;
 }
 
-
 function renderReportCharts(model){
-  if(!model || !model.totals) return;
-  buildPrintRevenuePieSvg(model);
-  if(typeof Chart === "undefined") return;
+  if(!model || !model.totals || typeof Chart === "undefined") return;
 
   const t = model.totals;
-  const costCanvas = document.getElementById("reportCostChart");
-  const trendCanvas = document.getElementById("reportTrendChart");
+  const labor = Number(t.trueLaborCost || t.adjustedPayroll || 0);
+  const bohPayroll = Number(t.bohPayroll || 0);
+  const fohPayroll = Number(t.fohPayroll || 0);
+  const payrollBurden = Math.max(0, labor - bohPayroll - fohPayroll);
+  const operatingResult = Number(t.operationalProfitLoss || 0);
 
-  const trueLabor = t.trueLaborCost || t.adjustedPayroll || 0;
-  const bohPayroll = t.bohPayroll || 0;
-  const fohPayroll = t.fohPayroll || 0;
-  const payrollBurden = Math.max(0, trueLabor - bohPayroll - fohPayroll);
+  const colors = {
+    boh:"#3ba3e6", foh:"#22c55e", burden:"#ff9f3a", fixed:"#ff5f86",
+    food:"#f97316", beverage:"#ffd166", pos:"#4bc0c0", tax:"#8b5cf6",
+    tips:"#14b8a6", profit:"#22c55e", loss:"#b91c1c"
+  };
 
+  const costItems = [
+    {label:"BOH Payroll", value:bohPayroll, color:colors.boh},
+    {label:"FOH Payroll", value:fohPayroll, color:colors.foh},
+    {label:"Payroll Burden", value:payrollBurden, color:colors.burden},
+    {label:"Fixed Costs", value:t.fixed || 0, color:colors.fixed},
+    {label:"Food Cost", value:t.foodCost || 0, color:colors.food},
+    {label:"Beverage Cost", value:t.bevCost || 0, color:colors.beverage},
+    {label:"POS Fees", value:t.posFees || 0, color:colors.pos},
+    {label:"Sales Tax", value:t.tax || 0, color:colors.tax},
+    {label:"Estimated Tips", value:t.tips || 0, color:colors.tips}
+  ].filter(item=>Number(item.value)>0);
+  const totalCost = costItems.reduce((sum,item)=>sum+Number(item.value||0),0);
 
-  const costBreakdownBody = document.getElementById("reportCostBreakdownBody");
-  if(costBreakdownBody){
-    const costItems = [
-      {label:"BOH Payroll", value:bohPayroll, color:"#3ba3e6"},
-      {label:"FOH Payroll", value:fohPayroll, color:"#22c55e"},
-      {label:"Payroll Burden", value:payrollBurden, color:"#ff9f3a"},
-      {label:"Fixed Costs", value:t.fixed || 0, color:"#ff5f86"},
-      {label:"Food Cost", value:t.foodCost || 0, color:"#f97316"},
-      {label:"Beverage Cost", value:t.bevCost || 0, color:"#ffd166"},
-      {label:"POS Fees", value:t.posFees || 0, color:"#4bc0c0"},
-      {label:"Sales Tax", value:t.tax || 0, color:"#8b5cf6"},
-      {label:"Estimated Tips", value:t.tips || 0, color:"#14b8a6"}
-    ].filter(item => Number(item.value) > 0);
+  const costTotal = document.getElementById("reportCostTotal");
+  if(costTotal) costTotal.textContent = money(totalCost);
 
-    const totalCostItems = costItems.reduce((sum,item)=>sum + (Number(item.value)||0),0);
-
-    costBreakdownBody.innerHTML = costItems.map(item=>{
-      const pctValue = totalCostItems > 0 ? (item.value / totalCostItems) * 100 : 0;
-      return `
-        <div class="report-revenue-grid-row">
-          <div class="report-revenue-category"><span class="report-color-dot" style="background:${item.color}"></span>${item.label}</div>
-          <div class="report-revenue-amount">${money(item.value)}</div>
-          <div class="report-revenue-percent">${pctValue.toFixed(1)}%</div>
-        </div>
-      `;
-    }).join("");
+  const costGrid = document.getElementById("reportCostBreakdownGrid");
+  if(costGrid){
+    costGrid.innerHTML = `
+      <div class="report-category-header"><span>Category</span><span>Amount</span><span>%</span></div>
+      ${costItems.map(item=>reportCategoryRow(item,totalCost)).join("")}
+      <div class="report-category-footer"><span>Total Operating Costs</span><strong>${money(totalCost)}</strong><strong>100%</strong></div>
+    `;
   }
 
-
+  const costCanvas = document.getElementById("reportCostChart");
   if(costCanvas){
-    safeDestroyChart(reportCostChart);
-
+    if(reportCostChart) reportCostChart.destroy();
     reportCostChart = new Chart(costCanvas, {
       type:"bar",
       data:{
         labels:["Labor","Fixed","Food","Beverage","POS","Tax","Tips"],
         datasets:[
-          {label:"BOH Payroll", data:[bohPayroll,0,0,0,0,0,0], backgroundColor:"#3ba3e6", stack:"labor"},
-          {label:"FOH Payroll", data:[fohPayroll,0,0,0,0,0,0], backgroundColor:"#22c55e", stack:"labor"},
-          {label:"Payroll Burden", data:[payrollBurden,0,0,0,0,0,0], backgroundColor:"#ff9f3a", stack:"labor"},
-          {label:"Fixed Costs", data:[0,t.fixed,0,0,0,0,0], backgroundColor:"#ff5f86"},
-          {label:"Food Cost", data:[0,0,t.foodCost,0,0,0,0], backgroundColor:"#f97316"},
-          {label:"Beverage Cost", data:[0,0,0,t.bevCost,0,0,0], backgroundColor:"#ffd166"},
-          {label:"POS Fees", data:[0,0,0,0,t.posFees,0,0], backgroundColor:"#4bc0c0"},
-          {label:"Sales Tax", data:[0,0,0,0,0,t.tax,0], backgroundColor:"#8b5cf6"},
-          {label:"Estimated Tips", data:[0,0,0,0,0,0,t.tips], backgroundColor:"#14b8a6"}
+          {label:"BOH Payroll", data:[bohPayroll,0,0,0,0,0,0], backgroundColor:colors.boh, stack:"labor"},
+          {label:"FOH Payroll", data:[fohPayroll,0,0,0,0,0,0], backgroundColor:colors.foh, stack:"labor"},
+          {label:"Payroll Burden", data:[payrollBurden,0,0,0,0,0,0], backgroundColor:colors.burden, stack:"labor"},
+          {label:"Fixed Costs", data:[0,t.fixed||0,0,0,0,0,0], backgroundColor:colors.fixed},
+          {label:"Food Cost", data:[0,0,t.foodCost||0,0,0,0,0], backgroundColor:colors.food},
+          {label:"Beverage Cost", data:[0,0,0,t.bevCost||0,0,0,0], backgroundColor:colors.beverage},
+          {label:"POS Fees", data:[0,0,0,0,t.posFees||0,0,0], backgroundColor:colors.pos},
+          {label:"Sales Tax", data:[0,0,0,0,0,t.tax||0,0], backgroundColor:colors.tax},
+          {label:"Estimated Tips", data:[0,0,0,0,0,0,t.tips||0], backgroundColor:colors.tips}
         ]
       },
       options:{
@@ -7363,109 +7733,85 @@ function renderReportCharts(model){
         maintainAspectRatio:false,
         plugins:{
           legend:{position:"top"},
-          tooltip:{
-            filter:(ctx)=>Number(ctx.raw)!==0,
-            callbacks:{label:(ctx)=>ctx.dataset.label + ": " + money(ctx.raw)}
-          }
+          tooltip:{filter:(ctx)=>Number(ctx.raw)!==0, callbacks:{label:(ctx)=>ctx.dataset.label + ": " + money(ctx.raw)}}
         },
-        scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,ticks:{callback:value=>money(value)}}}
+        scales:{
+          x:{stacked:true, grid:{display:false}},
+          y:{stacked:true, beginAtZero:true, ticks:{callback:value=>money(value)}}
+        }
       }
     });
   }
 
+  const operatingItem = operatingResult >= 0
+    ? {label:"Operational Profit", value:operatingResult, displayValue:operatingResult, color:colors.profit}
+    : {label:"Operational Loss", value:Math.abs(operatingResult), displayValue:operatingResult, color:colors.loss};
 
-  const revenuePieCanvas = document.getElementById("reportRevenuePieChart");
-  const revenueBody = document.getElementById("reportRevenueDistributionBody");
+  const revenueItems = [
+    {label:"True Labor Cost", value:labor, displayValue:labor, color:colors.boh},
+    {label:"Fixed Costs", value:t.fixed || 0, displayValue:t.fixed || 0, color:colors.fixed},
+    {label:"Food Cost", value:t.foodCost || 0, displayValue:t.foodCost || 0, color:colors.food},
+    {label:"Beverage Cost", value:t.bevCost || 0, displayValue:t.bevCost || 0, color:colors.beverage},
+    {label:"POS Fees", value:t.posFees || 0, displayValue:t.posFees || 0, color:colors.pos},
+    {label:"Sales Tax", value:t.tax || 0, displayValue:t.tax || 0, color:colors.tax},
+    {label:"Estimated Tips", value:t.tips || 0, displayValue:t.tips || 0, color:colors.tips},
+    operatingItem
+  ].filter(item=>Number(item.value)>0);
+  const totalRevenueDistribution = revenueItems.reduce((sum,item)=>sum+Number(item.value||0),0);
 
-  if(revenuePieCanvas || revenueBody){
-    const operatingResult = Number(t.operationalProfitLoss) || 0;
-    const operatingResultItem = operatingResult >= 0
-      ? {label:"Operational Profit", value:operatingResult, displayValue:operatingResult, color:"#22c55e"}
-      : {label:"Operational Loss", value:Math.abs(operatingResult), displayValue:operatingResult, color:"#b91c1c"};
+  const revenueTotal = document.getElementById("reportRevenuePieTotal");
+  if(revenueTotal) revenueTotal.textContent = money(totalRevenueDistribution);
 
-    const revenueItems = [
-      {label:"True Labor Cost", value:trueLabor, displayValue:trueLabor, color:"#3ba3e6"},
-      {label:"Fixed Costs", value:t.fixed || 0, displayValue:t.fixed || 0, color:"#ff5f86"},
-      {label:"Food Cost", value:t.foodCost || 0, displayValue:t.foodCost || 0, color:"#f97316"},
-      {label:"Beverage Cost", value:t.bevCost || 0, displayValue:t.bevCost || 0, color:"#ffd166"},
-      {label:"POS Fees", value:t.posFees || 0, displayValue:t.posFees || 0, color:"#4bc0c0"},
-      {label:"Sales Tax", value:t.tax || 0, displayValue:t.tax || 0, color:"#8b5cf6"},
-      {label:"Estimated Tips", value:t.tips || 0, displayValue:t.tips || 0, color:"#14b8a6"},
-      operatingResultItem
-    ].filter(item => Number(item.value) > 0);
-
-    const totalDistribution = revenueItems.reduce((sum,item)=>sum + (Number(item.value)||0),0);
-
-    if(revenueBody){
-      revenueBody.innerHTML = revenueItems.map(item=>{
-        const pctValue = totalDistribution > 0 ? (item.value / totalDistribution) * 100 : 0;
-        return `
-          <div class="report-revenue-grid-row">
-            <div class="report-revenue-category"><span class="report-color-dot" style="background:${item.color}"></span>${item.label}</div>
-            <div class="report-revenue-amount">${money(item.value)}</div>
-            <div class="report-revenue-percent">${pctValue.toFixed(1)}%</div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    
-    const revenueNote = document.getElementById("reportRevenueNote");
-    if(revenueNote){
-      revenueNote.textContent = operatingResult < 0
-        ? "Note: Operational Loss is shown as an absolute slice in the pie chart and as a negative dollar amount in the table."
-        : "";
-    }
-
-
-    if(revenuePieCanvas && typeof Chart !== "undefined"){
-      safeDestroyChart(reportRevenuePieChart);
-
-      reportRevenuePieChart = new Chart(revenuePieCanvas, {
-        type:"pie",
-        data:{
-          labels:revenueItems.map(item=>item.label),
-          datasets:[{
-            data:revenueItems.map(item=>item.value),
-            backgroundColor:revenueItems.map(item=>item.color),
-            borderColor:"#ffffff",
-            borderWidth:2
-          }]
-        },
-        options:{
-          responsive:true,
-          maintainAspectRatio:false,
-          plugins:{
-            legend:{position:"bottom"},
-            tooltip:{
-              callbacks:{
-                label:(ctx)=>{
-                  const total = ctx.dataset.data.reduce((sum,value)=>sum + (Number(value)||0),0);
-                  const pctValue = total > 0 ? ((Number(ctx.raw)||0)/total)*100 : 0;
-                  const item = revenueItems[ctx.dataIndex];
-                  const display = item && item.displayValue !== undefined ? item.displayValue : ctx.raw;
-                  return ctx.label + ": " + money(display) + " (" + pctValue.toFixed(1) + "%)";
-                }
-              }
-            }
-          }
-        }
-      });
-    }
+  const revenueGrid = document.getElementById("reportRevenueDistributionGrid");
+  if(revenueGrid){
+    revenueGrid.innerHTML = `
+      <div class="report-category-header"><span>Category</span><span>Amount</span><span>%</span></div>
+      ${revenueItems.map(item=>reportCategoryRow(item,totalRevenueDistribution)).join("")}
+      <div class="report-category-footer"><span>Total</span><strong>${money(totalRevenueDistribution)}</strong><strong>100%</strong></div>
+    `;
   }
 
+  const revenueCanvas = document.getElementById("reportRevenuePieChart");
+  if(revenueCanvas){
+    if(reportRevenuePieChart) reportRevenuePieChart.destroy();
+    reportRevenuePieChart = new Chart(revenueCanvas, {
+      type:"doughnut",
+      data:{
+        labels:revenueItems.map(item=>item.label),
+        datasets:[{
+          data:revenueItems.map(item=>item.value),
+          backgroundColor:revenueItems.map(item=>item.color),
+          borderColor:"#fff",
+          borderWidth:2
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        cutout:"54%",
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:(ctx)=>{
+            const item = revenueItems[ctx.dataIndex];
+            const pct = totalRevenueDistribution > 0 ? (item.value/totalRevenueDistribution)*100 : 0;
+            return item.label + ": " + money(item.displayValue) + " (" + pct.toFixed(1) + "%)";
+          }}}
+        }
+      }
+    });
+  }
 
+  const trendCanvas = document.getElementById("reportTrendChart");
   if(trendCanvas){
-    safeDestroyChart(reportTrendChart);
-
+    if(reportTrendChart) reportTrendChart.destroy();
     reportTrendChart = new Chart(trendCanvas, {
       type:"line",
       data:{
         labels:months,
         datasets:[
-          {label:"Expected Sales", data:model.rows.map(r=>r.expectedSales), tension:.25},
-          {label:"Break-Even Sales", data:model.rows.map(r=>r.breakEven), tension:.25},
-          {label:"Operating P/L", data:model.rows.map(r=>r.operationalProfitLoss), tension:.25}
+          {label:"Expected Sales", data:model.rows.map(r=>r.expectedSales), tension:.25, borderWidth:3, pointRadius:2, borderColor:"#3ba3e6", backgroundColor:"rgba(59,163,230,.12)"},
+          {label:"Break-Even Sales", data:model.rows.map(r=>r.breakEven), tension:.25, borderWidth:2, pointRadius:1, borderColor:"#ff5f86", backgroundColor:"rgba(255,95,134,.08)"},
+          {label:"Operating P/L", data:model.rows.map(r=>r.operationalProfitLoss), tension:.25, borderWidth:3, pointRadius:2, borderColor:"#ff9f3a", backgroundColor:"rgba(255,159,58,.10)"}
         ]
       },
       options:{
@@ -7478,7 +7824,71 @@ function renderReportCharts(model){
   }
 }
 
+function snapshotOneChartForPrint(canvasId, chartObj){
+  const canvas = document.getElementById(canvasId);
+  const img = document.getElementById(canvasId + "PrintImage");
+  if(!canvas || !img) return false;
+  try{
+    canvas.style.display = "block";
+    canvas.style.width = "100%";
+    canvas.style.height = "300px";
+    if(chartObj && typeof chartObj.resize === "function"){
+      chartObj.resize();
+      chartObj.update("none");
+    }
+    const url = canvas.toDataURL("image/png", 1.0);
+    if(url && url.length > 1000){
+      img.src = url;
+      img.style.removeProperty("display");
+      img.setAttribute("data-ready","1");
+      return true;
+    }
+  }catch(e){ console.warn("Chart snapshot failed", canvasId, e); }
+  return false;
+}
 
+function snapshotReportChartsForPrint(){
+  snapshotOneChartForPrint("reportCostChart", reportCostChart);
+  snapshotOneChartForPrint("reportRevenuePieChart", reportRevenuePieChart);
+  snapshotOneChartForPrint("reportTrendChart", reportTrendChart);
+  try{ if(typeof runModel === "function") buildPrintRevenuePieSvg(runModel()); }catch(e){}
+}
+
+function refreshReportChartsForPrint(){
+  try{
+    if(typeof runModel === "function") updateReport(runModel());
+    else if(typeof calculate === "function") calculate();
+  }catch(e){ console.warn("Unable to refresh report before print", e); }
+}
+
+function prepareAllReportChartsForPrint(){
+  refreshReportChartsForPrint();
+  setTimeout(snapshotReportChartsForPrint,100);
+  setTimeout(snapshotReportChartsForPrint,350);
+  setTimeout(snapshotReportChartsForPrint,700);
+}
+
+function printExecutiveReport(){
+  refreshReportChartsForPrint();
+  setTimeout(()=>{
+    snapshotReportChartsForPrint();
+    setTimeout(()=>{
+      snapshotReportChartsForPrint();
+      window.print();
+    },450);
+  },450);
+}
+
+window.addEventListener("beforeprint", ()=>{
+  refreshReportChartsForPrint();
+  snapshotReportChartsForPrint();
+});
+
+document.addEventListener("DOMContentLoaded", ()=>setTimeout(prepareAllReportChartsForPrint,900));
+document.addEventListener("click", e=>{
+  const btn = e.target.closest ? e.target.closest('[data-tab="report"]') : null;
+  if(btn) setTimeout(prepareAllReportChartsForPrint,500);
+});
 
 
 function updateSummary(model){
@@ -8064,7 +8474,6 @@ function updateChart(model){
 
   mainChart = new Chart(canvas, config);
   updatePieVisibleTotal();
-  setTimeout(renderLandscapeFullscreenChart, 50);
 }
 
 function toggleMobileYearDetails(button){
@@ -8164,9 +8573,9 @@ function collectData(){
       bohPayroll:card.querySelector(".periodBOH")?.value || 0,
       fohPayroll:card.querySelector(".periodFOH")?.value || 0,
       payroll:card.querySelector(".vacPayroll")?.value || 0,
-      applyBOHBurden:card.querySelector(".applyPeriodBOHBurden")?.value || "yes",
-      applyFOHBurden:card.querySelector(".applyPeriodFOHBurden")?.value || "yes",
-      applyTipBurden:card.querySelector(".applyPeriodTipBurden")?.value || "default"
+      applyBOHBurden:card.querySelector(".applyPeriodBOHBurden")?.checked ? "yes" : "no",
+      applyFOHBurden:card.querySelector(".applyPeriodFOHBurden")?.checked ? "yes" : "no",
+      applyTipBurden:card.querySelector(".applyPeriodTipBurden")?.checked ? "default" : "no"
     }))
   };
 }
@@ -8252,7 +8661,7 @@ document.querySelectorAll("input,select").forEach(el=>{
   el.addEventListener("change",calculate);
 });
 
-document.getElementById("uploadFile").addEventListener("change",e=>{
+document.getElementById("uploadFile")?.addEventListener("change",e=>{
   const file=e.target.files[0];
   if(file) uploadData(file);
 });
@@ -8519,172 +8928,6 @@ document.addEventListener("DOMContentLoaded", bindInlineScrollLinks);
 setTimeout(bindInlineScrollLinks, 300);
 
 
-function forceLandscapeChartOnly(){
-  const landscape = window.matchMedia("(orientation: landscape)").matches;
-  const smallScreen = window.innerWidth <= 1024 || window.innerHeight <= 520;
-
-  if(landscape && smallScreen){
-    document.body.classList.add("chart-landscape-active");
-
-    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
-    const charts = document.getElementById("tab-charts");
-    if(charts) charts.classList.add("active");
-
-    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
-    const chartBtn = document.querySelector('[data-tab="charts"]');
-    if(chartBtn) chartBtn.classList.add("active");
-
-    if(typeof calculate === "function") calculate();
-
-    setTimeout(()=>{
-      if(mainChart && typeof mainChart.resize === "function"){
-        mainChart.resize(window.innerWidth, window.innerHeight);
-        mainChart.update("none");
-      }
-    }, 250);
-  }else{
-    document.body.classList.remove("chart-landscape-active");
-    if(mainChart && typeof mainChart.resize === "function"){
-      setTimeout(()=>mainChart.resize(), 150);
-    }
-  }
-}
-
-window.addEventListener("orientationchange", ()=>setTimeout(forceLandscapeChartOnly, 350));
-window.addEventListener("resize", ()=>{
-  clearTimeout(window.__forceLandscapeChartTimer);
-  window.__forceLandscapeChartTimer = setTimeout(forceLandscapeChartOnly, 200);
-});
-document.addEventListener("DOMContentLoaded", ()=>setTimeout(forceLandscapeChartOnly, 500));
-
-
-let landscapeFullscreenChart = null;
-
-function getCurrentChartConfigClone(){
-  if(!mainChart) return null;
-  const config = {
-    type: mainChart.config.type,
-    data: JSON.parse(JSON.stringify(mainChart.config.data)),
-    options: JSON.parse(JSON.stringify(mainChart.config.options || {}))
-  };
-
-  config.options.responsive = true;
-  config.options.maintainAspectRatio = false;
-  config.options.layout = {
-    padding: config.type === "pie"
-      ? {top: 8, right: 12, bottom: 18, left: 12}
-      : {top: 8, right: 12, bottom: 8, left: 12}
-  };
-
-  config.options.plugins = config.options.plugins || {};
-  config.options.plugins.legend = config.options.plugins.legend || {};
-  config.options.plugins.legend.display = true;
-  config.options.plugins.legend.position = config.type === "pie" ? "bottom" : "top";
-  config.options.plugins.legend.align = "center";
-  config.options.plugins.legend.labels = {
-    boxWidth: 26,
-    boxHeight: 10,
-    padding: 12,
-    font: { size: window.innerHeight <= 420 ? 10 : 12, weight: "600" }
-  };
-
-  if(config.options.plugins.title){
-    config.options.plugins.title.display = true;
-  }else{
-    const selector = document.getElementById("chartSelector");
-    const selectedText = selector && selector.options[selector.selectedIndex]
-      ? selector.options[selector.selectedIndex].text
-      : "Chart";
-
-    config.options.plugins.title = {
-      display: true,
-      text: selectedText === "Break-Even, Expected Sales & Profit Gaps"
-        ? "Monthly Break-Even vs Expected Sales / Profit Gaps"
-        : selectedText,
-      font: { size: window.innerHeight <= 420 ? 12 : 16, weight: "bold" },
-      padding: { bottom: 12 }
-    };
-  }
-
-  if(config.options.scales && config.options.scales.x && config.options.scales.x.ticks){
-    config.options.scales.x.ticks.maxRotation = 35;
-    config.options.scales.x.ticks.minRotation = 25;
-  }
-
-  if(config.options.scales){
-    Object.keys(config.options.scales).forEach(axisKey=>{
-      const axis = config.options.scales[axisKey];
-      axis.display = true;
-      axis.ticks = axis.ticks || {};
-      axis.ticks.display = true;
-      axis.ticks.font = { size: 11 };
-      axis.grid = axis.grid || {};
-      axis.grid.display = true;
-    });
-  }
-
-  return config;
-}
-
-function renderLandscapeFullscreenChart(){
-  const overlay = document.getElementById("landscapeChartFullscreen");
-  const canvas = document.getElementById("landscapeChartCanvas");
-  if(!overlay || !canvas || typeof Chart === "undefined") return;
-
-  const landscape = window.matchMedia("(orientation: landscape)").matches;
-  const mobileLandscape = landscape && window.innerHeight <= 520;
-
-  if(!mobileLandscape){
-    document.body.classList.remove("landscape-chart-only");
-    if(landscapeFullscreenChart){
-      landscapeFullscreenChart.destroy();
-      landscapeFullscreenChart = null;
-    }
-    return;
-  }
-
-  document.body.classList.add("landscape-chart-only");
-
-  if(typeof calculate === "function"){
-    calculate();
-  }
-
-  const config = getCurrentChartConfigClone();
-  if(!config) return;
-
-  if(config.options && config.options.plugins && config.options.plugins.legend){
-    config.options.plugins.legend.display = true;
-    config.options.plugins.legend.position = config.type === "pie" ? "bottom" : "top";
-  }
-
-  if(landscapeFullscreenChart){
-    landscapeFullscreenChart.destroy();
-  }
-
-  landscapeFullscreenChart = new Chart(canvas, config);
-
-  setTimeout(()=>{
-    if(landscapeFullscreenChart){
-      landscapeFullscreenChart.resize();
-      landscapeFullscreenChart.update("none");
-    }
-  }, 120);
-}
-
-window.addEventListener("orientationchange", ()=>setTimeout(renderLandscapeFullscreenChart, 450));
-window.addEventListener("resize", ()=>{
-  clearTimeout(window.__landscapeFullscreenTimer);
-  window.__landscapeFullscreenTimer = setTimeout(renderLandscapeFullscreenChart, 250);
-});
-
-document.addEventListener("DOMContentLoaded", ()=>setTimeout(renderLandscapeFullscreenChart, 600));
-document.addEventListener("change", e=>{
-  if(e.target && e.target.id === "chartSelector"){
-    setTimeout(renderLandscapeFullscreenChart, 100);
-  }
-});
-
-
 document.addEventListener("DOMContentLoaded", ()=>{
   const tabs = document.querySelector(".tabs");
   if(tabs){
@@ -8693,6 +8936,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
 });
 
 
+
+function initTouchSteppers(){}
+function initStaticNumberSteppers(){}
 
 document.addEventListener("DOMContentLoaded", ()=>setTimeout(initTouchSteppers, 250));
 document.addEventListener("change", ()=>setTimeout(initTouchSteppers, 50));
@@ -8815,85 +9061,15 @@ window.addEventListener("beforeprint", refreshPrintSnapshotGrids);
 document.addEventListener("DOMContentLoaded", ()=>setTimeout(refreshPrintSnapshotGrids, 800));
 
 
-function refreshReportChartsForPrint(){
-  try{
-    if(typeof runModel === "function" && typeof updateReport === "function"){
-      updateReport(runModel());
-    }else if(typeof calculate === "function"){
-      calculate();
-    }
-  }catch(e){
-    console.warn("Unable to refresh report before print", e);
-  }
-}
 
-function snapshotOneChartForPrint(canvasId, chartObj){
-  const canvas = document.getElementById(canvasId);
-  const img = document.getElementById(canvasId + "PrintImage");
-  if(!canvas || !img) return false;
 
-  try{
-    const wrapper = canvas.closest(".report-chart-print") || canvas.parentElement;
-    if(wrapper){
-      wrapper.style.display = "block";
-      wrapper.style.height = wrapper.style.height || "320px";
-      wrapper.style.minHeight = wrapper.style.minHeight || "300px";
-    }
 
-    canvas.style.display = "block";
-    canvas.style.width = "100%";
-    canvas.style.height = "300px";
 
-    if(chartObj && typeof chartObj.resize === "function"){
-      chartObj.resize();
-      chartObj.update("none");
-    }
 
-    const url = canvas.toDataURL("image/png", 1.0);
-    if(url && url.length > 1000){
-      img.src = url;
-      img.style.display = "block";
-      img.setAttribute("data-ready", "1");
-      return true;
-    }
-  }catch(e){
-    console.warn("Could not snapshot chart:", canvasId, e);
-  }
 
-  return false;
-}
 
-function snapshotReportChartsForPrint(){
-  snapshotOneChartForPrint("reportCostChart", typeof reportCostChart !== "undefined" ? reportCostChart : null);
-  snapshotOneChartForPrint("reportRevenuePieChart", typeof reportRevenuePieChart !== "undefined" ? reportRevenuePieChart : null);
-  snapshotOneChartForPrint("reportTrendChart", typeof reportTrendChart !== "undefined" ? reportTrendChart : null);
 
-  try{
-    if(typeof runModel === "function" && typeof buildPrintRevenuePieSvg === "function"){
-      buildPrintRevenuePieSvg(runModel());
-    }
-  }catch(e){}
-}
 
-function prepareAllReportChartsForPrint(){
-  refreshReportChartsForPrint();
-
-  // Multiple passes are intentional: Chart.js may need a moment to draw after hidden tab/report rendering.
-  setTimeout(snapshotReportChartsForPrint, 100);
-  setTimeout(snapshotReportChartsForPrint, 350);
-  setTimeout(snapshotReportChartsForPrint, 700);
-}
-
-function printExecutiveReport(){
-  refreshReportChartsForPrint();
-  setTimeout(()=>{
-    snapshotReportChartsForPrint();
-    setTimeout(()=>{
-      snapshotReportChartsForPrint();
-      window.print();
-    }, 450);
-  }, 450);
-}
 
 window.addEventListener("beforeprint", ()=>{
   refreshReportChartsForPrint();
