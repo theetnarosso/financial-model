@@ -89,10 +89,18 @@ function getCurrentConfigurationForExport(){
 
   data.seasonality = getSeasonalityForExport();
 
-  data.vacations = Array.from(document.querySelectorAll(".vacation-card")).map(card=>({
+  const exportVacationList = (typeof getVacationListElement === "function" && getVacationListElement()) || document;
+  data.vacations = Array.from(exportVacationList.querySelectorAll(".vacation-card")).map(card=>({
     start:card.querySelector(".vacStart")?.value || "",
     end:card.querySelector(".vacEnd")?.value || "",
-    payroll:card.querySelector(".vacPayroll")?.value || "0"
+    mode:card.querySelector(".adjustmentMode")?.value || "replace",
+    type:card.querySelector(".periodType")?.value || "Custom",
+    bohPayroll:card.querySelector(".periodBOH")?.value || "0",
+    fohPayroll:card.querySelector(".periodFOH")?.value || "0",
+    payroll:card.querySelector(".vacPayroll")?.value || "0",
+    applyBOHBurden:card.querySelector(".applyPeriodBOHBurden")?.checked ? "yes" : "no",
+    applyFOHBurden:card.querySelector(".applyPeriodFOHBurden")?.checked ? "yes" : "no",
+    applyTipBurden:card.querySelector(".applyPeriodTipBurden")?.checked ? "default" : "no"
   }));
 
   return data;
@@ -5012,6 +5020,651 @@ body{
   }
 }
 
+/* Guided setup operating-system layer */
+.legacy-input-source{
+  display:none !important;
+}
+
+#tab-inputs > .section:not(.guided-setup){
+  display:none !important;
+}
+
+.guided-setup{
+  display:grid;
+  gap:18px;
+}
+
+.wizard-shell{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:22px;
+  box-shadow:0 16px 42px rgba(0,0,0,.06);
+  overflow:hidden;
+}
+
+.wizard-topbar{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  padding:22px;
+  background:linear-gradient(135deg,#ffffff 0%,#f7f7f7 100%);
+  border-bottom:1px solid var(--border);
+}
+
+.wizard-eyebrow{
+  color:var(--muted);
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.wizard-topbar h2{
+  margin:5px 0 6px;
+}
+
+.wizard-topbar p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.45;
+  max-width:760px;
+}
+
+.wizard-progress{
+  min-width:230px;
+  display:grid;
+  gap:8px;
+}
+
+.wizard-progress-label{
+  display:flex;
+  justify-content:space-between;
+  color:var(--muted);
+  font-size:13px;
+  font-weight:800;
+}
+
+.wizard-progress-track{
+  height:10px;
+  background:#ece7df;
+  border-radius:999px;
+  overflow:hidden;
+}
+
+.wizard-progress-fill{
+  display:block;
+  width:0%;
+  height:100%;
+  background:#111;
+  border-radius:999px;
+  transition:width .2s ease;
+}
+
+.wizard-step-nav{
+  display:grid;
+  grid-template-columns:repeat(9,minmax(0,1fr));
+  gap:1px;
+  background:var(--border);
+}
+
+.wizard-step-btn{
+  border:0;
+  background:#fafafa;
+  padding:14px 10px;
+  text-align:left;
+  cursor:pointer;
+  color:#555;
+  font-weight:900;
+  min-height:74px;
+}
+
+.wizard-step-btn span{
+  display:block;
+  font-size:11px;
+  color:#888;
+  margin-bottom:5px;
+}
+
+.wizard-step-btn.active{
+  background:#111;
+  color:#fff;
+}
+
+.wizard-step-btn.active span{
+  color:#d6d6d6;
+}
+
+.wizard-body{
+  padding:24px;
+}
+
+.wizard-panel{
+  display:none;
+}
+
+.wizard-panel.active{
+  display:block;
+}
+
+.wizard-panel-header{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  align-items:flex-start;
+  margin-bottom:18px;
+}
+
+.wizard-panel-header h3{
+  margin:0 0 6px;
+  font-size:24px;
+}
+
+.wizard-panel-header p{
+  margin:0;
+  color:var(--muted);
+  line-height:1.45;
+}
+
+.mode-switch{
+  display:inline-flex;
+  gap:4px;
+  padding:4px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:#f7f7f7;
+}
+
+.mode-switch button{
+  border:0;
+  border-radius:999px;
+  padding:9px 13px;
+  background:transparent;
+  color:#555;
+  cursor:pointer;
+  font-weight:900;
+}
+
+.mode-switch button.active{
+  background:#111;
+  color:#fff;
+}
+
+.setup-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+}
+
+.setup-grid.two{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.setup-grid.three{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+
+.setup-card{
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  background:#fff;
+}
+
+.setup-card h4{
+  margin:0 0 12px;
+  font-size:16px;
+}
+
+.setup-card.full{
+  grid-column:1 / -1;
+}
+
+.setup-toggle-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+}
+
+.setup-checkbox{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:11px 12px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#fafafa;
+  font-weight:800;
+}
+
+.setup-checkbox input{
+  width:auto;
+}
+
+.guided-mode-panel{
+  display:none;
+}
+
+.guided-mode-panel.active{
+  display:block;
+}
+
+.advanced-collapse{
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:#fff;
+  margin-top:14px;
+  overflow:hidden;
+}
+
+.advanced-collapse summary{
+  cursor:pointer;
+  padding:15px 16px;
+  font-weight:900;
+  background:#fafafa;
+}
+
+.advanced-collapse > div{
+  padding:16px;
+  border-top:1px solid var(--border);
+}
+
+.cost-manager{
+  display:grid;
+  gap:12px;
+}
+
+.cost-manager-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+}
+
+.cost-manager-head strong{
+  font-size:17px;
+}
+
+.cost-card{
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:12px;
+  background:#fff;
+}
+
+.cost-card[draggable="true"]{
+  cursor:grab;
+}
+
+.cost-card.dragging{
+  opacity:.55;
+}
+
+.cost-card-head{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:start;
+  column-gap:8px;
+  margin-bottom:12px;
+}
+
+.cost-title-wrap{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  align-items:start;
+  column-gap:4px;
+  min-width:0;
+}
+
+.cost-name-input{
+  width:100%;
+  min-width:0;
+  font-weight:900;
+}
+
+.cost-enabled-check{
+  width:18px;
+  height:18px;
+  margin-top:2px;
+  align-self:start;
+}
+
+.cost-card-actions{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  align-items:flex-end;
+}
+
+.mini-btn{
+  border:1px solid var(--border);
+  background:#fafafa;
+  color:#222;
+  border-radius:10px;
+  padding:8px 10px;
+  cursor:pointer;
+  font-weight:900;
+}
+
+.mini-btn.danger{
+  color:#b91c1c;
+}
+
+.cost-subtotal,
+.wizard-output-band{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+  margin-top:14px;
+}
+
+.output-tile{
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:13px;
+  background:#fafafa;
+}
+
+.output-tile span{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+  margin-bottom:5px;
+}
+
+.output-tile strong{
+  font-size:19px;
+}
+
+.seasonality-mode-bar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-bottom:16px;
+}
+
+.seasonality-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+
+.seasonality-card{
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:13px;
+  background:#fff;
+}
+
+.seasonality-card-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.seasonality-label{
+  color:#555;
+  font-size:12px;
+  font-weight:900;
+  border-radius:999px;
+  background:#f2f2f2;
+  padding:5px 8px;
+  white-space:nowrap;
+}
+
+.season-sales-input-row{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:6px 10px;
+  background:#fff;
+}
+
+.season-sales-input-row span{
+  margin:0;
+  color:#222;
+  font-size:21px;
+  font-weight:900;
+}
+
+.season-sales-input{
+  width:100%;
+  min-width:0;
+  border:0;
+  outline:none;
+  padding:0;
+  margin:0;
+  background:transparent;
+  color:#222;
+  font-size:28px;
+  font-weight:900;
+  line-height:1.1;
+  font-variant-numeric:tabular-nums;
+  appearance:textfield;
+  -moz-appearance:textfield;
+}
+
+.season-sales-input::-webkit-outer-spin-button,
+.season-sales-input::-webkit-inner-spin-button{
+  -webkit-appearance:none;
+  margin:0;
+}
+
+.labor-position-row{
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:13px;
+  margin-bottom:10px;
+  background:#fff;
+}
+
+.guided-periods-disabled{
+  opacity:.55;
+  pointer-events:none;
+}
+
+.diagnostic-list{
+  display:grid;
+  gap:10px;
+}
+
+.diagnostic-card{
+  border:1px solid var(--border);
+  border-left:5px solid #888;
+  border-radius:14px;
+  padding:14px;
+  background:#fff;
+}
+
+.diagnostic-card.warning{ border-left-color:#f59e0b; }
+.diagnostic-card.critical{ border-left-color:#b91c1c; }
+.diagnostic-card.good{ border-left-color:#22c55e; }
+
+.diagnostic-card strong{
+  display:block;
+  margin-bottom:6px;
+}
+
+.diagnostic-card p{
+  margin:4px 0;
+  color:#555;
+  line-height:1.38;
+}
+
+.diagnostic-card small{
+  display:block;
+  color:#222;
+  font-weight:800;
+  margin-top:8px;
+}
+
+.wizard-footer{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  padding-top:18px;
+  margin-top:18px;
+  border-top:1px solid var(--border);
+}
+
+.wizard-footer-actions{
+  display:flex;
+  gap:10px;
+}
+
+.report-preset-select{
+  min-width:190px;
+}
+
+.tooltip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:18px;
+  height:18px;
+  margin-left:5px;
+  border-radius:999px;
+  background:#ececec;
+  color:#333;
+  font-size:12px;
+  font-weight:900;
+  cursor:help;
+}
+
+.tooltip:hover::after,
+.tooltip:focus::after{
+  content:attr(data-tip);
+  position:absolute;
+  z-index:9999;
+  max-width:280px;
+  transform:translate(-12px,24px);
+  padding:10px 12px;
+  border-radius:10px;
+  background:#111;
+  color:#fff;
+  font-weight:700;
+  line-height:1.35;
+  box-shadow:0 10px 24px rgba(0,0,0,.18);
+}
+
+@media(max-width:1050px){
+  .wizard-step-nav{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+
+  .setup-grid,
+  .setup-grid.three,
+  .setup-grid.two,
+  .cost-subtotal,
+  .wizard-output-band{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .seasonality-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:700px){
+  .wizard-topbar,
+  .wizard-panel-header,
+  .cost-manager-head,
+  .wizard-footer{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .cost-card-head{
+    grid-template-columns:1fr;
+    row-gap:8px;
+  }
+
+  .cost-card-actions{
+    flex-direction:row;
+    justify-content:flex-start;
+    flex-wrap:wrap;
+  }
+
+  .wizard-progress{
+    min-width:0;
+  }
+
+  .wizard-body{
+    padding:16px;
+  }
+
+  .wizard-step-nav{
+    grid-template-columns:1fr;
+  }
+
+  .wizard-step-btn{
+    min-height:auto;
+    padding:12px 14px;
+  }
+
+  .setup-grid,
+  .setup-grid.three,
+  .setup-grid.two,
+  .setup-toggle-grid,
+  .cost-subtotal,
+  .wizard-output-band,
+  .seasonality-grid{
+    grid-template-columns:1fr;
+  }
+
+  .mode-switch{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+
+  .mode-switch button{
+    padding:10px 8px;
+  }
+}
+
+@media print{
+  .guided-setup,
+  .legacy-input-source{
+    display:none !important;
+  }
+}
+
+/* Reliable print fallback: show canvas unless a snapshot image is confirmed ready */
+@media print{
+  .report-chart-block canvas{
+    display:block !important;
+  }
+
+  .report-chart-block .print-chart-img{
+    display:none !important;
+  }
+
+  .report-chart-block.print-snapshot-ready canvas{
+    display:none !important;
+  }
+
+  .report-chart-block.print-snapshot-ready .print-chart-img{
+    display:block !important;
+  }
+
+  .revenue-pie-report-block .report-donut-wrap canvas,
+  .revenue-pie-report-block .report-donut-wrap .print-chart-img{
+    display:none !important;
+  }
+
+  .revenue-pie-report-block .print-only-revenue-pie{
+    display:block !important;
+  }
+}
+
 </style>
 </head>
 
@@ -5067,7 +5720,7 @@ body{
 
 
 <div class="tabs">
-  <button class="tab-btn active" data-tab="inputs">Inputs</button>
+  <button class="tab-btn active" data-tab="inputs">Setup Wizard</button>
   <button class="tab-btn" data-tab="capacity">Capacity</button>
   <button class="tab-btn" data-tab="monthly">Monthly Breakdown</button>
   <button class="tab-btn" data-tab="scenarios">Scenario</button>
@@ -5076,6 +5729,336 @@ body{
 </div>
 
   <div class="tab-panel active" id="tab-inputs">
+<div class="section guided-setup">
+  <div class="wizard-shell">
+    <div class="wizard-topbar">
+      <div>
+        <div class="wizard-eyebrow">Guided Setup</div>
+        <h2>Restaurant Financial Operating System</h2>
+        <p>Build the model in a logical flow: Profile, Revenue, Costs, Labor, Tax & Tips, Seasonality, Profit Goals, Diagnostics, and Report.</p>
+      </div>
+      <div class="wizard-progress" aria-live="polite">
+        <div class="wizard-progress-label"><span id="wizardProgressText">Step 1 of 9</span><span id="wizardProgressPct">11%</span></div>
+        <div class="wizard-progress-track"><span class="wizard-progress-fill" id="wizardProgressFill"></span></div>
+      </div>
+    </div>
+
+    <div class="wizard-step-nav" role="tablist" aria-label="Setup steps">
+      <button type="button" class="wizard-step-btn active" data-step="0"><span>01</span>Profile</button>
+      <button type="button" class="wizard-step-btn" data-step="1"><span>02</span>Revenue</button>
+      <button type="button" class="wizard-step-btn" data-step="2"><span>03</span>Costs</button>
+      <button type="button" class="wizard-step-btn" data-step="3"><span>04</span>Labor</button>
+      <button type="button" class="wizard-step-btn" data-step="4"><span>05</span>Tax & Tips</button>
+      <button type="button" class="wizard-step-btn" data-step="5"><span>06</span>Seasonality</button>
+      <button type="button" class="wizard-step-btn" data-step="6"><span>07</span>Goals</button>
+      <button type="button" class="wizard-step-btn" data-step="7"><span>08</span>Diagnostics</button>
+      <button type="button" class="wizard-step-btn" data-step="8"><span>09</span>Report</button>
+    </div>
+
+    <div class="wizard-body">
+      <div class="wizard-panel active" data-panel="0">
+        <div class="wizard-panel-header">
+          <div>
+            <h3>Restaurant Profile</h3>
+            <p>Define the operating footprint before modeling the money.</p>
+          </div>
+        </div>
+        <div class="setup-grid">
+          <div class="field"><label>Restaurant Name</label><input type="text" id="profileRestaurantName" placeholder="Restaurant name"></div>
+          <div class="field"><label>Concept Type</label><select id="profileConceptType"><option>Full service restaurant</option><option>Fast casual</option><option>Bar</option><option>Cafe</option><option>Fine dining</option><option>Seasonal hospitality</option><option>Hybrid venue</option><option>Multi-unit operation</option></select></div>
+          <div class="field"><label>City / State</label><input type="text" id="profileCityState" placeholder="City, ST"></div>
+          <div class="field"><label>Seating Capacity</label><input type="number" id="profileSeatingCapacity" value="48" min="0" step="1"></div>
+          <div class="field"><label>Indoor Seats</label><input type="number" id="profileIndoorSeats" value="38" min="0" step="1"></div>
+          <div class="field"><label>Outdoor Seats</label><input type="number" id="profileOutdoorSeats" value="0" min="0" step="1"></div>
+          <div class="field"><label>Bar Seats</label><input type="number" id="profileBarSeats" value="10" min="0" step="1"></div>
+          <div class="field"><label>Operating Days / Week</label><input type="number" id="profileOperatingDaysWeek" value="6" min="0" max="7" step="1"></div>
+          <div class="field"><label>Services Offered</label><select id="profileServices"><option value="dinner">Dinner</option><option value="lunch">Lunch</option><option value="both" selected>Lunch and dinner</option></select></div>
+          <div class="field"><label>Average Days Open / Month</label><input type="number" id="profileDaysOpenMonth" value="26" min="0" max="31" step="1"></div>
+          <div class="field setup-card full">
+            <h4>Closed Days</h4>
+            <div class="setup-toggle-grid">
+              <label class="setup-checkbox"><input type="checkbox" class="guidedClosedDay" value="0">Sun</label>
+              <label class="setup-checkbox"><input type="checkbox" class="guidedClosedDay" value="1">Mon</label>
+              <label class="setup-checkbox"><input type="checkbox" class="guidedClosedDay" value="2">Tue</label>
+              <label class="setup-checkbox"><input type="checkbox" class="guidedClosedDay" value="3">Wed</label>
+              <label class="setup-checkbox"><input type="checkbox" class="guidedClosedDay" value="4">Thu</label>
+              <label class="setup-checkbox"><input type="checkbox" class="guidedClosedDay" value="5">Fri</label>
+              <label class="setup-checkbox"><input type="checkbox" class="guidedClosedDay" value="6">Sat</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-panel" data-panel="1">
+        <div class="wizard-panel-header">
+          <div>
+            <h3>Revenue Engine</h3>
+            <p>Use a simple monthly revenue estimate or calculate sales from capacity, turns, check average, operating days, and utilization.</p>
+          </div>
+          <div class="mode-switch" data-mode-group="revenueMode">
+            <button type="button" class="active" data-mode="simple">Simple</button>
+            <button type="button" data-mode="advanced">Advanced</button>
+          </div>
+        </div>
+        <div class="guided-mode-panel active" data-mode-panel="revenueMode:simple">
+          <div class="setup-grid two">
+            <div class="field"><label>Estimated Monthly Net Sales <span class="tooltip" tabindex="0" data-tip="Accounting revenue before sales tax and tips.">?</span></label><input type="number" id="revenueSimpleMonthly" value="50000" min="0" step="100"></div>
+            <div class="field"><label>Food / Beverage Split</label><select id="revenueMixPreset"><option value="75:25" selected>75% food / 25% beverage</option><option value="65:35">65% food / 35% beverage</option><option value="55:45">55% food / 45% beverage</option><option value="85:15">85% food / 15% beverage</option><option value="custom">Custom</option></select></div>
+          </div>
+        </div>
+        <div class="guided-mode-panel" data-mode-panel="revenueMode:advanced">
+          <div class="setup-grid">
+            <div class="field"><label>Total Seats</label><input type="number" id="revenueSeats" value="48" min="0" step="1"></div>
+            <div class="field"><label>Turns / Service</label><input type="number" id="revenueTurns" value="1.5" min="0" step="0.1"></div>
+            <div class="field"><label>Utilization %</label><input type="number" id="revenueUtilization" value="75" min="0" max="150" step="1"></div>
+            <div class="field"><label>Average Check <span class="tooltip" tabindex="0" data-tip="Food spend plus beverage spend per guest.">?</span></label><input type="number" id="revenueAvgCheck" value="90" min="0" step="1"></div>
+            <div class="field"><label>Food Average Spend</label><input type="number" id="revenueFoodSpend" value="67.5" min="0" step="0.5"></div>
+            <div class="field"><label>Beverage Average Spend</label><input type="number" id="revenueBevSpend" value="22.5" min="0" step="0.5"></div>
+            <div class="field"><label>Operating Days / Month</label><input type="number" id="revenueOperatingDays" value="26" min="0" max="31" step="1"></div>
+          </div>
+        </div>
+        <details class="advanced-collapse" open>
+          <summary>Optional Revenue Streams</summary>
+          <div class="setup-grid">
+            <div class="field"><label>Events Monthly Revenue</label><input type="number" id="revenueEvents" value="0" min="0" step="100"></div>
+            <div class="field"><label>Catering Monthly Revenue</label><input type="number" id="revenueCatering" value="0" min="0" step="100"></div>
+            <div class="field"><label>Take Out Monthly Revenue</label><input type="number" id="revenueTakeOut" value="0" min="0" step="100"></div>
+            <div class="field"><label>Delivery Monthly Revenue</label><input type="number" id="revenueDelivery" value="0" min="0" step="100"></div>
+            <div class="field"><label>Retail Monthly Revenue</label><input type="number" id="revenueRetail" value="0" min="0" step="100"></div>
+            <div class="field"><label>Apply Delivery Service Fee %</label><label class="setup-checkbox"><input type="checkbox" id="revenueApplyDeliveryFee">Yes, apply delivery service fee</label></div>
+            <div class="field"><label>Delivery Service Fee %</label><input type="number" id="revenueDeliveryFeePct" value="0" min="0" max="100" step="0.1"></div>
+          </div>
+        </details>
+        <div class="wizard-output-band">
+          <div class="output-tile"><span>Projected Monthly Net Sales</span><strong id="guidedRevenueMonthly">$0</strong></div>
+          <div class="output-tile"><span>Projected Daily Net Sales</span><strong id="guidedRevenueDaily">$0</strong></div>
+          <div class="output-tile"><span>Food Sales Mix</span><strong id="guidedFoodMix">75%</strong></div>
+          <div class="output-tile"><span>Beverage Sales Mix</span><strong id="guidedBevMix">25%</strong></div>
+        </div>
+      </div>
+
+      <div class="wizard-panel" data-panel="2">
+        <div class="wizard-panel-header">
+          <div>
+            <h3>Cost Structure</h3>
+            <p>Separate variable, fixed, and semi-variable costs. Fixed and semi-variable categories are fully customizable.</p>
+          </div>
+        </div>
+        <div class="setup-grid">
+          <div class="field"><label>Food Cost %</label><input type="number" id="costFoodPct" value="30" min="0" max="100" step="0.1"></div>
+          <div class="field"><label>Beverage Cost %</label><input type="number" id="costBevPct" value="25" min="0" max="100" step="0.1"></div>
+          <div class="field"><label>POS / Merchant Processing %</label><input type="number" id="costProcessingPct" value="3" min="0" max="100" step="0.1"></div>
+        </div>
+        <div class="setup-grid two" style="margin-top:16px;">
+          <div class="cost-manager">
+            <div class="cost-manager-head">
+              <strong>Fixed Costs</strong>
+              <button type="button" class="primary" id="addFixedCostBtn">+ Add Custom Cost</button>
+            </div>
+            <div id="fixedCostList"></div>
+            <div class="cost-subtotal">
+              <div class="output-tile"><span>Monthly Fixed Subtotal</span><strong id="fixedCostSubtotal">$0</strong></div>
+              <div class="output-tile"><span>Yearly Fixed Subtotal</span><strong id="fixedCostYearly">$0</strong></div>
+            </div>
+          </div>
+          <div class="cost-manager">
+            <div class="cost-manager-head">
+              <strong>Semi-Variable Costs</strong>
+              <button type="button" class="primary" id="addSemiVariableCostBtn">+ Add Custom Cost</button>
+            </div>
+            <div id="semiVariableCostList"></div>
+            <div class="cost-subtotal">
+              <div class="output-tile"><span>Monthly Base</span><strong id="semiVariableBaseSubtotal">$0</strong></div>
+              <div class="output-tile"><span>Estimated Monthly Total</span><strong id="semiVariableEstimatedSubtotal">$0</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-panel" data-panel="3">
+        <div class="wizard-panel-header">
+          <div>
+            <h3>Labor Module</h3>
+            <p>Keep FOH, BOH, management, tips, and employer burden separate.</p>
+          </div>
+          <div class="mode-switch" data-mode-group="laborMode">
+            <button type="button" class="active" data-mode="simple">Simple</button>
+            <button type="button" data-mode="structured">Structured</button>
+            <button type="button" data-mode="advanced">Advanced</button>
+          </div>
+        </div>
+        <div class="guided-mode-panel active" data-mode-panel="laborMode:simple">
+          <div class="setup-grid two">
+            <div class="field"><label>Total Monthly Labor Cost</label><input type="number" id="laborSimpleTotal" value="25000" min="0" step="100"></div>
+            <div class="field"><label>FOH Share %</label><input type="number" id="laborSimpleFohShare" value="28" min="0" max="100" step="1"></div>
+          </div>
+        </div>
+        <div class="guided-mode-panel" data-mode-panel="laborMode:structured">
+          <div class="setup-grid">
+            <div class="field"><label>FOH Payroll</label><input type="number" id="laborFohPayroll" value="7000" min="0" step="100"></div>
+            <div class="field"><label>BOH Payroll</label><input type="number" id="laborBohPayroll" value="18000" min="0" step="100"></div>
+            <div class="field"><label>Management Payroll</label><input type="number" id="laborManagementPayroll" value="0" min="0" step="100"></div>
+            <div class="field"><label>Payroll Tax / Burden %</label><input type="number" id="laborStructuredBurdenPct" value="11" min="0" max="100" step="0.1"></div>
+          </div>
+        </div>
+        <div class="guided-mode-panel" data-mode-panel="laborMode:advanced">
+          <div id="laborPositionList"></div>
+          <button type="button" class="primary" id="addLaborPositionBtn">+ Add Position</button>
+        </div>
+        <details class="advanced-collapse" open>
+          <summary>Tips, Burden, and Display Options</summary>
+          <div class="setup-grid">
+            <div class="field"><label>Tips Collected</label><input type="number" id="laborTipsCollected" value="0" min="0" step="100"></div>
+            <div class="field"><label>Employer Payroll Burden %</label><input type="number" id="laborPayrollBurdenPct" value="11" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>Tip Burden %</label><input type="number" id="laborTipBurdenPct" value="8" min="0" max="100" step="0.1"></div>
+            <div class="field"><label>Include Tips in Labor Display</label><select id="laborIncludeTipsDisplay"><option value="no" selected>No</option><option value="yes">Yes</option></select></div>
+          </div>
+        </details>
+        <details class="advanced-collapse">
+          <summary>Temporary Labor Periods</summary>
+          <div class="setup-grid two">
+            <div class="field">
+              <label>Use Temporary Labor Periods</label>
+              <select id="laborUseTempPeriods">
+                <option value="no" selected>No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <div class="btn-row">
+                <button type="button" class="primary" id="laborAddPeriodBtn">+ Add Period</button>
+                <button type="button" class="secondary" id="laborClearPeriodsBtn">Clear Periods</button>
+              </div>
+            </div>
+          </div>
+          <div class="help">Adjust BOH and FOH payroll for date ranges like vacations, events, closures, and seasonal staffing shifts.</div>
+          <div class="vacation-list" id="guidedVacationList"></div>
+          <div class="wizard-output-band">
+            <div class="output-tile"><span>Configured Periods</span><strong id="laborPeriodCountOutput">0</strong></div>
+            <div class="output-tile"><span>Total Period Days</span><strong id="laborPeriodDaysOutput">0</strong></div>
+            <div class="output-tile"><span>Period Logic</span><strong id="laborPeriodStatusOutput">Off</strong></div>
+          </div>
+        </details>
+        <div class="wizard-output-band">
+          <div class="output-tile"><span>FOH Labor</span><strong id="laborFohOutput">$0</strong></div>
+          <div class="output-tile"><span>BOH Labor</span><strong id="laborBohOutput">$0</strong></div>
+          <div class="output-tile"><span>Management Labor</span><strong id="laborManagementOutput">$0</strong></div>
+          <div class="output-tile"><span>Employer Burden</span><strong id="laborBurdenOutput">$0</strong></div>
+        </div>
+      </div>
+
+      <div class="wizard-panel" data-panel="4">
+        <div class="wizard-panel-header">
+          <div>
+            <h3>Tips, Tax & Processing</h3>
+            <p>Separate accounting revenue from taxes, tips, gross cash processed, and operating cashflow.</p>
+          </div>
+        </div>
+        <div class="setup-grid">
+          <div class="field"><label>Sales Tax %</label><input type="number" id="cashSalesTaxPct" value="7" min="0" max="100" step="0.1"></div>
+          <div class="field"><label>Average Tip %</label><input type="number" id="cashTipPct" value="19" min="0" max="100" step="0.1"></div>
+          <div class="field"><label>Credit Card Processing %</label><input type="number" id="cashProcessingPct" value="3" min="0" max="100" step="0.1"></div>
+          <div class="field"><label>Processing Applies To</label><select id="cashProcessingBase"><option value="grossWithTips" selected>Gross revenue, sales tax, and tips</option><option value="grossRevenue">Gross revenue and sales tax</option><option value="tipsOnly">Tips only</option><option value="netSales">Net sales only</option></select></div>
+          <div class="field"><label>Sales Tax Treatment</label><select id="cashTaxTreatment"><option value="processed" selected>Include in gross processed revenue</option><option value="cashflow">Show in cashflow only</option></select></div>
+        </div>
+        <div class="wizard-output-band">
+          <div class="output-tile"><span>Net Sales</span><strong id="cashNetSales">$0</strong></div>
+          <div class="output-tile"><span>Sales Tax Collected</span><strong id="cashSalesTax">$0</strong></div>
+          <div class="output-tile"><span>Tips Collected</span><strong id="cashTips">$0</strong></div>
+          <div class="output-tile"><span>Gross Cash Processed</span><strong id="cashGrossProcessed">$0</strong></div>
+          <div class="output-tile"><span>Accounting Revenue</span><strong id="cashAccountingRevenue">$0</strong></div>
+          <div class="output-tile"><span>Operating Cashflow</span><strong id="cashOperatingCashflow">$0</strong></div>
+        </div>
+      </div>
+
+      <div class="wizard-panel" data-panel="5">
+        <div class="wizard-panel-header">
+          <div>
+            <h3>Seasonality Module</h3>
+            <p>Apply the same month every month or customize each period.</p>
+          </div>
+        </div>
+        <div class="seasonality-mode-bar">
+          <div class="mode-switch" data-mode-group="seasonalityMode">
+            <button type="button" class="active" data-mode="same">Same Every Month</button>
+            <button type="button" data-mode="custom">Customize Each Month</button>
+          </div>
+          <div class="field" style="max-width:220px;"><label>Default Factor</label><input type="number" id="seasonalityDefaultFactor" value="1" min="0" max="3.5" step="0.05"></div>
+        </div>
+        <div class="seasonality-grid" id="guidedSeasonalityGrid"></div>
+      </div>
+
+      <div class="wizard-panel" data-panel="6">
+        <div class="wizard-panel-header">
+          <div>
+            <h3>Profit Goals</h3>
+            <p>Set owner goals, debt payments, and reserve targets, then see the sales, check average, occupancy, and turns required.</p>
+          </div>
+        </div>
+        <div class="setup-grid">
+          <div class="field"><label>Desired Owner Salary / Month</label><input type="number" id="goalOwnerSalary" value="0" min="0" step="100"></div>
+          <div class="field"><label>Desired Monthly Profit</label><input type="number" id="goalMonthlyProfit" value="0" min="0" step="100"></div>
+          <div class="field"><label>Desired Yearly Profit</label><input type="number" id="goalYearlyProfit" value="0" min="0" step="100"></div>
+          <div class="field"><label>Debt Payment / Month</label><input type="number" id="goalDebtPayment" value="0" min="0" step="100"></div>
+          <div class="field"><label>Emergency Reserve Target</label><input type="number" id="goalReserveTarget" value="0" min="0" step="100"></div>
+        </div>
+        <div class="wizard-output-band">
+          <div class="output-tile"><span>Required Monthly Sales</span><strong id="goalRequiredMonthlySales">$0</strong></div>
+          <div class="output-tile"><span>Required Daily Sales</span><strong id="goalRequiredDailySales">$0</strong></div>
+          <div class="output-tile"><span>Required Average Check</span><strong id="goalRequiredAvgCheck">$0</strong></div>
+          <div class="output-tile"><span>Required Occupancy</span><strong id="goalRequiredOccupancy">0%</strong></div>
+          <div class="output-tile"><span>Required Turns</span><strong id="goalRequiredTurns">0.00</strong></div>
+        </div>
+      </div>
+
+      <div class="wizard-panel" data-panel="7">
+        <div class="wizard-panel-header">
+          <div>
+            <h3>Diagnostic Engine</h3>
+            <p>Automatic warnings include the problem, why it matters, and a suggested action.</p>
+          </div>
+        </div>
+        <div class="diagnostic-list" id="guidedDiagnostics"></div>
+      </div>
+
+      <div class="wizard-panel" data-panel="8">
+        <div class="wizard-panel-header">
+          <div>
+            <h3>Report Builder</h3>
+            <p>Choose a report preset, then use the Report tab for the print/PDF-ready view.</p>
+          </div>
+        </div>
+        <div class="setup-grid two">
+          <div class="field"><label>Report Preset</label><select id="reportPreset" class="report-preset-select"><option value="owner" selected>Owner Report</option><option value="investor">Investor Report</option><option value="bank">Bank / SBA Report</option><option value="operational">Operational Report</option></select></div>
+          <div class="field"><label>Report Notes</label><input type="text" id="reportPresetNotes" placeholder="Optional report note"></div>
+        </div>
+        <div class="wizard-output-band">
+          <div class="output-tile"><span>Revenue</span><strong id="reportBuilderRevenue">$0</strong></div>
+          <div class="output-tile"><span>Cost Breakdown</span><strong id="reportBuilderCosts">$0</strong></div>
+          <div class="output-tile"><span>Labor Breakdown</span><strong id="reportBuilderLabor">$0</strong></div>
+          <div class="output-tile"><span>Profit</span><strong id="reportBuilderProfit">$0</strong></div>
+          <div class="output-tile"><span>Break-Even</span><strong id="reportBuilderBreakEven">$0</strong></div>
+          <div class="output-tile"><span>Risk Diagnostics</span><strong id="reportBuilderRisk">0</strong></div>
+        </div>
+        <div class="btn-row" style="margin-top:16px;">
+          <button type="button" class="primary" data-tab-jump="report">Open Report</button>
+          <button type="button" class="secondary" onclick="downloadConfigDirect()">Export JSON</button>
+          <button type="button" class="secondary" id="downloadCsvExportBtn">Export CSV</button>
+          <label for="importCsvCosts" class="secondary">Import CSV<input type="file" id="importCsvCosts" accept=".csv,text/csv" style="display:none"></label>
+        </div>
+      </div>
+
+      <div class="wizard-footer">
+        <div class="help">The dashboard, monthly breakdown, charts, scenarios, and report stay available after setup.</div>
+        <div class="wizard-footer-actions">
+          <button type="button" class="secondary" id="wizardPrevBtn">Back</button>
+          <button type="button" class="primary" id="wizardNextBtn">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="section"><h2 id="coreOperatingAssumptionsTop">Core Operating Assumptions</h2>
     
 </div>
@@ -5459,7 +6442,15 @@ Choose which months should use the Adjusted Fixed Cost Override.
           <h2>Executive Financial Report</h2>
           <div class="help report-v2-help">A print-ready financial summary with key conclusions, assumptions, cost structure, revenue distribution, monthly trends, and scenario comparison.</div>
         </div>
-        <button type="button" class="print-report-btn" onclick="printExecutiveReport()">Print Report</button>
+        <div class="wizard-footer-actions">
+          <select id="reportPresetToolbar" class="report-preset-select">
+            <option value="owner" selected>Owner Report</option>
+            <option value="investor">Investor Report</option>
+            <option value="bank">Bank / SBA Report</option>
+            <option value="operational">Operational Report</option>
+          </select>
+          <button type="button" class="print-report-btn" onclick="printExecutiveReport()">Print Report</button>
+        </div>
       </div>
 
       <div id="printReportArea" class="report-v2">
@@ -5507,21 +6498,6 @@ Choose which months should use the Adjusted Fixed Cost Override.
             <h3>EBITDA / Operating Profit Bridge</h3>
             <div id="reportEbitdaBridge" class="report-bridge"></div>
           </div>
-        </section>
-
-        <section class="report-page report-page-charts">
-          <div class="report-block report-chart-block">
-            <div class="report-block-header">
-              <div>
-                <h3>Cost Breakdown</h3>
-                <p>Major annual cost categories shown as a percent of total operating costs.</p>
-              </div>
-              <div id="reportCostTotal" class="report-mini-total">$0</div>
-            </div>
-            <canvas id="reportCostChart"></canvas>
-            <img id="reportCostChartPrintImage" class="print-chart-img" alt="Cost breakdown print image">
-            <div id="reportCostBreakdownGrid" class="report-category-grid"></div>
-          </div>
 
           <div class="report-block report-chart-block revenue-pie-report-block">
             <div class="report-block-header">
@@ -5540,9 +6516,7 @@ Choose which months should use the Adjusted Fixed Cost Override.
               <div id="reportRevenueDistributionGrid" class="report-category-grid"></div>
             </div>
           </div>
-        </section>
 
-        <section class="report-page report-page-scenarios">
           <div class="report-block report-chart-block">
             <div class="report-block-header">
               <div>
@@ -5553,7 +6527,24 @@ Choose which months should use the Adjusted Fixed Cost Override.
             <canvas id="reportTrendChart"></canvas>
             <img id="reportTrendChartPrintImage" class="print-chart-img" alt="Monthly trend print image">
           </div>
+        </section>
 
+        <section class="report-page report-page-charts">
+          <div class="report-block report-chart-block">
+            <div class="report-block-header">
+              <div>
+                <h3>Cost Breakdown</h3>
+                <p>Major annual cost categories shown as a percent of total operating costs.</p>
+              </div>
+              <div id="reportCostTotal" class="report-mini-total">$0</div>
+            </div>
+            <canvas id="reportCostChart"></canvas>
+            <img id="reportCostChartPrintImage" class="print-chart-img" alt="Cost breakdown print image">
+            <div id="reportCostBreakdownGrid" class="report-category-grid"></div>
+          </div>
+        </section>
+
+        <section class="report-page report-page-scenarios">
           <div class="report-block">
             <h3>Scenario Comparison</h3>
             <table class="report-table report-scenario-table">
@@ -5908,6 +6899,93 @@ Choose which months should use the Adjusted Fixed Cost Override.
 function applyConfigDirect(data){
   try{
     applyMetadataFromImport(data);
+    if(data.profile){
+      const map = {
+        profileRestaurantName:"restaurantName",
+        profileConceptType:"conceptType",
+        profileCityState:"cityState",
+        profileSeatingCapacity:"seatingCapacity",
+        profileIndoorSeats:"indoorSeats",
+        profileOutdoorSeats:"outdoorSeats",
+        profileBarSeats:"barSeats",
+        profileOperatingDaysWeek:"operatingDaysWeek",
+        profileServices:"services",
+        profileDaysOpenMonth:"daysOpenMonth"
+      };
+      Object.entries(map).forEach(([id,key])=>setValue(id,data.profile[key]));
+    }
+    if(data.guidedRevenue){
+      const map = {
+        revenueSimpleMonthly:"simpleMonthly",
+        revenueSeats:"seats",
+        revenueTurns:"turns",
+        revenueUtilization:"utilization",
+        revenueAvgCheck:"avgCheck",
+        revenueFoodSpend:"foodSpend",
+        revenueBevSpend:"bevSpend",
+        revenueOperatingDays:"operatingDays",
+        revenueEvents:"events",
+        revenueCatering:"catering",
+        revenueTakeOut:"takeOut",
+        revenueDelivery:"delivery",
+        revenueRetail:"retail",
+        revenueApplyDeliveryFee:"applyDeliveryFee",
+        revenueDeliveryFeePct:"deliveryFeePct"
+      };
+      Object.entries(map).forEach(([id,key])=>setValue(id,data.guidedRevenue[key]));
+      if(data.guidedRevenue.mode && typeof setGuidedMode === "function") setGuidedMode("revenueMode", data.guidedRevenue.mode);
+    }
+    if(Array.isArray(data.fixedCosts)){
+      fixedCosts = data.fixedCosts.map(item=>({id:item.id || createCostId("fixed"), enabled:item.enabled !== false, frequency:item.frequency || "monthly", deductible:item.deductible !== false, ...item}));
+      if(typeof renderFixedCosts === "function") renderFixedCosts();
+    }
+    if(Array.isArray(data.semiVariableCosts)){
+      semiVariableCosts = data.semiVariableCosts.map(item=>({id:item.id || createCostId("semi"), enabled:item.enabled !== false, scalingMode:item.scalingMode || "revenue", ...item}));
+      if(typeof renderSemiVariableCosts === "function") renderSemiVariableCosts();
+    }
+    if(data.laborModule){
+      if(Array.isArray(data.laborModule.positions)){
+        laborPositions = data.laborModule.positions.map(item=>({id:item.id || createCostId("labor"), area:item.area || "foh", overtime:!!item.overtime, ...item}));
+        if(typeof renderLaborPositions === "function") renderLaborPositions();
+      }
+      const map = {
+        laborIncludeTipsDisplay:"includeTipsDisplay",
+        laborUseTempPeriods:"useTempPeriods",
+        laborSimpleTotal:"simpleTotal",
+        laborSimpleFohShare:"simpleFohShare",
+        laborFohPayroll:"fohPayroll",
+        laborBohPayroll:"bohPayroll",
+        laborManagementPayroll:"managementPayroll",
+        laborStructuredBurdenPct:"structuredBurdenPct"
+      };
+      Object.entries(map).forEach(([id,key])=>setValue(id,data.laborModule[key]));
+      if(data.laborModule.mode && typeof setGuidedMode === "function") setGuidedMode("laborMode", data.laborModule.mode);
+    }
+    if(data.taxTipsProcessing){
+      const map = {
+        cashSalesTaxPct:"salesTaxPct",
+        cashTipPct:"tipPct",
+        cashProcessingPct:"processingPct",
+        cashProcessingBase:"processingBase",
+        cashTaxTreatment:"taxTreatment"
+      };
+      Object.entries(map).forEach(([id,key])=>setValue(id,data.taxTipsProcessing[key]));
+    }
+    if(data.profitGoals){
+      const map = {
+        goalOwnerSalary:"ownerSalary",
+        goalMonthlyProfit:"monthlyProfit",
+        goalYearlyProfit:"yearlyProfit",
+        goalDebtPayment:"debtPayment",
+        goalReserveTarget:"reserveTarget"
+      };
+      Object.entries(map).forEach(([id,key])=>setValue(id,data.profitGoals[key]));
+    }
+    if(data.reportBuilder){
+      setValue("reportPreset", data.reportBuilder.preset);
+      setValue("reportPresetNotes", data.reportBuilder.notes);
+    }
+    if(typeof syncGuidedSetupToModel === "function") syncGuidedSetupToModel();
     // Simple scalar fields
     Object.keys(data).forEach(key=>{
       if(["closedDays","adjustedFixedMonths","vacations","seasonality"].includes(key)) return;
@@ -5944,35 +7022,38 @@ function applyConfigDirect(data){
     applySeasonalityFromImport(data);
 
     // Payroll adjustment periods
-    if(Array.isArray(data.vacations)){
-      const list = document.getElementById("vacationList");
-      if(list) list.innerHTML = "";
-
-      if(typeof vacationCounter !== "undefined"){
-        vacationCounter = 0;
-      }
-
-      if(typeof addVacationPeriod === "function"){
-        data.vacations.forEach(v=>{
-          addVacationPeriod({
-            start:v.start || "",
-            end:v.end || "",
-            mode:v.mode || v.adjustmentMode || "replace",
-            type:v.type || "Custom",
-            bohPayroll:v.bohPayroll ?? v.boh ?? v.payroll ?? 0,
-            fohPayroll:v.fohPayroll ?? v.foh ?? 0,
-            payroll:v.payroll ?? 0,
-            applyBOHBurden:v.applyBOHBurden || "yes",
-            applyFOHBurden:v.applyFOHBurden || "yes",
-            applyTipBurden:v.applyTipBurden || "default"
-          });
-        });
-
-        if(data.vacations.length === 0){
-          addVacationPeriod();
-        }
-      }
+    const hasImportedPeriods = Array.isArray(data.vacations) && data.vacations.length > 0;
+    if(data.laborModule && data.laborModule.useTempPeriods !== undefined){
+      setValue("laborUseTempPeriods", data.laborModule.useTempPeriods);
+    }else{
+      setValue("laborUseTempPeriods", hasImportedPeriods ? "yes" : "no");
     }
+
+    if(typeof clearVacationPeriods === "function"){
+      clearVacationPeriods();
+    }
+
+    if(typeof vacationCounter !== "undefined"){
+      vacationCounter = 0;
+    }
+
+    if(hasImportedPeriods && typeof addVacationPeriod === "function"){
+      data.vacations.forEach(v=>{
+        addVacationPeriod({
+          start:v.start || "",
+          end:v.end || "",
+          mode:v.mode || v.adjustmentMode || "replace",
+          type:v.type || "Custom",
+          bohPayroll:v.bohPayroll ?? v.boh ?? v.payroll ?? 0,
+          fohPayroll:v.fohPayroll ?? v.foh ?? 0,
+          payroll:v.payroll ?? 0,
+          applyBOHBurden:v.applyBOHBurden || "yes",
+          applyFOHBurden:v.applyFOHBurden || "yes",
+          applyTipBurden:v.applyTipBurden || "default"
+        });
+      });
+    }
+    if(typeof updatePayrollPeriodSummary === "function") updatePayrollPeriodSummary();
 
     if(typeof calculate === "function"){
       calculate();
@@ -6073,15 +7154,7 @@ function resetConfigurationDirect(){
     });
 
     // Clear vacation periods
-    const vacationList = document.getElementById("vacationList");
-    if(vacationList){
-      vacationList.innerHTML = "";
-    }
-
-    // Re-add default period if function exists
-    if(typeof addVacationPeriod === "function"){
-      addVacationPeriod();
-    }
+    if(typeof clearVacationPeriods === "function") clearVacationPeriods();
 
     // Reset seasonality if available
     if(typeof seasonalityFactors !== "undefined" && Array.isArray(seasonalityFactors)){
@@ -6218,7 +7291,8 @@ function downloadConfigDirect(){
         checked: cb.checked
       }));
 
-      data.vacations = Array.from(document.querySelectorAll(".vacation-card")).map(card=>({
+      const exportVacationList = (typeof getVacationListElement === "function" && getVacationListElement()) || document;
+      data.vacations = Array.from(exportVacationList.querySelectorAll(".vacation-card")).map(card=>({
         start: card.querySelector(".vacStart")?.value || "",
         end: card.querySelector(".vacEnd")?.value || "",
         mode: card.querySelector(".adjustmentMode")?.value || "replace",
@@ -6305,7 +7379,192 @@ function setAdjustedFixedMonths(checked){
   calculate();
 }
 
+function guidedNum(id, fallback=0){
+  const el = document.getElementById(id);
+  if(!el) return fallback;
+  const value = Number(el.value);
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function guidedVal(id, fallback=""){
+  const el = document.getElementById(id);
+  return el ? el.value : fallback;
+}
+
+function createCostId(prefix){
+  return prefix + "-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8);
+}
+
+let fixedCosts = [
+  {id:createCostId("fixed"), name:"Rent", amount:5000, frequency:"monthly", escalationRate:0, enabled:true, deductible:true, notes:""},
+  {id:createCostId("fixed"), name:"Insurance", amount:500, frequency:"monthly", escalationRate:0, enabled:true, deductible:true, notes:""},
+  {id:createCostId("fixed"), name:"Software", amount:300, frequency:"monthly", escalationRate:0, enabled:true, deductible:true, notes:""},
+  {id:createCostId("fixed"), name:"Accounting", amount:400, frequency:"monthly", escalationRate:0, enabled:true, deductible:true, notes:""},
+  {id:createCostId("fixed"), name:"Licenses", amount:200, frequency:"monthly", escalationRate:0, enabled:true, deductible:true, notes:""},
+  {id:createCostId("fixed"), name:"Marketing", amount:800, frequency:"monthly", escalationRate:0, enabled:true, deductible:true, notes:""},
+  {id:createCostId("fixed"), name:"Utilities", amount:800, frequency:"monthly", escalationRate:0, enabled:true, deductible:true, notes:""}
+];
+
+let semiVariableCosts = [
+  {id:createCostId("semi"), name:"Cleaning", baseAmount:0, variablePercent:0, scalingMode:"revenue", minValue:0, maxValue:0, seasonalSensitivity:0, enabled:true, notes:""},
+  {id:createCostId("semi"), name:"Linen Service", baseAmount:0, variablePercent:0, scalingMode:"revenue", minValue:0, maxValue:0, seasonalSensitivity:0, enabled:true, notes:""},
+  {id:createCostId("semi"), name:"Repairs", baseAmount:0, variablePercent:0, scalingMode:"seasonal", minValue:0, maxValue:0, seasonalSensitivity:0, enabled:true, notes:""}
+];
+
+let laborPositions = [
+  {id:createCostId("labor"), name:"Line Cook", area:"boh", hourlyRate:22, weeklyHours:40, employees:2, overtime:false, burdenPct:11},
+  {id:createCostId("labor"), name:"Server", area:"foh", hourlyRate:12, weeklyHours:30, employees:4, overtime:false, burdenPct:11}
+];
+
+function fixedMonthlyAmount(item){
+  const amount = Number(item.amount) || 0;
+  return item.frequency === "yearly" ? amount / 12 : amount;
+}
+
+function fixedCostMonthlyTotal(){
+  return fixedCosts.reduce((sum,item)=>{
+    if(!item.enabled) return sum;
+    return sum + fixedMonthlyAmount(item);
+  },0);
+}
+
+function fixedCostBreakdownAnnual(){
+  return fixedCosts
+    .filter(item=>item.enabled && fixedMonthlyAmount(item)>0)
+    .map(item=>({label:item.name || "Fixed Cost", value:fixedMonthlyAmount(item)*12, color:"#ff5f86"}));
+}
+
+function semiVariableBaseMonthlyTotal(){
+  return semiVariableCosts.reduce((sum,item)=>item.enabled ? sum + (Number(item.baseAmount)||0) : sum,0);
+}
+
+function semiVariableSalesRate(){
+  return semiVariableCosts.reduce((sum,item)=>{
+    if(!item.enabled) return sum;
+    if(item.scalingMode === "revenue" || item.scalingMode === "seasonal") return sum + ((Number(item.variablePercent)||0)/100);
+    return sum;
+  },0);
+}
+
+function semiVariableCostForItem(item, netSales, monthIndex, stats, input){
+  if(!item.enabled) return 0;
+  const base = Number(item.baseAmount) || 0;
+  const pct = (Number(item.variablePercent) || 0) / 100;
+  const seasonality = Array.isArray(input.seasonality) ? (Number(input.seasonality[monthIndex]) || 1) : 1;
+  const sensitivity = (Number(item.seasonalSensitivity) || 0) / 100;
+  const seats = Number(document.getElementById("seatingCapacity")?.value) || 0;
+  const turns = Number(document.getElementById("turnsPerNight")?.value) || 0;
+  const guestCapacity = seats * turns * (stats?.actualOpenDays || 0);
+  const guestCount = input.avgCheck > 0 ? netSales / input.avgCheck : 0;
+  const occupancy = guestCapacity > 0 ? guestCount / guestCapacity : 0;
+
+  let variable = 0;
+  if(item.scalingMode === "revenue"){
+    variable = netSales * pct;
+  }else if(item.scalingMode === "occupancy"){
+    variable = base * occupancy * pct * 10;
+  }else if(item.scalingMode === "guest"){
+    variable = guestCount * pct;
+  }else if(item.scalingMode === "seasonal"){
+    variable = netSales * pct;
+  }
+
+  let total = base + variable;
+  if(item.scalingMode === "seasonal" || sensitivity > 0){
+    total *= 1 + ((seasonality - 1) * sensitivity);
+  }
+
+  const min = Number(item.minValue) || 0;
+  const max = Number(item.maxValue) || 0;
+  if(min > 0) total = Math.max(min, total);
+  if(max > 0) total = Math.min(max, total);
+  return Math.max(0,total);
+}
+
+function semiVariableCostMonthlyTotal(netSales, monthIndex, stats, input){
+  return semiVariableCosts.reduce((sum,item)=>sum + semiVariableCostForItem(item, netSales, monthIndex, stats, input),0);
+}
+
+function semiVariableBreakdownAnnual(model){
+  if(!model || !Array.isArray(model.rows)) return [];
+  return semiVariableCosts
+    .filter(item=>item.enabled)
+    .map(item=>{
+      const value = model.rows.reduce((sum,row)=>{
+        const stats = {actualOpenDays:row.actualOpenDays};
+        const input = getInputs();
+        input.seasonality = getSeasonality();
+        return sum + semiVariableCostForItem(item, row.expectedSales || 0, row.monthIndex, stats, input);
+      },0);
+      return {label:item.name || "Semi-Variable Cost", value, color:"#64748b"};
+    })
+    .filter(item=>item.value>0);
+}
+
+function processingEffectiveRate(input){
+  const pos = Number(input.pos) || 0;
+  const tax = Number(input.tax) || 0;
+  const tip = Number(input.tip) || 0;
+  const taxInProcessing = input.taxTreatment === "processed";
+  if(input.processingBase === "tipsOnly") return pos * tip;
+  if(input.processingBase === "grossRevenue") return pos * (1 + (taxInProcessing ? tax : 0));
+  if(input.processingBase === "grossWithTips") return pos * (1 + tip + (taxInProcessing ? tax : 0));
+  return pos;
+}
+
+function processingBaseAmount(netSales, tax, tips, input){
+  const taxAmount = input.taxTreatment === "processed" ? tax : 0;
+  if(input.processingBase === "tipsOnly") return tips;
+  if(input.processingBase === "grossRevenue") return netSales + taxAmount;
+  if(input.processingBase === "grossWithTips") return netSales + taxAmount + tips;
+  return netSales;
+}
+
+function getVacationListElement(){
+  return document.getElementById("guidedVacationList") || document.getElementById("vacationList");
+}
+
+function laborPeriodsEnabled(){
+  const toggle = document.getElementById("laborUseTempPeriods");
+  if(!toggle) return true;
+  return (toggle.value || "no") === "yes";
+}
+
+function updatePayrollPeriodSummary(){
+  const list = getVacationListElement();
+  const cards = list ? Array.from(list.querySelectorAll(".vacation-card")) : [];
+  let periodCount = 0;
+  let totalDays = 0;
+  cards.forEach(card=>{
+    const start = parseDate(card.querySelector(".vacStart")?.value);
+    const end = parseDate(card.querySelector(".vacEnd")?.value);
+    if(start && end && end >= start){
+      periodCount++;
+      totalDays += daysBetweenInclusive(start,end);
+    }
+  });
+
+  const enabled = laborPeriodsEnabled();
+  const set = (id, value)=>{
+    const el = document.getElementById(id);
+    if(el) el.textContent = String(value);
+  };
+  set("laborPeriodCountOutput", periodCount);
+  set("laborPeriodDaysOutput", totalDays);
+  set("laborPeriodStatusOutput", enabled ? "On" : "Off");
+
+  if(list){
+    list.classList.toggle("guided-periods-disabled", !enabled);
+  }
+  const addBtn = document.getElementById("laborAddPeriodBtn");
+  const clearBtn = document.getElementById("laborClearPeriodsBtn");
+  if(addBtn) addBtn.disabled = !enabled;
+  if(clearBtn) clearBtn.disabled = !enabled;
+}
+
 function addVacationPeriod(data={}){
+  const list = getVacationListElement();
+  if(!list) return;
   vacationCounter++;
 
   const type = data.type || "Custom";
@@ -6322,7 +7581,7 @@ function addVacationPeriod(data={}){
   div.innerHTML=`
     <div class="vacation-card-head">
       <strong>Payroll Adjustment Period ${vacationCounter}</strong>
-      <button class="danger" type="button" onclick="this.closest('.vacation-card').remove(); calculate();">Remove</button>
+      <button class="danger" type="button" onclick="this.closest('.vacation-card').remove(); updatePayrollPeriodSummary(); calculate();">Remove</button>
     </div>
 
     <div class="grid-3">
@@ -6417,25 +7676,34 @@ function addVacationPeriod(data={}){
     </div>
   `;
 
-  document.getElementById("vacationList").appendChild(div);
+  list.appendChild(div);
 
   div.querySelectorAll("input,select").forEach(el=>{
-    el.addEventListener("input",calculate);
-    el.addEventListener("change",calculate);
+    const refresh = ()=>{
+      updatePayrollPeriodSummary();
+      calculate();
+    };
+    el.addEventListener("input",refresh);
+    el.addEventListener("change",refresh);
   });
 
+  updatePayrollPeriodSummary();
   calculate();
 }
 
 function clearVacationPeriods(){
-  document.getElementById("vacationList").innerHTML="";
+  const list = getVacationListElement();
+  if(list) list.innerHTML = "";
+  updatePayrollPeriodSummary();
   calculate();
 }
 
 function getVacationPeriods(extra=null){
   const periods=[];
+  const list = getVacationListElement();
+  const periodCards = list ? list.querySelectorAll(".vacation-card") : [];
 
-  document.querySelectorAll(".vacation-card").forEach(card=>{
+  periodCards.forEach(card=>{
     const start=parseDate(card.querySelector(".vacStart")?.value);
     const end=parseDate(card.querySelector(".vacEnd")?.value);
 
@@ -6481,6 +7749,10 @@ function getVacationPeriods(extra=null){
       applyTipBurden:extra.applyTipBurden || "default",
       totalDays:daysBetweenInclusive(extra.start,extra.end)
     });
+  }
+
+  if(!laborPeriodsEnabled()){
+    return extra && extra.start && extra.end && extra.end>=extra.start ? periods.slice(-1) : [];
   }
 
   return periods;
@@ -6602,29 +7874,47 @@ function getInputs(overrides={}){
   const foodMixRaw=Number(document.getElementById("foodMix").value)||0;
   const bevMixRaw=Number(document.getElementById("bevMix").value)||0;
   const totalMix=foodMixRaw+bevMixRaw||100;
-  return {
+  const fixedTotal = fixedCostMonthlyTotal() || (Number(document.getElementById("fixed").value)||0);
+  const input = {
     bohPayroll: overrides.bohPayroll!==undefined ? overrides.bohPayroll : (Number(document.getElementById("bohPayroll").value)||0),
     fohPayroll: overrides.fohPayroll!==undefined ? overrides.fohPayroll : (Number(document.getElementById("fohPayroll").value)||0),
-    fixed: overrides.fixed!==undefined ? overrides.fixed : (Number(document.getElementById("fixed").value)||0),
+    managementPayroll: overrides.managementPayroll!==undefined ? overrides.managementPayroll : (Number(window.guidedLaborBreakdown?.management)||0),
+    fixed: overrides.fixed!==undefined ? overrides.fixed : fixedTotal,
     adjustedFixedCost: overrides.adjustedFixedCost!==undefined ? overrides.adjustedFixedCost : (Number(document.getElementById("adjustedFixedCost").value)||0),
     adjustedFixedMonths:getAdjustedFixedMonths(),
-    tax: overrides.tax!==undefined ? overrides.tax : ((Number(document.getElementById("tax").value)||0)/100),
-    pos: overrides.pos!==undefined ? overrides.pos : ((Number(document.getElementById("pos").value)||0)/100),
-    tip: overrides.tip!==undefined ? overrides.tip : ((Number(document.getElementById("tip").value)||0)/100),
+    tax: overrides.tax!==undefined ? overrides.tax : ((Number(document.getElementById("cashSalesTaxPct")?.value || document.getElementById("tax").value)||0)/100),
+    pos: overrides.pos!==undefined ? overrides.pos : ((Number(document.getElementById("cashProcessingPct")?.value || document.getElementById("pos").value)||0)/100),
+    tip: overrides.tip!==undefined ? overrides.tip : ((Number(document.getElementById("cashTipPct")?.value || document.getElementById("tip").value)||0)/100),
+    processingBase:guidedVal("cashProcessingBase","grossWithTips"),
+    taxTreatment:guidedVal("cashTaxTreatment","cashflow"),
+    applyDeliveryFee:!!document.getElementById("revenueApplyDeliveryFee")?.checked,
+    deliveryFeePct:(Number(document.getElementById("revenueDeliveryFeePct")?.value)||0)/100,
+    deliveryMonthlyRevenue:guidedNum("revenueDelivery",0),
     bohBurdenPct:(Number(document.getElementById("bohBurdenPct")?.value)||0)/100,
     fohBurdenPct:(Number(document.getElementById("fohBurdenPct")?.value)||0)/100,
     tipBurdenPct:(Number(document.getElementById("tipBurdenPct")?.value)||0)/100,
     applyTipBurden:(document.getElementById("applyTipBurden")?.value||"yes")==="yes",
     profitTarget: overrides.profitTarget!==undefined ? overrides.profitTarget : (Number(document.getElementById("profitTarget").value)||0),
+    ownerSalary:guidedNum("goalOwnerSalary",0),
+    debtPayment:guidedNum("goalDebtPayment",0),
+    reserveTarget:guidedNum("goalReserveTarget",0),
     ebitdaAddbacks:Number(document.getElementById("ebitdaAddbacks").value)||0,
     lockedMonthlySales:Number(document.getElementById("lockedMonthlySales").value)||0,
     useCapacityTarget:document.getElementById("useCapacityTarget").value,
     year:Number(document.getElementById("year").value)||new Date().getFullYear(),
+    avgCheck:guidedNum("revenueAvgCheck", Number(document.getElementById("avgCheck")?.value)||0),
     foodMix:foodMixRaw/totalMix,
     bevMix:bevMixRaw/totalMix,
     foodCostPct: overrides.foodCostPct!==undefined ? overrides.foodCostPct : ((Number(document.getElementById("foodCost").value)||0)/100),
     bevCostPct: overrides.bevCostPct!==undefined ? overrides.bevCostPct : ((Number(document.getElementById("bevCost").value)||0)/100)
   };
+  input.seasonality = getSeasonality();
+  const modeledMonthlySales = Math.max(0, Number(input.lockedMonthlySales) || calculatedGuidedMonthlyRevenue() || 0);
+  input.deliveryRevenueShare = modeledMonthlySales > 0 ? Math.max(0, input.deliveryMonthlyRevenue) / modeledMonthlySales : 0;
+  input.deliveryFeeEffectiveRate = input.applyDeliveryFee ? (input.deliveryRevenueShare * input.deliveryFeePct) : 0;
+  input.processingEffectiveRate = processingEffectiveRate(input);
+  input.semiVariableSalesRate = semiVariableSalesRate();
+  return input;
 }
 
 function runModel(options={}){
@@ -6632,27 +7922,31 @@ function runModel(options={}){
   const closedDays=getClosedDays();
   const periods=getVacationPeriods(options.extraPeriod||null);
   const seasonality=options.ignoreSeasonality ? months.map(()=>1) : getSeasonality();
+  input.seasonality = seasonality;
   const blendedCogs=(input.foodMix*input.foodCostPct)+(input.bevMix*input.bevCostPct);
-  const margin=1-blendedCogs-input.pos;
+  const margin=1-blendedCogs-input.processingEffectiveRate-input.semiVariableSalesRate-input.deliveryFeeEffectiveRate;
   const hasMarginWarning=margin<=0;
 
   const totals={
-    regularWorkingDays:0,openDays:0,vacationDays:0,bohPayroll:0,fohPayroll:0,vacationPayroll:0,
-    adjustedPayroll:0,laborBurdenCost:0,trueLaborCost:0,fixed:0,foodCost:0,bevCost:0,cogs:0,posFees:0,
+    regularWorkingDays:0,openDays:0,vacationDays:0,bohPayroll:0,fohPayroll:0,managementPayroll:0,vacationPayroll:0,
+    adjustedPayroll:0,laborBurdenCost:0,trueLaborCost:0,fixed:0,semiVariableCost:0,deliveryFeeCost:0,foodCost:0,bevCost:0,cogs:0,posFees:0,
     breakEven:0,requiredProfit:0,expectedSales:0,operationalProfitLoss:0,ownerProfitGap:0,
-    additionalSalesNeeded:0,tips:0,tax:0,gross:0,grossPlusTips:0,profitTarget:0,ebitda:0
+    additionalSalesNeeded:0,tips:0,tax:0,gross:0,grossPlusTips:0,accountingRevenue:0,operatingCashflow:0,profitTarget:0,ebitda:0
   };
   const rows=[];
 
   months.forEach((monthName,monthIndex)=>{
     const stats=monthStats(input.year,monthIndex,closedDays,periods);
-    const fixed = input.adjustedFixedMonths.includes(monthIndex) ? input.adjustedFixedCost : input.fixed;
+    const fixed = input.adjustedFixedMonths.includes(monthIndex) && input.adjustedFixedCost > 0 ? input.adjustedFixedCost : input.fixed;
+    const semiVariableBase = semiVariableCostMonthlyTotal(0, monthIndex, stats, input);
 
     const bohDaily=stats.regularWorkingDays>0 ? input.bohPayroll/stats.regularWorkingDays : 0;
     const fohDaily=stats.regularWorkingDays>0 ? input.fohPayroll/stats.regularWorkingDays : 0;
+    const managementDaily=stats.regularWorkingDays>0 ? input.managementPayroll/stats.regularWorkingDays : 0;
 
     const regularBOHForOpenDays=bohDaily*stats.actualOpenDays;
     const regularFOHForOpenDays=fohDaily*stats.actualOpenDays;
+    const managementUsed=managementDaily*stats.actualOpenDays;
 
     let bohUsed=regularBOHForOpenDays;
     let fohUsed=regularFOHForOpenDays;
@@ -6664,29 +7958,33 @@ function runModel(options={}){
     fohUsed = Math.max(0, fohUsed - stats.reduceFOH);
 
     const vacationPayroll=stats.vacationPayroll;
-    const adjustedPayroll=bohUsed+fohUsed;
+    const adjustedPayroll=bohUsed+fohUsed+managementUsed;
 
     const regularBOHBurdenBase=Math.max(0, regularBOHForOpenDays + stats.addBOH - stats.reduceBOH);
     const regularFOHBurdenBase=Math.max(0, regularFOHForOpenDays + stats.addFOH - stats.reduceFOH);
 
     const wageBurdenCost =
-      ((regularBOHBurdenBase + stats.periodBOHBurdenBase) * input.bohBurdenPct) +
+      ((regularBOHBurdenBase + managementUsed + stats.periodBOHBurdenBase) * input.bohBurdenPct) +
       ((regularFOHBurdenBase + stats.periodFOHBurdenBase) * input.fohBurdenPct);
 
-    const breakEven=margin>0 ? (adjustedPayroll+fixed)/margin : 0;
-    const requiredProfit=margin>0 ? (adjustedPayroll+fixed+input.profitTarget)/margin : 0;
+    const breakEven=margin>0 ? (adjustedPayroll+fixed+semiVariableBase)/margin : 0;
+    const requiredProfit=margin>0 ? (adjustedPayroll+fixed+semiVariableBase+input.profitTarget)/margin : 0;
     const expectedSalesBase = input.useCapacityTarget==="yes"
       ? input.lockedMonthlySales * seasonality[monthIndex]
       : breakEven * seasonality[monthIndex];
 
     const expectedSales = expectedSalesBase * (options.expectedSalesMultiplier!==undefined ? options.expectedSalesMultiplier : 1);
 
+    const tips=expectedSales*input.tip;
+    const tax=expectedSales*input.tax;
+    const processingBase = processingBaseAmount(expectedSales, tax, tips, input);
+    const posFees=processingBase*input.pos;
     const foodCost=expectedSales*input.foodMix*input.foodCostPct;
     const bevCost=expectedSales*input.bevMix*input.bevCostPct;
+    const deliveryRevenue = expectedSales * input.deliveryRevenueShare;
+    const deliveryFeeCost = input.applyDeliveryFee ? (deliveryRevenue * input.deliveryFeePct) : 0;
+    const semiVariableCost=semiVariableCostMonthlyTotal(expectedSales, monthIndex, stats, input);
     const cogs=foodCost+bevCost;
-    const posFees=expectedSales*input.pos;
-
-    const tips=expectedSales*input.tip;
     const periodTipBurdenApplies =
       stats.tipBurdenOverride === "yes" ? true :
       stats.tipBurdenOverride === "no" ? false :
@@ -6696,22 +7994,23 @@ function runModel(options={}){
     const laborBurdenCost=wageBurdenCost+tipBurdenCost;
     const trueLaborCost=adjustedPayroll+laborBurdenCost;
 
-    const operationalProfitLoss=expectedSales-cogs-posFees-trueLaborCost-fixed;
+    const operationalProfitLoss=expectedSales-cogs-posFees-deliveryFeeCost-trueLaborCost-fixed-semiVariableCost;
     const ownerProfitGap = input.profitTarget > 0 ? Math.max(0, input.profitTarget - operationalProfitLoss) : 0;
     const additionalSalesNeeded=margin>0 ? ownerProfitGap/margin : 0;
 
-    const tax=expectedSales*input.tax;
     const gross=expectedSales+tax;
     const grossPlusTips=gross+tips;
+    const accountingRevenue=expectedSales;
+    const operatingCashflow=grossPlusTips-tax-tips-posFees;
 
     const dailyBE=stats.actualOpenDays>0 ? breakEven/stats.actualOpenDays : 0;
     const primeCostPct=expectedSales>0 ? (cogs+trueLaborCost)/expectedSales : 0;
 
     const row={monthName,monthIndex,seasonality:seasonality[monthIndex],regularWorkingDays:stats.regularWorkingDays,
       actualOpenDays:stats.actualOpenDays,vacationDays:stats.vacationDays,bohPayroll:bohUsed,fohPayroll:fohUsed,
-      vacationPayroll,adjustedPayroll,laborBurdenCost,trueLaborCost,wageBurdenCost,tipBurdenCost,fixed,foodCost,bevCost,cogs,posFees,breakEven,dailyBE,requiredProfit,
+      managementPayroll:managementUsed,vacationPayroll,adjustedPayroll,laborBurdenCost,trueLaborCost,wageBurdenCost,tipBurdenCost,fixed,semiVariableCost,deliveryFeeCost,foodCost,bevCost,cogs,posFees,breakEven,dailyBE,requiredProfit,
       expectedSales,operationalProfitLoss,ownerProfitGap,additionalSalesNeeded,tips,tax,gross,grossPlusTips,
-      primeCostPct,hasMarginWarning};
+      accountingRevenue,operatingCashflow,primeCostPct,hasMarginWarning};
 
     rows.push(row);
 
@@ -6720,11 +8019,14 @@ function runModel(options={}){
     totals.vacationDays+=stats.vacationDays;
     totals.bohPayroll+=bohUsed;
     totals.fohPayroll+=fohUsed;
+    totals.managementPayroll+=managementUsed;
     totals.vacationPayroll+=vacationPayroll;
     totals.adjustedPayroll+=adjustedPayroll;
     totals.laborBurdenCost+=laborBurdenCost;
     totals.trueLaborCost+=trueLaborCost;
     totals.fixed+=fixed;
+    totals.semiVariableCost+=semiVariableCost;
+    totals.deliveryFeeCost+=deliveryFeeCost;
     totals.foodCost+=foodCost;
     totals.bevCost+=bevCost;
     totals.cogs+=cogs;
@@ -6739,6 +8041,8 @@ function runModel(options={}){
     totals.tax+=tax;
     totals.gross+=gross;
     totals.grossPlusTips+=grossPlusTips;
+    totals.accountingRevenue+=accountingRevenue;
+    totals.operatingCashflow+=operatingCashflow;
     totals.profitTarget+=input.profitTarget;
     totals.ebitda+=input.profitTarget+input.ebitdaAddbacks;
   });
@@ -6757,10 +8061,10 @@ function runModel(options={}){
 function renderSeasonalityControl(monthIndex,value){
   return `
     <div class="inline-seasonality">
-      <input type="range" class="seasonality" data-month="${monthIndex}" min="0" max="3.5" step="0.10" value="${value}">
+      <input type="range" class="seasonality" data-month="${monthIndex}" min="0" max="3.5" step="0.01" value="${value}">
       <div class="seasonality-controls">
         <button type="button" class="seasonality-btn" data-step="-0.01" data-month="${monthIndex}">−</button>
-        
+
 <input data-static-stepper="1" type="number" class="seasonalityNumber" data-month="${monthIndex}" min="0" max="3.5" step="0.01" value="${Number(value).toFixed(2)}">
         <button type="button" class="seasonality-btn" data-step="0.01" data-month="${monthIndex}">+</button>
       </div>
@@ -6779,6 +8083,8 @@ function syncSeasonality(month,value){
 
 function bindSeasonalityControls(){
   document.querySelectorAll(".seasonality").forEach(el=>{
+    if(el.dataset.seasonalityBound === "1") return;
+    el.dataset.seasonalityBound = "1";
     el.addEventListener("input",e=>{
       const value=clampSeasonality(e.target.value);
       syncSeasonality(e.target.dataset.month,value);
@@ -6786,6 +8092,8 @@ function bindSeasonalityControls(){
     });
   });
   document.querySelectorAll(".seasonalityNumber").forEach(el=>{
+    if(el.dataset.seasonalityBound === "1") return;
+    el.dataset.seasonalityBound = "1";
     el.addEventListener("change",e=>{
       const value=clampSeasonality(e.target.value);
       syncSeasonality(e.target.dataset.month,value);
@@ -6796,13 +8104,48 @@ function bindSeasonalityControls(){
     });
   });
   document.querySelectorAll(".seasonality-btn").forEach(btn=>{
+    if(btn.dataset.seasonalityBound === "1") return;
+    btn.dataset.seasonalityBound = "1";
     btn.addEventListener("click",e=>{
-      const month=e.target.dataset.month;
-      const step=Number(e.target.dataset.step);
-      const current=Number(document.querySelector(`.seasonalityNumber[data-month="${month}"]`).value)||0;
+      const button=e.currentTarget;
+      const month=button.dataset.month;
+      const step=Number(button.dataset.step);
+      const controls=button.closest(".seasonality-controls");
+      const currentInput=controls?.querySelector(`.seasonalityNumber[data-month="${month}"]`) || document.querySelector(`.seasonalityNumber[data-month="${month}"]`);
+      const current=Number(currentInput?.value)||0;
       const value=clampSeasonality(current+step);
       syncSeasonality(month,value);
       calculate();
+    });
+  });
+}
+
+function seasonalityBaseMonthlySales(){
+  const locked = Number(document.getElementById("lockedMonthlySales")?.value);
+  if(Number.isFinite(locked) && locked > 0) return locked;
+  const guided = Number(calculatedGuidedMonthlyRevenue());
+  return Number.isFinite(guided) && guided > 0 ? guided : 0;
+}
+
+function bindGuidedSeasonSalesInputs(){
+  document.querySelectorAll(".season-sales-input").forEach(input=>{
+    if(input.dataset.salesBound === "1") return;
+    input.dataset.salesBound = "1";
+    const commit=()=>{
+      const month = input.dataset.month;
+      const typedSales = Math.max(0, Number(input.value) || 0);
+      const baseMonthly = seasonalityBaseMonthlySales();
+      if(baseMonthly <= 0){
+        input.value = "0";
+        return;
+      }
+      const factor = clampSeasonality(typedSales / baseMonthly);
+      syncSeasonality(month,factor);
+      calculate();
+    };
+    input.addEventListener("change",commit);
+    input.addEventListener("keydown",e=>{
+      if(e.key==="Enter") e.target.blur();
     });
   });
 }
@@ -6854,19 +8197,22 @@ if(typeof Chart !== "undefined"){
 
 function operatingRevenueItemsFromRow(r){
   const profit = Math.max(0, r.operationalProfitLoss || 0);
+  const items = [
+    {label:"True Labor Cost", value:r.trueLaborCost || r.adjustedPayroll || 0, color:"#3ba3e6"},
+    {label:"Fixed Costs", value:r.fixed || 0, color:"#ff5f86"},
+    {label:"Semi-Variable Costs", value:r.semiVariableCost || 0, color:"#64748b"},
+    {label:"Expected Food Cost", value:r.foodCost || 0, color:"#ff9f3a"},
+    {label:"Expected Beverage Cost", value:r.bevCost || 0, color:"#ffd166"},
+    {label:"Delivery Service Fees", value:r.deliveryFeeCost || 0, color:"#a855f7"},
+    {label:"Expected POS Fees", value:r.posFees || 0, color:"#4bc0c0"},
+    {label:"Sales Tax", value:r.tax || 0, color:"#8b5cf6"},
+    {label:"Estimated Tips", value:r.tips || 0, color:"#14b8a6"},
+    {label:"Operational Profit", value:profit, color:"#22c55e"}
+  ].filter(item=>Number(item.value)>0);
   return {
-    labels:["True Labor Cost","Fixed Costs","Expected Food Cost","Expected Beverage Cost","Expected POS Fees","Sales Tax","Estimated Tips","Operational Profit"],
-    values:[
-      r.trueLaborCost || r.adjustedPayroll || 0,
-      r.fixed || 0,
-      r.foodCost || 0,
-      r.bevCost || 0,
-      r.posFees || 0,
-      r.tax || 0,
-      r.tips || 0,
-      profit
-    ],
-    colors:["#3ba3e6","#ff5f86","#ff9f3a","#ffd166","#4bc0c0","#8b5cf6","#14b8a6","#22c55e"]
+    labels:items.map(item=>item.label),
+    values:items.map(item=>item.value),
+    colors:items.map(item=>item.color)
   };
 }
 
@@ -6941,9 +8287,8 @@ function renderInlinePieChart(canvasId, source){
                 return ctx.chart.getDataVisibility(index) ? sum + (Number(value)||0) : sum;
               }, 0);
               const pctValue = totalVisible > 0 ? ((Number(ctx.raw)||0) / totalVisible) * 100 : 0;
-              const item = revenueItems[ctx.dataIndex];
-                  const display = item && item.displayValue !== undefined ? item.displayValue : ctx.raw;
-                  return ctx.label + ": " + money(display) + " (" + pctValue.toFixed(1) + "%)";
+              const display = ctx.raw;
+              return ctx.label + ": " + money(display) + " (" + pctValue.toFixed(1) + "%)";
             }
           }
         }
@@ -7020,8 +8365,10 @@ function renderMonthly(model){
             ${detail("Labor Burden Cost",money(r.laborBurdenCost))}
             ${detail("True Labor Cost",money(r.trueLaborCost))}
             ${detail("Effective Labor %",pct(r.expectedSales>0 ? r.trueLaborCost/r.expectedSales : 0))}
+            ${detail("Semi-Variable Costs",money(r.semiVariableCost || 0))}
             ${detail("Food Cost",money(r.foodCost))}
             ${detail("Beverage Cost",money(r.bevCost))}
+            ${detail("Delivery Service Fees",money(r.deliveryFeeCost || 0))}
             ${detail("POS Fees",money(r.posFees))}
             ${detail("Estimated Tips",money(r.tips))}
             ${detail("Sales Tax",money(r.tax))}
@@ -7066,8 +8413,10 @@ function renderMonthly(model){
             <div class="metric-row"><span class="metric-label">FOH Payroll</span><span class="metric-value">${money(r.fohPayroll)}</span></div>
             <div class="metric-row"><span class="metric-label">Payroll Adjustment Amount</span><span class="metric-value">${money(r.vacationPayroll)}</span></div>
             <div class="metric-row"><span class="metric-label">Adjusted Payroll</span><span class="metric-value">${money(r.adjustedPayroll)}</span></div>
+            <div class="metric-row"><span class="metric-label">Semi-Variable Costs</span><span class="metric-value">${money(r.semiVariableCost || 0)}</span></div>
             <div class="metric-row"><span class="metric-label">Food Cost</span><span class="metric-value">${money(r.foodCost)}</span></div>
             <div class="metric-row"><span class="metric-label">Beverage Cost</span><span class="metric-value">${money(r.bevCost)}</span></div>
+            <div class="metric-row"><span class="metric-label">Delivery Service Fees</span><span class="metric-value">${money(r.deliveryFeeCost || 0)}</span></div>
             <div class="metric-row"><span class="metric-label">Total COGS</span><span class="metric-value">${money(r.cogs)}</span></div>
             <div class="metric-row"><span class="metric-label">POS Fees</span><span class="metric-value">${money(r.posFees)}</span></div>
             <div class="metric-row"><span class="metric-label">Estimated Tips</span><span class="metric-value">${money(r.tips)}</span></div>
@@ -7120,8 +8469,10 @@ function renderMonthly(model){
           ${detail("Labor Burden Cost",money(t.laborBurdenCost || 0))}
           ${detail("True Labor Cost",money(t.trueLaborCost || t.adjustedPayroll))}
           ${detail("Fixed Costs",money(t.fixed))}
+          ${detail("Semi-Variable Costs",money(t.semiVariableCost || 0))}
           ${detail("Food Cost",money(t.foodCost))}
           ${detail("Beverage Cost",money(t.bevCost))}
+          ${detail("Delivery Service Fees",money(t.deliveryFeeCost || 0))}
           ${detail("Total COGS",money(t.cogs))}
           ${detail("POS Fees",money(t.posFees))}
           ${detail("Estimated Tips",money(t.tips))}
@@ -7401,6 +8752,8 @@ function updateReport(model){
   const cogs = Number(t.cogs || 0);
   const foodCost = Number(t.foodCost || 0);
   const bevCost = Number(t.bevCost || 0);
+  const deliveryFeeCost = Number(t.deliveryFeeCost || 0);
+  const semiVariableCost = Number(t.semiVariableCost || 0);
   const fixed = Number(t.fixed || reportGetNum("fixed") * 12 || 0);
   const posFees = Number(t.posFees || 0);
   const tax = Number(t.tax || 0);
@@ -7412,6 +8765,13 @@ function updateReport(model){
   const cogsPct = expectedSales > 0 ? cogs / expectedSales : 0;
   const primeCostPct = expectedSales > 0 ? (labor + cogs) / expectedSales : 0;
   const opMargin = expectedSales > 0 ? operatingPL / expectedSales : 0;
+  const selectedPreset = reportGetText("reportPresetToolbar") || reportGetText("reportPreset") || "owner";
+  const presetLabels = {
+    owner:"Owner Report",
+    investor:"Investor Report",
+    bank:"Bank / SBA Report",
+    operational:"Operational Report"
+  };
 
   const set = (id, value) => {
     const el = document.getElementById(id);
@@ -7439,8 +8799,10 @@ function updateReport(model){
   const metaLine = document.getElementById("reportMetaLine");
   if(metaLine){
     const name = meta.restaurantName ? meta.restaurantName + " · " : "";
-    metaLine.textContent = `${name}Generated ${new Date().toLocaleDateString()} · Model Version ${meta.modelVersion || "2.5"}`;
+    metaLine.textContent = `${name}${presetLabels[selectedPreset] || "Owner Report"} · Generated ${new Date().toLocaleDateString()} · Model Version ${meta.modelVersion || "2.5"}`;
   }
+  const reportTitle = document.querySelector(".report-title-row h1");
+  if(reportTitle) reportTitle.textContent = `${presetLabels[selectedPreset] || "Owner Report"} Financial Summary`;
 
   const executive = document.getElementById("reportExecutiveSummary");
   if(executive){
@@ -7496,8 +8858,12 @@ function updateReport(model){
   }
 
   const assumptions = [
+    ["Concept Type", reportGetText("profileConceptType") || "—"],
+    ["City / State", reportGetText("profileCityState") || "—"],
+    ["Seating Capacity", reportGetText("profileSeatingCapacity") || reportGetText("seatingCapacity") || "—"],
     ["Monthly Owner Profit Target", money(reportGetNum("profitTarget"))],
-    ["Monthly Fixed Costs", money(reportGetNum("fixed"))],
+    ["Monthly Fixed Costs", money(fixed / 12)],
+    ["Monthly Semi-Variable Base", money(semiVariableBaseMonthlyTotal())],
     ["Sales Tax", reportGetNum("tax").toFixed(1) + "%"],
     ["POS Fees", reportGetNum("pos").toFixed(1) + "%"],
     ["Estimated Tips Collected", reportGetNum("tip").toFixed(1) + "%"],
@@ -7508,16 +8874,21 @@ function updateReport(model){
 
   const bohPayroll = Number(t.bohPayroll || reportGetNum("bohPayroll") * 12 || 0);
   const fohPayroll = Number(t.fohPayroll || reportGetNum("fohPayroll") * 12 || 0);
-  const payrollBurden = Math.max(0, labor - bohPayroll - fohPayroll);
+  const managementPayroll = Number(t.managementPayroll || 0);
+  const payrollBurden = Math.max(0, labor - bohPayroll - fohPayroll - managementPayroll);
 
   const costs = [
     ["BOH Payroll", money(bohPayroll)],
     ["FOH Payroll", money(fohPayroll)],
+    ["Management Payroll", money(managementPayroll)],
     ["Payroll Burden", money(payrollBurden)],
     ["True Labor Cost", money(labor)],
     ["Food Cost", money(foodCost)],
     ["Beverage Cost", money(bevCost)],
+    ["Delivery Service Fees", money(deliveryFeeCost)],
     ["COGS", money(cogs)],
+    ["Fixed Costs", money(fixed)],
+    ["Semi-Variable Costs", money(semiVariableCost)],
     ["POS Fees", money(posFees)],
     ["Sales Tax", money(tax)]
   ];
@@ -7535,6 +8906,8 @@ function updateReport(model){
       ["COGS", -cogs, "negative"],
       ["True Labor Cost", -labor, "negative"],
       ["Fixed Costs", -fixed, "negative"],
+      ["Semi-Variable Costs", -semiVariableCost, "negative"],
+      ["Delivery Service Fees", -deliveryFeeCost, "negative"],
       ["POS Fees", -posFees, "negative"],
       ["Operating Profit / Loss", operatingPL, operatingPL >= 0 ? "positive" : "negative"]
     ];
@@ -7562,7 +8935,7 @@ function updateReport(model){
 
   const sensitivity = document.getElementById("reportSensitivityGrid");
   if(sensitivity){
-    const variableRate = expectedSales > 0 ? ((foodCost + bevCost + posFees) / expectedSales) : 0;
+    const variableRate = expectedSales > 0 ? ((foodCost + bevCost + posFees + deliveryFeeCost) / expectedSales) : 0;
     const contributionMargin = Math.max(0.01, 1 - variableRate);
     const plusTenSales = expectedSales * .10;
     const laborReduction = labor * .05;
@@ -7583,6 +8956,7 @@ function updateReport(model){
 
   renderReportCharts(model);
   buildPrintRevenuePieSvg(model);
+  scheduleReportChartSnapshots(280);
 }
 
 function polarToCartesian(cx, cy, r, angleDeg){
@@ -7611,8 +8985,10 @@ function buildPrintRevenuePieSvg(model){
   const items = [
     {label:"True Labor Cost", value:trueLabor, displayValue:trueLabor, color:"#3ba3e6"},
     {label:"Fixed Costs", value:t.fixed || 0, displayValue:t.fixed || 0, color:"#ff5f86"},
+    {label:"Semi-Variable Costs", value:t.semiVariableCost || 0, displayValue:t.semiVariableCost || 0, color:"#64748b"},
     {label:"Food Cost", value:t.foodCost || 0, displayValue:t.foodCost || 0, color:"#f97316"},
     {label:"Beverage Cost", value:t.bevCost || 0, displayValue:t.bevCost || 0, color:"#ffd166"},
+    {label:"Delivery Service Fees", value:t.deliveryFeeCost || 0, displayValue:t.deliveryFeeCost || 0, color:"#a855f7"},
     {label:"POS Fees", value:t.posFees || 0, displayValue:t.posFees || 0, color:"#4bc0c0"},
     {label:"Sales Tax", value:t.tax || 0, displayValue:t.tax || 0, color:"#8b5cf6"},
     {label:"Estimated Tips", value:t.tips || 0, displayValue:t.tips || 0, color:"#14b8a6"},
@@ -7675,22 +9051,26 @@ function renderReportCharts(model){
   const labor = Number(t.trueLaborCost || t.adjustedPayroll || 0);
   const bohPayroll = Number(t.bohPayroll || 0);
   const fohPayroll = Number(t.fohPayroll || 0);
-  const payrollBurden = Math.max(0, labor - bohPayroll - fohPayroll);
+  const managementPayroll = Number(t.managementPayroll || 0);
+  const payrollBurden = Math.max(0, labor - bohPayroll - fohPayroll - managementPayroll);
   const operatingResult = Number(t.operationalProfitLoss || 0);
 
   const colors = {
     boh:"#3ba3e6", foh:"#22c55e", burden:"#ff9f3a", fixed:"#ff5f86",
     food:"#f97316", beverage:"#ffd166", pos:"#4bc0c0", tax:"#8b5cf6",
-    tips:"#14b8a6", profit:"#22c55e", loss:"#b91c1c"
+    tips:"#14b8a6", profit:"#22c55e", loss:"#b91c1c", management:"#2563eb", semi:"#64748b", deliveryFee:"#a855f7"
   };
 
   const costItems = [
     {label:"BOH Payroll", value:bohPayroll, color:colors.boh},
     {label:"FOH Payroll", value:fohPayroll, color:colors.foh},
+    {label:"Management Payroll", value:managementPayroll, color:colors.management},
     {label:"Payroll Burden", value:payrollBurden, color:colors.burden},
-    {label:"Fixed Costs", value:t.fixed || 0, color:colors.fixed},
+    ...fixedCostBreakdownAnnual(),
+    ...semiVariableBreakdownAnnual(model),
     {label:"Food Cost", value:t.foodCost || 0, color:colors.food},
     {label:"Beverage Cost", value:t.bevCost || 0, color:colors.beverage},
+    {label:"Delivery Service Fees", value:t.deliveryFeeCost || 0, color:colors.deliveryFee},
     {label:"POS Fees", value:t.posFees || 0, color:colors.pos},
     {label:"Sales Tax", value:t.tax || 0, color:colors.tax},
     {label:"Estimated Tips", value:t.tips || 0, color:colors.tips}
@@ -7711,21 +9091,32 @@ function renderReportCharts(model){
 
   const costCanvas = document.getElementById("reportCostChart");
   if(costCanvas){
+    const hasDeliveryFee = Number(t.deliveryFeeCost || 0) > 0;
+    const costLabels = ["Labor","Fixed","Semi-Variable","Food","Beverage",...(hasDeliveryFee ? ["Delivery Service Fees"] : []),"POS","Tax","Tips"];
+    const mkData = (label, value) => {
+      const arr = new Array(costLabels.length).fill(0);
+      const idx = costLabels.indexOf(label);
+      if(idx >= 0) arr[idx] = value;
+      return arr;
+    };
     if(reportCostChart) reportCostChart.destroy();
     reportCostChart = new Chart(costCanvas, {
       type:"bar",
       data:{
-        labels:["Labor","Fixed","Food","Beverage","POS","Tax","Tips"],
+        labels:costLabels,
         datasets:[
-          {label:"BOH Payroll", data:[bohPayroll,0,0,0,0,0,0], backgroundColor:colors.boh, stack:"labor"},
-          {label:"FOH Payroll", data:[fohPayroll,0,0,0,0,0,0], backgroundColor:colors.foh, stack:"labor"},
-          {label:"Payroll Burden", data:[payrollBurden,0,0,0,0,0,0], backgroundColor:colors.burden, stack:"labor"},
-          {label:"Fixed Costs", data:[0,t.fixed||0,0,0,0,0,0], backgroundColor:colors.fixed},
-          {label:"Food Cost", data:[0,0,t.foodCost||0,0,0,0,0], backgroundColor:colors.food},
-          {label:"Beverage Cost", data:[0,0,0,t.bevCost||0,0,0,0], backgroundColor:colors.beverage},
-          {label:"POS Fees", data:[0,0,0,0,t.posFees||0,0,0], backgroundColor:colors.pos},
-          {label:"Sales Tax", data:[0,0,0,0,0,t.tax||0,0], backgroundColor:colors.tax},
-          {label:"Estimated Tips", data:[0,0,0,0,0,0,t.tips||0], backgroundColor:colors.tips}
+          {label:"BOH Payroll", data:mkData("Labor",bohPayroll), backgroundColor:colors.boh, stack:"labor"},
+          {label:"FOH Payroll", data:mkData("Labor",fohPayroll), backgroundColor:colors.foh, stack:"labor"},
+          {label:"Management Payroll", data:mkData("Labor",managementPayroll), backgroundColor:colors.management, stack:"labor"},
+          {label:"Payroll Burden", data:mkData("Labor",payrollBurden), backgroundColor:colors.burden, stack:"labor"},
+          {label:"Fixed Costs", data:mkData("Fixed",t.fixed||0), backgroundColor:colors.fixed},
+          {label:"Semi-Variable Costs", data:mkData("Semi-Variable",t.semiVariableCost||0), backgroundColor:colors.semi},
+          {label:"Food Cost", data:mkData("Food",t.foodCost||0), backgroundColor:colors.food},
+          {label:"Beverage Cost", data:mkData("Beverage",t.bevCost||0), backgroundColor:colors.beverage},
+          ...(hasDeliveryFee ? [{label:"Delivery Service Fees", data:mkData("Delivery Service Fees",t.deliveryFeeCost||0), backgroundColor:colors.deliveryFee}] : []),
+          {label:"POS Fees", data:mkData("POS",t.posFees||0), backgroundColor:colors.pos},
+          {label:"Sales Tax", data:mkData("Tax",t.tax||0), backgroundColor:colors.tax},
+          {label:"Estimated Tips", data:mkData("Tips",t.tips||0), backgroundColor:colors.tips}
         ]
       },
       options:{
@@ -7750,8 +9141,10 @@ function renderReportCharts(model){
   const revenueItems = [
     {label:"True Labor Cost", value:labor, displayValue:labor, color:colors.boh},
     {label:"Fixed Costs", value:t.fixed || 0, displayValue:t.fixed || 0, color:colors.fixed},
+    {label:"Semi-Variable Costs", value:t.semiVariableCost || 0, displayValue:t.semiVariableCost || 0, color:colors.semi},
     {label:"Food Cost", value:t.foodCost || 0, displayValue:t.foodCost || 0, color:colors.food},
     {label:"Beverage Cost", value:t.bevCost || 0, displayValue:t.bevCost || 0, color:colors.beverage},
+    {label:"Delivery Service Fees", value:t.deliveryFeeCost || 0, displayValue:t.deliveryFeeCost || 0, color:colors.deliveryFee},
     {label:"POS Fees", value:t.posFees || 0, displayValue:t.posFees || 0, color:colors.pos},
     {label:"Sales Tax", value:t.tax || 0, displayValue:t.tax || 0, color:colors.tax},
     {label:"Estimated Tips", value:t.tips || 0, displayValue:t.tips || 0, color:colors.tips},
@@ -7828,6 +9221,12 @@ function snapshotOneChartForPrint(canvasId, chartObj){
   const canvas = document.getElementById(canvasId);
   const img = document.getElementById(canvasId + "PrintImage");
   if(!canvas || !img) return false;
+  const hostBlock = canvas.closest(".report-chart-block");
+  const isRevenuePie = canvasId === "reportRevenuePieChart";
+  if(hostBlock && !isRevenuePie){
+    hostBlock.classList.remove("print-snapshot-ready");
+  }
+  img.removeAttribute("data-ready");
   try{
     canvas.style.display = "block";
     canvas.style.width = "100%";
@@ -7836,15 +9235,29 @@ function snapshotOneChartForPrint(canvasId, chartObj){
       chartObj.resize();
       chartObj.update("none");
     }
-    const url = canvas.toDataURL("image/png", 1.0);
+    const url = chartObj && typeof chartObj.toBase64Image === "function"
+      ? chartObj.toBase64Image("image/png", 1)
+      : canvas.toDataURL("image/png", 1.0);
     if(url && url.length > 1000){
       img.src = url;
       img.style.removeProperty("display");
       img.setAttribute("data-ready","1");
+      if(hostBlock && !isRevenuePie){
+        hostBlock.classList.add("print-snapshot-ready");
+      }
       return true;
     }
   }catch(e){ console.warn("Chart snapshot failed", canvasId, e); }
   return false;
+}
+
+let reportPrintSnapshotTimer = null;
+
+function scheduleReportChartSnapshots(delay=220){
+  clearTimeout(reportPrintSnapshotTimer);
+  reportPrintSnapshotTimer = setTimeout(()=>{
+    snapshotReportChartsForPrint();
+  }, Math.max(0, Number(delay) || 0));
 }
 
 function snapshotReportChartsForPrint(){
@@ -7856,27 +9269,74 @@ function snapshotReportChartsForPrint(){
 
 function refreshReportChartsForPrint(){
   try{
-    if(typeof runModel === "function") updateReport(runModel());
-    else if(typeof calculate === "function") calculate();
+    [reportCostChart, reportRevenuePieChart, reportTrendChart].forEach(chart=>{
+      if(chart && typeof chart.resize === "function"){
+        chart.resize();
+        chart.update("none");
+      }
+    });
   }catch(e){ console.warn("Unable to refresh report before print", e); }
 }
 
 function prepareAllReportChartsForPrint(){
   refreshReportChartsForPrint();
-  setTimeout(snapshotReportChartsForPrint,100);
-  setTimeout(snapshotReportChartsForPrint,350);
-  setTimeout(snapshotReportChartsForPrint,700);
+  setTimeout(snapshotReportChartsForPrint,120);
+  setTimeout(snapshotReportChartsForPrint,320);
+  setTimeout(snapshotReportChartsForPrint,620);
+}
+
+function waitForRenderCycle(delay=140){
+  return new Promise(resolve=>{
+    requestAnimationFrame(()=>setTimeout(resolve,delay));
+  });
+}
+
+async function prepareReportChartsForPrintAsync(){
+  refreshReportChartsForPrint();
+  await waitForRenderCycle(160);
+  snapshotReportChartsForPrint();
+  await waitForRenderCycle(260);
+  snapshotReportChartsForPrint();
+  await waitForRenderCycle(260);
+  snapshotReportChartsForPrint();
+}
+
+function refreshReportDataForPrint(){
+  try{
+    if(typeof runModel === "function" && typeof updateReport === "function"){
+      updateReport(runModel());
+    }else if(typeof calculate === "function"){
+      calculate();
+    }
+  }catch(e){
+    console.warn("Unable to refresh report data before print", e);
+  }
+}
+
+function waitForPrintImagesReady(){
+  const images = [
+    document.getElementById("reportCostChartPrintImage"),
+    document.getElementById("reportTrendChartPrintImage")
+  ].filter(Boolean);
+  if(!images.length) return Promise.resolve();
+  return Promise.all(images.map(img=>{
+    if(img.getAttribute("data-ready") === "1" && img.complete && img.naturalWidth > 0){
+      return Promise.resolve();
+    }
+    return new Promise(resolve=>{
+      const done = ()=>resolve();
+      img.addEventListener("load", done, {once:true});
+      img.addEventListener("error", done, {once:true});
+      setTimeout(done, 500);
+    });
+  }));
 }
 
 function printExecutiveReport(){
-  refreshReportChartsForPrint();
-  setTimeout(()=>{
-    snapshotReportChartsForPrint();
-    setTimeout(()=>{
-      snapshotReportChartsForPrint();
-      window.print();
-    },450);
-  },450);
+  refreshReportDataForPrint();
+  prepareReportChartsForPrintAsync()
+    .then(waitForPrintImagesReady)
+    .then(()=>window.print());
 }
 
 window.addEventListener("beforeprint", ()=>{
@@ -8313,16 +9773,25 @@ function updateChart(model){
     const trueLabor = t.trueLaborCost || t.adjustedPayroll || 0;
     const bohPayroll = t.bohPayroll || 0;
     const fohPayroll = t.fohPayroll || 0;
-    const payrollBurden = Math.max(0, trueLabor - bohPayroll - fohPayroll);
+    const managementPayroll = t.managementPayroll || 0;
+    const payrollBurden = Math.max(0, trueLabor - bohPayroll - fohPayroll - managementPayroll);
+    const hasDeliveryFee = Number(t.deliveryFeeCost || 0) > 0;
+    const costLabels = ["True Labor Cost","Fixed Costs","Semi-Variable Costs","Food Cost","Beverage Cost",...(hasDeliveryFee ? ["Delivery Service Fees"] : []),"POS Fees","Sales Tax","Estimated Tips"];
+    const mkData = (label, value) => {
+      const arr = new Array(costLabels.length).fill(0);
+      const idx = costLabels.indexOf(label);
+      if(idx >= 0) arr[idx] = value;
+      return arr;
+    };
 
     config = {
       type:"bar",
       data:{
-        labels:["True Labor Cost","Fixed Costs","Food Cost","Beverage Cost","POS Fees","Sales Tax","Estimated Tips"],
+        labels:costLabels,
         datasets:[
           {
             label:"BOH Payroll",
-            data:[bohPayroll,0,0,0,0,0,0],
+            data:mkData("True Labor Cost",bohPayroll),
             backgroundColor:"#3ba3e6",
             borderRadius:12,
             borderWidth:0,
@@ -8330,15 +9799,23 @@ function updateChart(model){
           },
           {
             label:"FOH Payroll",
-            data:[fohPayroll,0,0,0,0,0,0],
+            data:mkData("True Labor Cost",fohPayroll),
             backgroundColor:"#22c55e",
             borderRadius:12,
             borderWidth:0,
             stack:"costStack"
           },
           {
+            label:"Management Payroll",
+            data:mkData("True Labor Cost",managementPayroll),
+            backgroundColor:"#2563eb",
+            borderRadius:12,
+            borderWidth:0,
+            stack:"costStack"
+          },
+          {
             label:"Payroll Tax Burden",
-            data:[payrollBurden,0,0,0,0,0,0],
+            data:mkData("True Labor Cost",payrollBurden),
             backgroundColor:"#ff9f3a",
             borderRadius:12,
             borderWidth:0,
@@ -8346,15 +9823,23 @@ function updateChart(model){
           },
           {
             label:"Fixed Costs",
-            data:[0,t.fixed,0,0,0,0,0],
+            data:mkData("Fixed Costs",t.fixed),
             backgroundColor:"#ff5f86",
             borderRadius:12,
             borderWidth:0,
             stack:"costStack"
           },
           {
+            label:"Semi-Variable Costs",
+            data:mkData("Semi-Variable Costs",t.semiVariableCost||0),
+            backgroundColor:"#64748b",
+            borderRadius:12,
+            borderWidth:0,
+            stack:"costStack"
+          },
+          {
             label:"Food Cost",
-            data:[0,0,t.foodCost,0,0,0,0],
+            data:mkData("Food Cost",t.foodCost),
             backgroundColor:"#f97316",
             borderRadius:12,
             borderWidth:0,
@@ -8362,15 +9847,23 @@ function updateChart(model){
           },
           {
             label:"Beverage Cost",
-            data:[0,0,0,t.bevCost,0,0,0],
+            data:mkData("Beverage Cost",t.bevCost),
             backgroundColor:"#ffd166",
             borderRadius:12,
             borderWidth:0,
             stack:"costStack"
           },
+          ...(hasDeliveryFee ? [{
+            label:"Delivery Service Fees",
+            data:mkData("Delivery Service Fees",t.deliveryFeeCost||0),
+            backgroundColor:"#a855f7",
+            borderRadius:12,
+            borderWidth:0,
+            stack:"costStack"
+          }] : []),
           {
             label:"POS Fees",
-            data:[0,0,0,0,t.posFees,0,0],
+            data:mkData("POS Fees",t.posFees),
             backgroundColor:"#4bc0c0",
             borderRadius:12,
             borderWidth:0,
@@ -8378,7 +9871,7 @@ function updateChart(model){
           },
           {
             label:"Sales Tax",
-            data:[0,0,0,0,0,t.tax,0],
+            data:mkData("Sales Tax",t.tax),
             backgroundColor:"#8b5cf6",
             borderRadius:12,
             borderWidth:0,
@@ -8386,7 +9879,7 @@ function updateChart(model){
           },
           {
             label:"Estimated Tips",
-            data:[0,0,0,0,0,0,t.tips],
+            data:mkData("Estimated Tips",t.tips),
             backgroundColor:"#14b8a6",
             borderRadius:12,
             borderWidth:0,
@@ -8428,13 +9921,25 @@ function updateChart(model){
   }else if(type === "cash"){
     const t = model.totals;
     const profitSlice = Math.max(0, t.operationalProfitLoss || 0);
+    const revenueItems = [
+      {label:"True Labor Cost", value:t.trueLaborCost || t.adjustedPayroll || 0, displayValue:t.trueLaborCost || t.adjustedPayroll || 0, color:"#3ba3e6"},
+      {label:"Fixed Costs", value:t.fixed || 0, displayValue:t.fixed || 0, color:"#ff5f86"},
+      {label:"Semi-Variable Costs", value:t.semiVariableCost || 0, displayValue:t.semiVariableCost || 0, color:"#64748b"},
+      {label:"Expected Food Cost", value:t.foodCost || 0, displayValue:t.foodCost || 0, color:"#ff9f3a"},
+      {label:"Expected Beverage Cost", value:t.bevCost || 0, displayValue:t.bevCost || 0, color:"#ffd166"},
+      {label:"Delivery Service Fees", value:t.deliveryFeeCost || 0, displayValue:t.deliveryFeeCost || 0, color:"#a855f7"},
+      {label:"Expected POS Fees", value:t.posFees || 0, displayValue:t.posFees || 0, color:"#4bc0c0"},
+      {label:"Sales Tax", value:t.tax || 0, displayValue:t.tax || 0, color:"#8b5cf6"},
+      {label:"Estimated Tips", value:t.tips || 0, displayValue:t.tips || 0, color:"#14b8a6"},
+      {label:"Operational Profit", value:profitSlice, displayValue:t.operationalProfitLoss || 0, color:"#22c55e"}
+    ].filter(item => Number(item.value) > 0);
     config = {
       type:"pie",
       data:{
-        labels:["True Labor Cost","Fixed Costs","Expected Food Cost","Expected Beverage Cost","Expected POS Fees","Sales Tax","Estimated Tips","Operational Profit"],
+        labels:revenueItems.map(item=>item.label),
         datasets:[{
-          data:[t.trueLaborCost || t.adjustedPayroll,t.fixed,t.foodCost,t.bevCost,t.posFees,t.tax,t.tips,profitSlice],
-          backgroundColor:["#3ba3e6","#ff5f86","#ff9f3a","#ffd166","#4bc0c0","#8b5cf6","#14b8a6","#22c55e"],
+          data:revenueItems.map(item=>item.value),
+          backgroundColor:revenueItems.map(item=>item.color),
           borderColor:"#ffffff",
           borderWidth:2
         }]
@@ -8533,6 +10038,7 @@ function calculate(){
   updateCapacity();
   const model=runModel();
   renderMonthly(model);
+  updateGuidedOutputs(model);
   updateCapacityHeatmap(model);
   updateMobileYearSummary(model);
   updateSummary(model);
@@ -8548,6 +10054,68 @@ function collectData(){
       savedAt:new Date().toISOString(),
       restaurantName:val("metaRestaurantName"),
       notes:val("metaNotes")
+    },
+    profile:{
+      restaurantName:val("profileRestaurantName"),
+      conceptType:val("profileConceptType"),
+      cityState:val("profileCityState"),
+      seatingCapacity:val("profileSeatingCapacity"),
+      indoorSeats:val("profileIndoorSeats"),
+      outdoorSeats:val("profileOutdoorSeats"),
+      barSeats:val("profileBarSeats"),
+      operatingDaysWeek:val("profileOperatingDaysWeek"),
+      services:val("profileServices"),
+      daysOpenMonth:val("profileDaysOpenMonth")
+    },
+    guidedRevenue:{
+      mode:activeGuidedMode("revenueMode"),
+      simpleMonthly:val("revenueSimpleMonthly"),
+      seats:val("revenueSeats"),
+      turns:val("revenueTurns"),
+      utilization:val("revenueUtilization"),
+      avgCheck:val("revenueAvgCheck"),
+      foodSpend:val("revenueFoodSpend"),
+      bevSpend:val("revenueBevSpend"),
+      operatingDays:val("revenueOperatingDays"),
+      events:val("revenueEvents"),
+      catering:val("revenueCatering"),
+      takeOut:val("revenueTakeOut"),
+      delivery:val("revenueDelivery"),
+      retail:val("revenueRetail"),
+      applyDeliveryFee:document.getElementById("revenueApplyDeliveryFee")?.checked ? "yes" : "no",
+      deliveryFeePct:val("revenueDeliveryFeePct")
+    },
+    fixedCosts:fixedCosts,
+    semiVariableCosts:semiVariableCosts,
+    laborModule:{
+      mode:activeGuidedMode("laborMode"),
+      positions:laborPositions,
+      includeTipsDisplay:val("laborIncludeTipsDisplay"),
+      useTempPeriods:val("laborUseTempPeriods"),
+      simpleTotal:val("laborSimpleTotal"),
+      simpleFohShare:val("laborSimpleFohShare"),
+      fohPayroll:val("laborFohPayroll"),
+      bohPayroll:val("laborBohPayroll"),
+      managementPayroll:val("laborManagementPayroll"),
+      structuredBurdenPct:val("laborStructuredBurdenPct")
+    },
+    taxTipsProcessing:{
+      salesTaxPct:val("cashSalesTaxPct"),
+      tipPct:val("cashTipPct"),
+      processingPct:val("cashProcessingPct"),
+      processingBase:val("cashProcessingBase"),
+      taxTreatment:val("cashTaxTreatment")
+    },
+    profitGoals:{
+      ownerSalary:val("goalOwnerSalary"),
+      monthlyProfit:val("goalMonthlyProfit"),
+      yearlyProfit:val("goalYearlyProfit"),
+      debtPayment:val("goalDebtPayment"),
+      reserveTarget:val("goalReserveTarget")
+    },
+    reportBuilder:{
+      preset:val("reportPreset"),
+      notes:val("reportPresetNotes")
     },
     bohPayroll:val("bohPayroll"),fohPayroll:val("fohPayroll"),fixed:val("fixed"),adjustedFixedCost:val("adjustedFixedCost"),
     tax:val("tax"),pos:val("pos"),tip:val("tip"),
@@ -8565,18 +10133,21 @@ function collectData(){
     closedDays:Array.from(document.querySelectorAll(".closedDay")).map(cb=>({value:cb.value,checked:cb.checked})),
     adjustedFixedMonths:Array.from(document.querySelectorAll(".adjustedFixedMonth")).map(cb=>({value:cb.value,checked:cb.checked})),
     seasonality:getSeasonality(),
-    vacations:Array.from(document.querySelectorAll(".vacation-card")).map(card=>({
-      start:card.querySelector(".vacStart")?.value || "",
-      end:card.querySelector(".vacEnd")?.value || "",
-      mode:card.querySelector(".adjustmentMode")?.value || "replace",
-      type:card.querySelector(".periodType")?.value || "Custom",
-      bohPayroll:card.querySelector(".periodBOH")?.value || 0,
-      fohPayroll:card.querySelector(".periodFOH")?.value || 0,
-      payroll:card.querySelector(".vacPayroll")?.value || 0,
-      applyBOHBurden:card.querySelector(".applyPeriodBOHBurden")?.checked ? "yes" : "no",
-      applyFOHBurden:card.querySelector(".applyPeriodFOHBurden")?.checked ? "yes" : "no",
-      applyTipBurden:card.querySelector(".applyPeriodTipBurden")?.checked ? "default" : "no"
-    }))
+    vacations:(()=>{
+      const list = typeof getVacationListElement === "function" ? getVacationListElement() : document;
+      return Array.from((list || document).querySelectorAll(".vacation-card")).map(card=>({
+        start:card.querySelector(".vacStart")?.value || "",
+        end:card.querySelector(".vacEnd")?.value || "",
+        mode:card.querySelector(".adjustmentMode")?.value || "replace",
+        type:card.querySelector(".periodType")?.value || "Custom",
+        bohPayroll:card.querySelector(".periodBOH")?.value || 0,
+        fohPayroll:card.querySelector(".periodFOH")?.value || 0,
+        payroll:card.querySelector(".vacPayroll")?.value || 0,
+        applyBOHBurden:card.querySelector(".applyPeriodBOHBurden")?.checked ? "yes" : "no",
+        applyFOHBurden:card.querySelector(".applyPeriodFOHBurden")?.checked ? "yes" : "no",
+        applyTipBurden:card.querySelector(".applyPeriodTipBurden")?.checked ? "default" : "no"
+      }));
+    })()
   };
 }
 
@@ -8596,7 +10167,12 @@ function downloadData(){
 
 function setValue(id,value){
   const el=document.getElementById(id);
-  if(el && value!==undefined) el.value=value;
+  if(!el || value===undefined) return;
+  if(el.type === "checkbox"){
+    el.checked = value === true || value === "true" || value === 1 || value === "1" || value === "yes";
+    return;
+  }
+  el.value=value;
 }
 
 function uploadData(file){
@@ -8624,10 +10200,17 @@ function uploadData(file){
         });
       }
       if(Array.isArray(data.seasonality)) pendingSeasonality=data.seasonality;
-      if(Array.isArray(data.vacations)){
-        clearVacationPeriods();
+      const hasImportedPeriods = Array.isArray(data.vacations) && data.vacations.length > 0;
+      if(data.laborModule && data.laborModule.useTempPeriods !== undefined){
+        setValue("laborUseTempPeriods", data.laborModule.useTempPeriods);
+      }else{
+        setValue("laborUseTempPeriods", hasImportedPeriods ? "yes" : "no");
+      }
+      clearVacationPeriods();
+      if(hasImportedPeriods){
         data.vacations.forEach(v=>addVacationPeriod(v));
       }
+      if(typeof updatePayrollPeriodSummary === "function") updatePayrollPeriodSummary();
       calculate();
       alert("Configuration uploaded successfully.");
     }catch(err){
@@ -8637,6 +10220,685 @@ function uploadData(file){
   };
   reader.readAsText(file);
 }
+
+let currentWizardStep = 0;
+window.guidedLaborBreakdown = {foh:7000, boh:18000, management:0, burdenPct:11};
+
+function setWizardStep(step){
+  const panels = Array.from(document.querySelectorAll(".wizard-panel"));
+  if(!panels.length) return;
+  currentWizardStep = Math.max(0, Math.min(step, panels.length - 1));
+  panels.forEach((panel,index)=>panel.classList.toggle("active", index === currentWizardStep));
+  document.querySelectorAll(".wizard-step-btn").forEach(btn=>{
+    btn.classList.toggle("active", Number(btn.dataset.step) === currentWizardStep);
+  });
+  const total = panels.length;
+  const pctValue = Math.round(((currentWizardStep + 1) / total) * 100);
+  const fill = document.getElementById("wizardProgressFill");
+  const text = document.getElementById("wizardProgressText");
+  const pctText = document.getElementById("wizardProgressPct");
+  if(fill) fill.style.width = pctValue + "%";
+  if(text) text.textContent = `Step ${currentWizardStep + 1} of ${total}`;
+  if(pctText) pctText.textContent = pctValue + "%";
+  const prev = document.getElementById("wizardPrevBtn");
+  const next = document.getElementById("wizardNextBtn");
+  if(prev) prev.disabled = currentWizardStep === 0;
+  if(next) next.textContent = currentWizardStep === total - 1 ? "Finish" : "Next";
+}
+
+function activeGuidedMode(group){
+  const active = document.querySelector(`.mode-switch[data-mode-group="${group}"] button.active`);
+  return active ? active.dataset.mode : "";
+}
+
+function setGuidedMode(group, mode){
+  document.querySelectorAll(`.mode-switch[data-mode-group="${group}"] button`).forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.mode === mode);
+  });
+  document.querySelectorAll(`[data-mode-panel^="${group}:"]`).forEach(panel=>{
+    panel.classList.toggle("active", panel.getAttribute("data-mode-panel") === `${group}:${mode}`);
+  });
+  if(group === "seasonalityMode"){
+    applySeasonalityMode();
+  }
+  syncGuidedSetupToModel();
+}
+
+function renderFixedCosts(){
+  const list = document.getElementById("fixedCostList");
+  if(!list) return;
+  list.innerHTML = fixedCosts.map((item,index)=>`
+    <div class="cost-card" draggable="true" data-type="fixed" data-id="${item.id}">
+      <div class="cost-card-head">
+        <div class="cost-title-wrap">
+          <input type="checkbox" class="cost-enabled-check" data-cost-field="enabled" ${item.enabled ? "checked" : ""} aria-label="Enable fixed cost">
+          <input type="text" class="cost-name-input" data-cost-field="name" value="${item.name || ""}" aria-label="Fixed cost name">
+        </div>
+        <div class="cost-card-actions">
+          <button type="button" class="mini-btn" data-cost-move="-1">Up</button>
+          <button type="button" class="mini-btn" data-cost-move="1">Down</button>
+          <button type="button" class="mini-btn danger" data-cost-delete="1">Delete</button>
+        </div>
+      </div>
+      <div class="setup-grid three">
+        <div class="field"><label>Monthly / Yearly Amount</label><input type="number" data-cost-field="amount" value="${Number(item.amount)||0}" min="0" step="50"></div>
+        <div class="field"><label>Frequency</label><select data-cost-field="frequency"><option value="monthly" ${item.frequency!=="yearly"?"selected":""}>Monthly</option><option value="yearly" ${item.frequency==="yearly"?"selected":""}>Yearly</option></select></div>
+        <div class="field"><label>Escalation %</label><input type="number" data-cost-field="escalationRate" value="${Number(item.escalationRate)||0}" step="0.1"></div>
+        <div class="field"><label>Tax Deductible</label><select data-cost-field="deductible"><option value="true" ${item.deductible!==false?"selected":""}>Yes</option><option value="false" ${item.deductible===false?"selected":""}>No</option></select></div>
+        <div class="field" style="grid-column:span 2;"><label>Notes</label><input type="text" data-cost-field="notes" value="${item.notes || ""}"></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderSemiVariableCosts(){
+  const list = document.getElementById("semiVariableCostList");
+  if(!list) return;
+  list.innerHTML = semiVariableCosts.map((item,index)=>`
+    <div class="cost-card" draggable="true" data-type="semi" data-id="${item.id}">
+      <div class="cost-card-head">
+        <div class="cost-title-wrap">
+          <input type="checkbox" class="cost-enabled-check" data-cost-field="enabled" ${item.enabled ? "checked" : ""} aria-label="Enable semi-variable cost">
+          <input type="text" class="cost-name-input" data-cost-field="name" value="${item.name || ""}" aria-label="Semi-variable cost name">
+        </div>
+        <div class="cost-card-actions">
+          <button type="button" class="mini-btn" data-cost-move="-1">Up</button>
+          <button type="button" class="mini-btn" data-cost-move="1">Down</button>
+          <button type="button" class="mini-btn danger" data-cost-delete="1">Delete</button>
+        </div>
+      </div>
+      <div class="setup-grid three">
+        <div class="field"><label>Monthly Base</label><input type="number" data-cost-field="baseAmount" value="${Number(item.baseAmount)||0}" min="0" step="50"></div>
+        <div class="field"><label>Variable %</label><input type="number" data-cost-field="variablePercent" value="${Number(item.variablePercent)||0}" min="0" step="0.1"></div>
+        <div class="field"><label>Scaling Mode</label><select data-cost-field="scalingMode"><option value="revenue" ${item.scalingMode==="revenue"?"selected":""}>Revenue</option><option value="occupancy" ${item.scalingMode==="occupancy"?"selected":""}>Occupancy</option><option value="guest" ${item.scalingMode==="guest"?"selected":""}>Guest count</option><option value="seasonal" ${item.scalingMode==="seasonal"?"selected":""}>Seasonal multiplier</option></select></div>
+        <div class="field"><label>Minimum</label><input type="number" data-cost-field="minValue" value="${Number(item.minValue)||0}" min="0" step="50"></div>
+        <div class="field"><label>Maximum</label><input type="number" data-cost-field="maxValue" value="${Number(item.maxValue)||0}" min="0" step="50"></div>
+        <div class="field"><label>Seasonality Sensitivity %</label><input type="number" data-cost-field="seasonalSensitivity" value="${Number(item.seasonalSensitivity)||0}" step="1"></div>
+        <div class="field" style="grid-column:1 / -1;"><label>Notes</label><input type="text" data-cost-field="notes" value="${item.notes || ""}"></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function updateCostItemFromControl(control){
+  const card = control.closest(".cost-card");
+  if(!card) return;
+  const type = card.dataset.type;
+  const collection = type === "fixed" ? fixedCosts : semiVariableCosts;
+  const item = collection.find(x=>x.id === card.dataset.id);
+  if(!item) return;
+  const field = control.dataset.costField;
+  if(!field) return;
+  if(control.type === "checkbox") item[field] = control.checked;
+  else if(["amount","escalationRate","baseAmount","variablePercent","minValue","maxValue","seasonalSensitivity"].includes(field)) item[field] = Number(control.value) || 0;
+  else if(field === "deductible") item[field] = control.value === "true";
+  else item[field] = control.value;
+  syncGuidedSetupToModel();
+  if(typeof calculate === "function") calculate();
+}
+
+function moveCostItem(type, id, direction){
+  const collection = type === "fixed" ? fixedCosts : semiVariableCosts;
+  const index = collection.findIndex(item=>item.id === id);
+  const next = index + direction;
+  if(index < 0 || next < 0 || next >= collection.length) return;
+  const [item] = collection.splice(index,1);
+  collection.splice(next,0,item);
+  renderFixedCosts();
+  renderSemiVariableCosts();
+  syncGuidedSetupToModel();
+  if(typeof calculate === "function") calculate();
+}
+
+function deleteCostItem(type, id){
+  if(type === "fixed") fixedCosts = fixedCosts.filter(item=>item.id !== id);
+  else semiVariableCosts = semiVariableCosts.filter(item=>item.id !== id);
+  renderFixedCosts();
+  renderSemiVariableCosts();
+  syncGuidedSetupToModel();
+  if(typeof calculate === "function") calculate();
+}
+
+function renderLaborPositions(){
+  const list = document.getElementById("laborPositionList");
+  if(!list) return;
+  list.innerHTML = laborPositions.map(pos=>`
+    <div class="labor-position-row" data-id="${pos.id}">
+      <div class="setup-grid">
+        <div class="field"><label>Position Name</label><input data-labor-field="name" value="${pos.name || ""}"></div>
+        <div class="field"><label>Labor Area</label><select data-labor-field="area"><option value="foh" ${pos.area==="foh"?"selected":""}>FOH</option><option value="boh" ${pos.area==="boh"?"selected":""}>BOH</option><option value="management" ${pos.area==="management"?"selected":""}>Management</option></select></div>
+        <div class="field"><label>Hourly Rate</label><input type="number" data-labor-field="hourlyRate" value="${Number(pos.hourlyRate)||0}" min="0" step="0.25"></div>
+        <div class="field"><label>Weekly Hours</label><input type="number" data-labor-field="weeklyHours" value="${Number(pos.weeklyHours)||0}" min="0" step="1"></div>
+        <div class="field"><label>Number of Employees</label><input type="number" data-labor-field="employees" value="${Number(pos.employees)||0}" min="0" step="1"></div>
+        <div class="field"><label>Overtime Option</label><select data-labor-field="overtime"><option value="false" ${!pos.overtime?"selected":""}>No</option><option value="true" ${pos.overtime?"selected":""}>Yes</option></select></div>
+        <div class="field"><label>Payroll Burden %</label><input type="number" data-labor-field="burdenPct" value="${Number(pos.burdenPct)||0}" min="0" step="0.1"></div>
+        <div class="field"><label>&nbsp;</label><button type="button" class="mini-btn danger" data-labor-delete="1">Delete Position</button></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function updateLaborPosition(control){
+  const row = control.closest(".labor-position-row");
+  if(!row) return;
+  const pos = laborPositions.find(item=>item.id === row.dataset.id);
+  if(!pos) return;
+  const field = control.dataset.laborField;
+  if(!field) return;
+  if(["hourlyRate","weeklyHours","employees","burdenPct"].includes(field)) pos[field] = Number(control.value) || 0;
+  else if(field === "overtime") pos[field] = control.value === "true";
+  else pos[field] = control.value;
+  syncGuidedSetupToModel();
+  if(typeof calculate === "function") calculate();
+}
+
+function monthlyLaborForPosition(pos){
+  const rate = Number(pos.hourlyRate) || 0;
+  const hours = Number(pos.weeklyHours) || 0;
+  const employees = Number(pos.employees) || 0;
+  const regularHours = pos.overtime ? Math.min(40, hours) : hours;
+  const overtimeHours = pos.overtime ? Math.max(0, hours - 40) : 0;
+  return ((regularHours * rate) + (overtimeHours * rate * 1.5)) * employees * 4.345;
+}
+
+function laborBreakdownFromGuided(){
+  const mode = activeGuidedMode("laborMode") || "simple";
+  let foh = 0, boh = 0, management = 0;
+  if(mode === "simple"){
+    const total = guidedNum("laborSimpleTotal",25000);
+    const fohShare = guidedNum("laborSimpleFohShare",28) / 100;
+    foh = total * fohShare;
+    boh = total - foh;
+  }else if(mode === "structured"){
+    foh = guidedNum("laborFohPayroll",7000);
+    boh = guidedNum("laborBohPayroll",18000);
+    management = guidedNum("laborManagementPayroll",0);
+  }else{
+    laborPositions.forEach(pos=>{
+      const monthly = monthlyLaborForPosition(pos);
+      if(pos.area === "management") management += monthly;
+      else if(pos.area === "foh") foh += monthly;
+      else boh += monthly;
+    });
+  }
+  const burdenPct = mode === "structured" ? guidedNum("laborStructuredBurdenPct",11) : guidedNum("laborPayrollBurdenPct",11);
+  return {foh, boh, management, burdenPct};
+}
+
+function renderGuidedSeasonalityGrid(){
+  const grid = document.getElementById("guidedSeasonalityGrid");
+  if(!grid) return;
+  const current = getSeasonalityForExport();
+  grid.innerHTML = months.map((month,index)=>{
+    const factor = current[index] === undefined ? 1 : Number(current[index]) || 1;
+    return `
+      <div class="seasonality-card">
+        <div class="seasonality-card-head">
+          <strong>${month}</strong>
+          <span class="seasonality-label" id="seasonalityLabel-${index}">${seasonalityStrengthLabel(factor)}</span>
+        </div>
+        ${renderSeasonalityControl(index, factor)}
+        <div class="wizard-output-band" style="grid-template-columns:1fr;gap:8px;margin-top:10px;">
+          <div class="output-tile"><span>Expected Cash Flow</span><strong id="seasonCash-${index}">$0</strong></div>
+          <div class="output-tile">
+            <span>Projected Net Sales</span>
+            <div class="season-sales-input-row">
+              <span>$</span>
+              <input type="number" class="season-sales-input" id="seasonSalesInput-${index}" data-month="${index}" min="0" step="1" aria-label="Projected net sales for ${month}">
+            </div>
+          </div>
+          <div class="output-tile"><span>Projected Labor</span><strong id="seasonLabor-${index}">$0</strong></div>
+          <div class="output-tile"><span>Food / Beverage Cost</span><strong id="seasonCogs-${index}">$0</strong></div>
+          <div class="output-tile"><span>Projected Profit</span><strong id="seasonProfit-${index}">$0</strong></div>
+        </div>
+      </div>
+    `;
+  }).join("");
+  bindSeasonalityControls();
+  bindGuidedSeasonSalesInputs();
+}
+
+function seasonalityStrengthLabel(factor){
+  const value = Number(factor) || 0;
+  if(value < .85) return "Weak month";
+  if(value < 1.15) return "Normal month";
+  if(value < 1.5) return "Strong month";
+  return "Peak month";
+}
+
+function applySeasonalityMode(){
+  if(activeGuidedMode("seasonalityMode") !== "same") return;
+  const factor = clampSeasonality(guidedNum("seasonalityDefaultFactor",1));
+  months.forEach((_,index)=>syncSeasonality(index,factor));
+}
+
+function optionalRevenueTotal(){
+  return guidedNum("revenueEvents",0) + guidedNum("revenueCatering",0) + guidedNum("revenueTakeOut",0) + guidedNum("revenueDelivery",0) + guidedNum("revenueRetail",0);
+}
+
+function calculatedGuidedMonthlyRevenue(){
+  const mode = activeGuidedMode("revenueMode") || "simple";
+  if(mode === "simple") return guidedNum("revenueSimpleMonthly",50000) + optionalRevenueTotal();
+  const seats = guidedNum("revenueSeats",48);
+  const turns = guidedNum("revenueTurns",1.5);
+  const avgCheck = guidedNum("revenueAvgCheck",90);
+  const days = guidedNum("revenueOperatingDays",26);
+  const utilization = guidedNum("revenueUtilization",75) / 100;
+  return (seats * turns * avgCheck * days * utilization) + optionalRevenueTotal();
+}
+
+function syncFoodBeverageMix(){
+  let foodMix = 75;
+  let bevMix = 25;
+  if(activeGuidedMode("revenueMode") === "advanced"){
+    const food = guidedNum("revenueFoodSpend",67.5);
+    const bev = guidedNum("revenueBevSpend",22.5);
+    const total = food + bev;
+    if(total > 0){
+      foodMix = (food / total) * 100;
+      bevMix = (bev / total) * 100;
+    }
+  }else{
+    const preset = guidedVal("revenueMixPreset","75:25");
+    if(preset !== "custom"){
+      const parts = preset.split(":").map(Number);
+      foodMix = parts[0] || 75;
+      bevMix = parts[1] || 25;
+    }else{
+      foodMix = Number(document.getElementById("foodMix")?.value) || 75;
+      bevMix = Math.max(0,100-foodMix);
+    }
+  }
+  setValue("foodMix", foodMix.toFixed(1));
+  setValue("bevMix", bevMix.toFixed(1));
+  const foodEl = document.getElementById("guidedFoodMix");
+  const bevEl = document.getElementById("guidedBevMix");
+  if(foodEl) foodEl.textContent = foodMix.toFixed(1) + "%";
+  if(bevEl) bevEl.textContent = bevMix.toFixed(1) + "%";
+}
+
+function syncGuidedSetupToModel(){
+  const profileName = guidedVal("profileRestaurantName","");
+  if(profileName) setValue("metaRestaurantName", profileName);
+  const city = guidedVal("profileCityState","");
+  const concept = guidedVal("profileConceptType","");
+  const notes = [concept, city].filter(Boolean).join(" | ");
+  if(notes) setValue("metaNotes", notes);
+
+  const activeId = document.activeElement?.id || "";
+  const profileSeats = guidedNum("profileSeatingCapacity", guidedNum("revenueSeats",48));
+  const profileDays = guidedNum("profileDaysOpenMonth", guidedNum("revenueOperatingDays",26));
+  const revenueSeats = activeId === "revenueSeats" ? guidedNum("revenueSeats",profileSeats) : profileSeats;
+  const revenueDays = activeId === "revenueOperatingDays" ? guidedNum("revenueOperatingDays",profileDays) : profileDays;
+  setValue("seatingCapacity", revenueSeats);
+  setValue("daysOpenManual", revenueDays);
+  if(activeId !== "revenueSeats") setValue("revenueSeats", revenueSeats);
+  if(activeId !== "revenueOperatingDays") setValue("revenueOperatingDays", revenueDays);
+  setValue("turnsPerNight", guidedNum("revenueTurns",1.5));
+  setValue("avgCheck", guidedNum("revenueAvgCheck",90));
+
+  document.querySelectorAll(".closedDay").forEach(cb=>{
+    const guided = document.querySelector(`.guidedClosedDay[value="${cb.value}"]`);
+    if(guided) cb.checked = guided.checked;
+  });
+
+  const monthlyRevenue = calculatedGuidedMonthlyRevenue();
+  setValue("lockedMonthlySales", Math.round(monthlyRevenue));
+  setValue("useCapacityTarget","yes");
+  setValue("fixed", fixedCostMonthlyTotal().toFixed(2));
+  setValue("foodCost", guidedNum("costFoodPct",30));
+  setValue("bevCost", guidedNum("costBevPct",25));
+  const processingPct = document.activeElement?.id === "costProcessingPct"
+    ? guidedNum("costProcessingPct",3)
+    : guidedNum("cashProcessingPct", guidedNum("costProcessingPct",3));
+  setValue("cashProcessingPct", processingPct);
+  setValue("costProcessingPct", processingPct);
+  setValue("pos", processingPct);
+  setValue("tax", guidedNum("cashSalesTaxPct",7));
+  setValue("tip", guidedNum("cashTipPct",19));
+
+  const goalTarget = guidedNum("goalOwnerSalary",0) + guidedNum("goalMonthlyProfit",0) + guidedNum("goalDebtPayment",0);
+  setValue("profitTarget", goalTarget);
+  setValue("ebitdaAddbacks", guidedNum("goalReserveTarget",0) / 12);
+
+  const labor = laborBreakdownFromGuided();
+  window.guidedLaborBreakdown = labor;
+  setValue("bohPayroll", labor.boh.toFixed(2));
+  setValue("fohPayroll", labor.foh.toFixed(2));
+  setValue("bohBurdenPct", labor.burdenPct);
+  setValue("fohBurdenPct", labor.burdenPct);
+  setValue("tipBurdenPct", guidedNum("laborTipBurdenPct",8));
+  setValue("applyTipBurden","yes");
+
+  const deliveryFeeInput = document.getElementById("revenueDeliveryFeePct");
+  const applyDeliveryFee = !!document.getElementById("revenueApplyDeliveryFee")?.checked;
+  if(deliveryFeeInput) deliveryFeeInput.disabled = !applyDeliveryFee;
+
+  syncFoodBeverageMix();
+  updateGuidedOutputs();
+}
+
+function updateGuidedOutputs(model=null){
+  const monthlyRevenue = calculatedGuidedMonthlyRevenue();
+  const days = Math.max(1,guidedNum("profileDaysOpenMonth",26));
+  const setText = (id,value)=>{ const el=document.getElementById(id); if(el) el.textContent=value; };
+  setText("guidedRevenueMonthly", money(monthlyRevenue));
+  setText("guidedRevenueDaily", money(monthlyRevenue / days));
+
+  const fixedMonthly = fixedCostMonthlyTotal();
+  setText("fixedCostSubtotal", money(fixedMonthly));
+  setText("fixedCostYearly", money(fixedMonthly * 12));
+  setText("semiVariableBaseSubtotal", money(semiVariableBaseMonthlyTotal()));
+  setText("semiVariableEstimatedSubtotal", money(semiVariableCostMonthlyTotal(monthlyRevenue,0,{actualOpenDays:days},getInputs())));
+
+  const labor = laborBreakdownFromGuided();
+  const laborBurden = (labor.foh + labor.boh + labor.management) * ((Number(labor.burdenPct)||0)/100);
+  const displayedTips = guidedVal("laborIncludeTipsDisplay","no") === "yes"
+    ? (guidedNum("laborTipsCollected",0) || (monthlyRevenue * (guidedNum("cashTipPct",19)/100)))
+    : 0;
+  setText("laborFohOutput", money(labor.foh + displayedTips));
+  setText("laborBohOutput", money(labor.boh));
+  setText("laborManagementOutput", money(labor.management));
+  setText("laborBurdenOutput", money(laborBurden));
+
+  const tax = monthlyRevenue * (guidedNum("cashSalesTaxPct",7)/100);
+  const tips = monthlyRevenue * (guidedNum("cashTipPct",19)/100);
+  const deliveryFeeCost = document.getElementById("revenueApplyDeliveryFee")?.checked
+    ? (guidedNum("revenueDelivery",0) * (guidedNum("revenueDeliveryFeePct",0)/100))
+    : 0;
+  const processingInput = getInputs();
+  const posFees = processingBaseAmount(monthlyRevenue,tax,tips,processingInput) * processingInput.pos;
+  const gross = monthlyRevenue + tax + tips;
+  setText("cashNetSales", money(monthlyRevenue));
+  setText("cashSalesTax", money(tax));
+  setText("cashTips", money(tips));
+  setText("cashGrossProcessed", money(gross));
+  setText("cashAccountingRevenue", money(monthlyRevenue));
+  setText("cashOperatingCashflow", money(gross - tax - tips - posFees - deliveryFeeCost));
+
+  if(model && model.rows){
+    model.rows.forEach((row,index)=>{
+      setText(`seasonalityLabel-${index}`, seasonalityStrengthLabel(row.seasonality));
+      setText(`seasonCash-${index}`, money(row.grossPlusTips || 0));
+      const seasonSalesInput = document.getElementById(`seasonSalesInput-${index}`);
+      if(seasonSalesInput){
+        seasonSalesInput.value = Math.round(Number(row.expectedSales) || 0);
+        seasonSalesInput.title = `Seasonality factor: ${Number(row.seasonality || 0).toFixed(2)}`;
+      }
+      setText(`seasonLabor-${index}`, money(row.trueLaborCost || row.adjustedPayroll));
+      setText(`seasonCogs-${index}`, money((row.foodCost||0)+(row.bevCost||0)));
+      setText(`seasonProfit-${index}`, money(row.operationalProfitLoss));
+    });
+
+    const t = model.totals;
+    const requiredMonthly = (t.requiredProfit || 0) / 12;
+    const seats = Math.max(1,guidedNum("revenueSeats",guidedNum("profileSeatingCapacity",48)));
+    const turns = Math.max(.01,guidedNum("revenueTurns",1.5));
+    const avgCheck = Math.max(.01,guidedNum("revenueAvgCheck",90));
+    const requiredGuests = requiredMonthly / avgCheck;
+    const monthlyGuestCapacity = seats * turns * days;
+    setText("goalRequiredMonthlySales", money(requiredMonthly));
+    setText("goalRequiredDailySales", money(requiredMonthly / days));
+    setText("goalRequiredAvgCheck", money(monthlyGuestCapacity > 0 ? requiredMonthly / monthlyGuestCapacity : 0));
+    setText("goalRequiredOccupancy", ((monthlyGuestCapacity > 0 ? requiredGuests / monthlyGuestCapacity : 0) * 100).toFixed(1) + "%");
+    setText("goalRequiredTurns", (seats * avgCheck * days > 0 ? requiredMonthly / (seats * avgCheck * days) : 0).toFixed(2));
+
+    setText("reportBuilderRevenue", money(t.expectedSales));
+    setText("reportBuilderCosts", money((t.cogs||0)+(t.fixed||0)+(t.semiVariableCost||0)+(t.posFees||0)+(t.deliveryFeeCost||0)));
+    setText("reportBuilderLabor", money(t.trueLaborCost || t.adjustedPayroll));
+    setText("reportBuilderProfit", money(t.operationalProfitLoss));
+    setText("reportBuilderBreakEven", money(t.breakEven));
+    const diagnostics = buildGuidedDiagnostics(model);
+    setText("reportBuilderRisk", diagnostics.filter(item=>item.level !== "good").length);
+    renderGuidedDiagnostics(diagnostics);
+  }
+}
+
+function buildGuidedDiagnostics(model){
+  if(!model || !model.totals) return [];
+  const t = model.totals;
+  const sales = Number(t.expectedSales) || 0;
+  const laborPct = sales > 0 ? (t.trueLaborCost || t.adjustedPayroll || 0) / sales : 0;
+  const foodPct = sales > 0 ? (t.foodCost || 0) / sales : 0;
+  const bevPct = sales > 0 ? (t.bevCost || 0) / sales : 0;
+  const rentItem = fixedCosts.find(item=>/rent/i.test(item.name || ""));
+  const rentAnnual = rentItem && rentItem.enabled ? fixedMonthlyAmount(rentItem) * 12 : 0;
+  const rentPct = sales > 0 ? rentAnnual / sales : 0;
+  const fixedPct = sales > 0 ? (t.fixed || 0) / sales : 0;
+  const posPct = sales > 0 ? (t.posFees || 0) / sales : 0;
+  const opMargin = sales > 0 ? (t.operationalProfitLoss || 0) / sales : 0;
+  const seats = guidedNum("revenueSeats",guidedNum("profileSeatingCapacity",48));
+  const seatProductivity = seats > 0 ? sales / seats : 0;
+  const semiPct = sales > 0 ? (t.semiVariableCost || 0) / sales : 0;
+  const concentration = fixedCosts.length ? Math.max(...fixedCosts.filter(x=>x.enabled).map(x=>fixedMonthlyAmount(x)),0) / Math.max(1,fixedCostMonthlyTotal()) : 0;
+
+  const items = [];
+  const add = (level, problem, why, action)=>items.push({level, problem, why, action});
+  if(foodPct > .34) add("warning","Food cost too high","Food cost is above a common target range and can compress contribution margin.","Review menu pricing, purchasing, waste, and portion controls.");
+  if(bevPct > .28) add("warning","Beverage cost too high","Beverage cost is consuming too much of beverage sales.","Review beverage pricing, comping, pours, and inventory controls.");
+  if(laborPct > .36) add("critical","Labor cost too high","Labor above target makes profitability fragile even when sales grow.","Revisit staffing plans, scheduling, management coverage, and sales-per-labor-hour goals.");
+  if(rentPct > .10) add("warning","Rent ratio too high","Occupancy cost above 10% of sales can limit owner profit and debt coverage.","Negotiate fixed overhead, increase seat productivity, or grow higher-margin revenue streams.");
+  if(opMargin < .05) add(opMargin < 0 ? "critical" : "warning","Weak profitability","The model has limited cushion after operating costs.","Improve prime cost, reduce overhead, or raise required sales targets.");
+  if(seatProductivity > 0 && seatProductivity < 12000) add("warning","Low seat productivity","Annual sales per seat appears low for a full-service model.","Improve turns, check average, utilization, or event/private dining revenue.");
+  if(guidedNum("profileOperatingDaysWeek",6) <= 4) add("warning","High dependency on weekends","A short operating week can concentrate revenue risk into fewer service periods.","Stress-test weak weekdays, events, and off-premise revenue.");
+  if(posPct > .04) add("warning","Low margin after processing fees","Merchant fees are taking a meaningful share of sales and tips.","Confirm whether fees apply to tips and tax, and review processor pricing.");
+  if(fixedPct > .22) add("warning","Unusually high fixed overhead","Fixed costs are elevated relative to projected sales.","Identify non-core overhead and model lease, loan, or franchise obligations separately.");
+  if(semiPct > .08) add("warning","Semi-variable costs scaling inefficiently","Semi-variable expenses are rising quickly with sales or seasonality.","Set minimum/maximum caps and review scaling assumptions for utilities, cleaning, linen, and repairs.");
+  if(concentration > .55) add("warning","Operational overhead concentration risk","One fixed cost category dominates overhead, increasing risk if sales soften.","Break out the category, validate contract terms, and run a downside scenario.");
+  if(!items.length) add("good","No major diagnostic warnings","Core ratios are within the current model thresholds.","Keep validating assumptions against actual POS, payroll, and accounting data.");
+  return items;
+}
+
+function renderGuidedDiagnostics(items){
+  const target = document.getElementById("guidedDiagnostics");
+  if(!target) return;
+  target.innerHTML = items.map(item=>`
+    <div class="diagnostic-card ${item.level}">
+      <strong>${item.problem}</strong>
+      <p><b>Why it matters:</b> ${item.why}</p>
+      <small>Suggested action: ${item.action}</small>
+    </div>
+  `).join("");
+}
+
+function bindGuidedSetup(){
+  if(window.guidedSetupBound) return;
+  window.guidedSetupBound = true;
+  document.querySelectorAll(".wizard-step-btn").forEach(btn=>btn.onclick=()=>setWizardStep(Number(btn.dataset.step)));
+  document.getElementById("wizardPrevBtn")?.addEventListener("click",()=>setWizardStep(currentWizardStep-1));
+  document.getElementById("wizardNextBtn")?.addEventListener("click",()=>setWizardStep(currentWizardStep+1));
+  document.querySelectorAll(".mode-switch button").forEach(btn=>{
+    btn.addEventListener("click",()=>setGuidedMode(btn.closest(".mode-switch").dataset.modeGroup, btn.dataset.mode));
+  });
+  document.getElementById("addFixedCostBtn")?.addEventListener("click",()=>{
+    fixedCosts.push({id:createCostId("fixed"),name:"Custom fixed cost",amount:0,frequency:"monthly",escalationRate:0,enabled:true,deductible:true,notes:""});
+    renderFixedCosts();
+    syncGuidedSetupToModel();
+  });
+  document.getElementById("addSemiVariableCostBtn")?.addEventListener("click",()=>{
+    semiVariableCosts.push({id:createCostId("semi"),name:"Custom semi-variable cost",baseAmount:0,variablePercent:0,scalingMode:"revenue",minValue:0,maxValue:0,seasonalSensitivity:0,enabled:true,notes:""});
+    renderSemiVariableCosts();
+    syncGuidedSetupToModel();
+  });
+  document.getElementById("addLaborPositionBtn")?.addEventListener("click",()=>{
+    laborPositions.push({id:createCostId("labor"),name:"New Position",area:"foh",hourlyRate:0,weeklyHours:0,employees:1,overtime:false,burdenPct:11});
+    renderLaborPositions();
+    syncGuidedSetupToModel();
+  });
+  document.getElementById("laborAddPeriodBtn")?.addEventListener("click",()=>{
+    addVacationPeriod();
+  });
+  document.getElementById("laborClearPeriodsBtn")?.addEventListener("click",()=>{
+    clearVacationPeriods();
+  });
+  document.getElementById("laborUseTempPeriods")?.addEventListener("change",()=>{
+    updatePayrollPeriodSummary();
+    if(typeof calculate === "function") calculate();
+  });
+  document.getElementById("reportPreset")?.addEventListener("change",e=>{
+    setValue("reportPresetToolbar", e.target.value);
+    if(typeof calculate === "function") calculate();
+  });
+  document.getElementById("reportPresetToolbar")?.addEventListener("change",e=>{
+    setValue("reportPreset", e.target.value);
+    if(typeof calculate === "function") calculate();
+  });
+  document.getElementById("downloadCsvExportBtn")?.addEventListener("click",downloadGuidedCsvExport);
+  document.getElementById("importCsvCosts")?.addEventListener("change",e=>{
+    const file = e.target.files && e.target.files[0];
+    if(file) importGuidedCsvCosts(file);
+    e.target.value = "";
+  });
+  document.addEventListener("input", e=>{
+    if(e.target.closest(".guided-setup")){
+      if(e.target.classList?.contains("season-sales-input")) return;
+      if(e.target.dataset.costField) updateCostItemFromControl(e.target);
+      else if(e.target.dataset.laborField) updateLaborPosition(e.target);
+      else {
+        if(e.target.id === "seasonalityDefaultFactor") applySeasonalityMode();
+        if(e.target.id === "laborUseTempPeriods") updatePayrollPeriodSummary();
+        syncGuidedSetupToModel();
+        if(typeof calculate === "function") calculate();
+      }
+    }
+  });
+  document.addEventListener("change", e=>{
+    if(e.target.closest(".guided-setup")){
+      if(e.target.classList?.contains("season-sales-input")) return;
+      if(e.target.dataset.costField) updateCostItemFromControl(e.target);
+      else if(e.target.dataset.laborField) updateLaborPosition(e.target);
+      else {
+        if(e.target.id === "laborUseTempPeriods") updatePayrollPeriodSummary();
+        syncGuidedSetupToModel();
+        if(typeof calculate === "function") calculate();
+      }
+    }
+  });
+  document.addEventListener("click", e=>{
+    const costCard = e.target.closest(".cost-card");
+    if(costCard && e.target.dataset.costDelete) deleteCostItem(costCard.dataset.type, costCard.dataset.id);
+    if(costCard && e.target.dataset.costMove) moveCostItem(costCard.dataset.type, costCard.dataset.id, Number(e.target.dataset.costMove));
+    const laborRow = e.target.closest(".labor-position-row");
+    if(laborRow && e.target.dataset.laborDelete){
+      laborPositions = laborPositions.filter(pos=>pos.id !== laborRow.dataset.id);
+      renderLaborPositions();
+      syncGuidedSetupToModel();
+      if(typeof calculate === "function") calculate();
+    }
+    const jump = e.target.closest("[data-tab-jump]");
+    if(jump){
+      const tab = document.querySelector(`.tab-btn[data-tab="${jump.dataset.tabJump}"]`);
+      if(tab) tab.click();
+    }
+  });
+  document.addEventListener("dragstart", e=>{
+    const card = e.target.closest(".cost-card");
+    if(!card) return;
+    card.classList.add("dragging");
+    e.dataTransfer.setData("text/plain", `${card.dataset.type}:${card.dataset.id}`);
+  });
+  document.addEventListener("dragend", e=>{
+    e.target.closest?.(".cost-card")?.classList.remove("dragging");
+  });
+  document.addEventListener("dragover", e=>{
+    const card = e.target.closest(".cost-card");
+    if(card) e.preventDefault();
+  });
+  document.addEventListener("drop", e=>{
+    const target = e.target.closest(".cost-card");
+    if(!target) return;
+    e.preventDefault();
+    const [type,id] = (e.dataTransfer.getData("text/plain") || "").split(":");
+    if(type !== target.dataset.type || id === target.dataset.id) return;
+    const collection = type === "fixed" ? fixedCosts : semiVariableCosts;
+    const from = collection.findIndex(item=>item.id === id);
+    const to = collection.findIndex(item=>item.id === target.dataset.id);
+    if(from < 0 || to < 0) return;
+    const [item] = collection.splice(from,1);
+    collection.splice(to,0,item);
+    renderFixedCosts();
+    renderSemiVariableCosts();
+    syncGuidedSetupToModel();
+  });
+
+  renderFixedCosts();
+  renderSemiVariableCosts();
+  renderLaborPositions();
+  renderGuidedSeasonalityGrid();
+  updatePayrollPeriodSummary();
+  setWizardStep(0);
+  syncGuidedSetupToModel();
+  if(typeof calculate === "function") calculate();
+}
+
+function downloadGuidedCsvExport(){
+  const rows = [
+    ["Type","Name","Amount","Frequency / Scaling","Enabled","Notes"],
+    ...fixedCosts.map(item=>["Fixed",item.name,item.amount,item.frequency,item.enabled,item.notes || ""]),
+    ...semiVariableCosts.map(item=>["Semi-Variable",item.name,item.baseAmount,item.scalingMode,item.enabled,item.notes || ""])
+  ];
+  const csv = rows.map(row=>row.map(value=>`"${String(value ?? "").replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "restaurant-cost-architecture.csv";
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(()=>{ document.body.removeChild(link); URL.revokeObjectURL(url); },100);
+}
+
+function parseCsvLine(line){
+  const cells = [];
+  let current = "";
+  let quoted = false;
+  for(let i=0;i<line.length;i++){
+    const ch = line[i];
+    const next = line[i+1];
+    if(ch === '"' && quoted && next === '"'){
+      current += '"';
+      i++;
+    }else if(ch === '"'){
+      quoted = !quoted;
+    }else if(ch === "," && !quoted){
+      cells.push(current);
+      current = "";
+    }else{
+      current += ch;
+    }
+  }
+  cells.push(current);
+  return cells;
+}
+
+function importGuidedCsvCosts(file){
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = String(e.target.result || "").split(/\r?\n/).filter(Boolean);
+    const rows = lines.slice(1).map(parseCsvLine);
+    const nextFixed = [];
+    const nextSemi = [];
+    rows.forEach(row=>{
+      const [type,name,amount,mode,enabled,notes] = row;
+      if(/^fixed$/i.test(type || "")){
+        nextFixed.push({id:createCostId("fixed"),name:name || "Fixed cost",amount:Number(amount)||0,frequency:mode === "yearly" ? "yearly" : "monthly",escalationRate:0,enabled:String(enabled).toLowerCase() !== "false",deductible:true,notes:notes || ""});
+      }else if(/^semi/i.test(type || "")){
+        nextSemi.push({id:createCostId("semi"),name:name || "Semi-variable cost",baseAmount:Number(amount)||0,variablePercent:0,scalingMode:mode || "revenue",minValue:0,maxValue:0,seasonalSensitivity:0,enabled:String(enabled).toLowerCase() !== "false",notes:notes || ""});
+      }
+    });
+    if(nextFixed.length) fixedCosts = nextFixed;
+    if(nextSemi.length) semiVariableCosts = nextSemi;
+    renderFixedCosts();
+    renderSemiVariableCosts();
+    syncGuidedSetupToModel();
+    if(typeof calculate === "function") calculate();
+    if(typeof showSaveToast === "function") showSaveToast("Cost CSV imported");
+  };
+  reader.readAsText(file);
+}
+
+document.addEventListener("DOMContentLoaded", bindGuidedSetup);
+setTimeout(bindGuidedSetup, 300);
 
 document.querySelectorAll(".tab-btn").forEach(btn=>{
   btn.addEventListener("click",()=>{
@@ -8691,7 +10953,7 @@ window.addEventListener("resize", () => {
   }
 });
 
-addVacationPeriod();
+updatePayrollPeriodSummary();
 calculate();
 
 document.getElementById("downloadConfigDownload")?.addEventListener("click",(e)=>{ e.preventDefault(); downloadConfigDirect(); });
@@ -8731,10 +10993,18 @@ function getCurrentConfigurationForExport(){
 
   data.seasonality = typeof getSeasonality === "function" ? getSeasonality() : [];
 
-  data.vacations = Array.from(document.querySelectorAll(".vacation-card")).map(card=>({
+  const exportVacationList = (typeof getVacationListElement === "function" && getVacationListElement()) || document;
+  data.vacations = Array.from(exportVacationList.querySelectorAll(".vacation-card")).map(card=>({
     start:card.querySelector(".vacStart")?.value || "",
     end:card.querySelector(".vacEnd")?.value || "",
-    payroll:card.querySelector(".vacPayroll")?.value || "0"
+    mode:card.querySelector(".adjustmentMode")?.value || "replace",
+    type:card.querySelector(".periodType")?.value || "Custom",
+    bohPayroll:card.querySelector(".periodBOH")?.value || "0",
+    fohPayroll:card.querySelector(".periodFOH")?.value || "0",
+    payroll:card.querySelector(".vacPayroll")?.value || "0",
+    applyBOHBurden:card.querySelector(".applyPeriodBOHBurden")?.checked ? "yes" : "no",
+    applyFOHBurden:card.querySelector(".applyPeriodFOHBurden")?.checked ? "yes" : "no",
+    applyTipBurden:card.querySelector(".applyPeriodTipBurden")?.checked ? "default" : "no"
   }));
 
   return data;
@@ -9038,54 +11308,6 @@ document.addEventListener("change", ()=>setTimeout(forceRefreshReport, 50));
 
 
 
-
-window.addEventListener("beforeprint", ()=>{
-  refreshReportChartsForPrint();
-  snapshotReportChartsForPrint();
-});
-
-
-function refreshPrintSnapshotGrids(){
-  try{
-    if(typeof runModel === "function" && typeof updateReport === "function"){
-      updateReport(runModel());
-    }else if(typeof calculate === "function"){
-      calculate();
-    }
-  }catch(e){
-    console.warn("Could not refresh print snapshot grids", e);
-  }
-}
-
-window.addEventListener("beforeprint", refreshPrintSnapshotGrids);
-document.addEventListener("DOMContentLoaded", ()=>setTimeout(refreshPrintSnapshotGrids, 800));
-
-
-
-
-
-
-
-
-
-
-
-
-window.addEventListener("beforeprint", ()=>{
-  refreshReportChartsForPrint();
-  snapshotReportChartsForPrint();
-});
-
-document.addEventListener("DOMContentLoaded", ()=>{
-  setTimeout(prepareAllReportChartsForPrint, 900);
-});
-
-document.addEventListener("click", e=>{
-  const btn = e.target.closest ? e.target.closest('[data-tab="report"]') : null;
-  if(btn){
-    setTimeout(prepareAllReportChartsForPrint, 500);
-  }
-});
 
 </script>
 
